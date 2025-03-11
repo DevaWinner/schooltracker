@@ -16,8 +16,9 @@ A centralized platform to simplify international school applications by tracking
   - [Environment Variables & Configuration](#environment-variables--configuration)
   - [Running the App Locally](#running-the-app-locally)
 - [Project Structure](#project-structure)
-- [Team Members](#team-members)
+- [Contributing](#contributing)
 - [License](#license)
+
 
 ---
 
@@ -191,25 +192,25 @@ SchoolTracker/
 
 ## 👥 Team Members
 
-### Aniekan Winner Anietie
+### 👤 Aniekan Winner Anietie
 **GitHub:** [@devawinner](https://github.com/DevaWinner)  
 **LinkedIn:** [Aniekan Winner](https://www.linkedin.com/in/winnera)
 
 ---
 
-### Jose Emilio Zamarron Sanchez
+### 👤 Jose Emilio Zamarron Sanchez
 **GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
 **LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
 
 ---
 
-### Godspower Onyebuchi Okonkwo
+### 👤 Godspower Onyebuchi Okonkwo
 **GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
 **LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
 
 ---
 
-### Joseph A Wallace
+### 👤 Joseph A Wallace
 **GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
 **LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
 
