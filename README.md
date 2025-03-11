@@ -195,26 +195,38 @@ SchoolTracker/
 ### 👤 Aniekan Winner Anietie
 **GitHub:** [@devawinner](https://github.com/DevaWinner)  
 **LinkedIn:** [Aniekan Winner](https://www.linkedin.com/in/winnera)
+#### 💬 Favorite Quote
+> ❝ The only limit to our realization of tomorrow is our doubts of today. ❞  
+> — Franklin D. Roosevelt
 
 ---
 
 ### 👤 Jose Emilio Zamarron Sanchez
 **GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
 **LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
+#### 💬 Favorite Quote
+> ❝ Your Favorite Quote Here ❞  
+> — Author
 
 ---
 
 ### 👤 Godspower Onyebuchi Okonkwo
 **GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
 **LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
+#### 💬 Favorite Quote
+> ❝ Your Favorite Quote Here ❞  
+> — Author
 
 ---
 
 ### 👤 Joseph A Wallace
 **GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
 **LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
+#### 💬 Favorite Quote
+> ❝ Your Favorite Quote Here ❞  
+> — Author
 
-> **💡 Note:** If you’d like to contribute to the project or have any questions, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue on GitHub. We’re always open to new ideas and collaboration opportunities!
+**💡 Note:** If you’d like to contribute to the project or have any questions, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue on GitHub. We’re always open to new ideas and collaboration opportunities!
 
 ---
 
