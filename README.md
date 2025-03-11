@@ -16,7 +16,7 @@ A centralized platform to simplify international school applications by tracking
   - [Environment Variables & Configuration](#environment-variables--configuration)
   - [Running the App Locally](#running-the-app-locally)
 - [Project Structure](#project-structure)
-- [Contributing](#contributing)
+- [Team Members](#team-members)
 - [License](#license)
 
 
