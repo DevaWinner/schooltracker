@@ -220,11 +220,11 @@ SchoolTracker/
 ---
 
 ### 👤 Joseph A Wallace
-**GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
-**LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
+**GitHub:** [@wallacejoe](https://github.com/wallacejoe)  
+**LinkedIn:** [Joseph Wallace](https://www.linkedin.com/in/wallace-joe/)
 #### 💬 Favorite Quote
-> ❝ Your Favorite Quote Here ❞  
-> — Author
+> ❝ You’re not everything you could be, and you know it ❞  
+> — Jordan B Peterson
 
 **💡 Note:** If you’d like to contribute to the project or have any questions, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue on GitHub. We’re always open to new ideas and collaboration opportunities!
 
