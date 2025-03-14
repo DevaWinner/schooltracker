@@ -82,11 +82,11 @@ See the full **[Installation Guide](https://github.com/DevaWinner/schooltracker/
 ---
 
 ### 👤 Jose Emilio Zamarron Sanchez
-**GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
-**LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
+**GitHub:** [@Zamarr0n](https://github.com/Zamarr0n)  
+**LinkedIn:** [Jose Emilio Zamarròn Sànchez](https://www.linkedin.com/in/emilio-zamarron-s%C3%A1nchez-699992203/)
 #### 💬 Favorite Quote
-> ❝ Your Favorite Quote Here ❞  
-> — Author
+> ❝ Whether you think you can or you think you can’t, you’re right. ❞  
+> — Henry Ford
 
 ---
 
