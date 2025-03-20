@@ -1,5 +1,5 @@
 import PageMeta from "../../components/common/PageMeta";
-import AuthLayout from "../../layout/AppLayout";
+import AuthLayout from "../../layout/AuthLayout";
 import SignUpForm from "../../components/auth/SignUpForm";
 
 export default function SignUp() {
