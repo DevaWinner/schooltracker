@@ -24,3 +24,6 @@ typing_extensions==4.12.2
 tzdata==2025.1
 uritemplate==4.1.1
 urllib3==2.3.0
+supabase == 2.14.0
+supafunc == 0.9.3
+python-dotenv== 1.0.1
