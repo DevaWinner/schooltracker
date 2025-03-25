@@ -64,3 +64,32 @@ def supabase_signin(email, password):
     except Exception as e :
         return {"error ": e }
     
+
+
+def signin_with_google():
+    
+    try:
+        response = supabase.auth.sign_in_with_oauth({
+            "provider": "google",
+            "options": {
+                "redirect_to": 'http://localhost:8000/api/auth/google/callback/',
+                "scopes": "openid profile email",  
+                "skip_browser_redirect": True,
+                "query_params": {
+                    "prompt": "select_account",
+                    "access_type": "offline",
+                    "include_granted_scopes": "true"
+                }
+            }
+        })
+        
+        if not response.url:
+            print("Error: No URL returned from Supabase")
+            return{"error": "Authentication service unavailable"}, 503
+            
+        print(f"Generated Google OAuth URL: {response.url}")
+        return {"url": response.url}
+    except Exception as e:
+        print(f"Authentication error: {str(e)}")
+        return {"error": str(e)}, 500
+
