@@ -1,3 +1,11 @@
 ### 1. Initiate Google Login
-GET http://localhost:8000/api/auth/sigin_google/
-Accept: application/json
+# GET http://localhost:8000/api/auth/sigin_google/
+# Accept: application/json
+
+# POST http://localhost:8000/api/auth/register/
+# Content-Type: application/json
+# Accept: application/json
+# {
+#     "email": "cestzamarron@gmail.com",
+#     "password": "123456789010"
+# } 

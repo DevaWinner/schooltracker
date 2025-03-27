@@ -16,13 +16,13 @@ def register_user(request):
             email = data.get("email")
             password = data.get("password")
             response = supabase_signup(email, password)
-            print("Supabase response:", response)  # Debug: Print the response from supabase_signup
+            print("Supabase response:", response)  
             return JsonResponse(response)
         except json.JSONDecodeError as e:
-            print("JSON decode error:", e)  # Debug: Print JSON decode errors
+            print("JSON decode error:", e)  
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
         except Exception as e:
-            print("Internal error:", e)  # Debug: Print unexpected errors
+            print("Internal error:", e)  
             return JsonResponse({"error": e}, status=500)
     return JsonResponse({"error": "Invalid request method"}, safe=False, status=405)
 
