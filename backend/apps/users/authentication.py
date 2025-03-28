@@ -57,3 +57,20 @@ class SupabaseAuthentication(BaseAuthentication):
         except User.DoesNotExist:
             logger.error(f"User with supabase_id {user_id} not found in database.")
             raise AuthenticationFailed("User not found in the database")
+
+
+    def verify_token(self, token):
+        """Validates Supabase token and fetches user info."""
+        url = f"{SUPABASE_URL}/auth/v1/user"
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {token}"
+        }
+        response = requests.get(url, headers=headers)
+
+        if response.status_code != 200:
+            logger.error(f"Supabase token verification failed: {response.json()}")
+            return None
+
+        return response.json()
+    
