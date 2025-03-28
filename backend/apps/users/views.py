@@ -1,10 +1,15 @@
 import json
 from django.http import JsonResponse
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
-from supabase import AuthApiError
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from .supabase_auth import supabase_signup, supabase_signin,signin_with_google
+from supabase import AuthApiError
+
+from .serializers import UserProfileSerializer
 from .models import UserProfile
 
 User = get_user_model()
@@ -103,8 +108,6 @@ def signin(request):
     return JsonResponse({"error": "Invalid request method."}, status=400)
 
 
-
-# New supporting views
 def google_login_view(request):
     """
     Uses your signin_with_google() function
@@ -129,3 +132,30 @@ def google_login_view(request):
             {"error": f"Internal server error: {str(e)}"},
             status=500
         )
+    
+
+class UserProfileView(APIView):
+    """
+    API endpoint to retrieve and update user profiles.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Retrieve authenticated user's profile, including User and UserProfile fields."""
+        user_profile = request.user.user_profile
+        serializer = UserProfileSerializer(user_profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request):
+        """Update the authenticated user's profile, including first_name and last_name."""
+        user_profile = request.user.user_profile
+        serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Profile updated successfully", "profile": serializer.data},
+                status=status.HTTP_200_OK
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
