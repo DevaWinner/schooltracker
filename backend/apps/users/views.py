@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
-
+from supabase import AuthApiError
 from .supabase_auth import supabase_signup, supabase_signin,signin_with_google
 from .models import UserProfile
 
@@ -69,6 +69,7 @@ def register_user(request):
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+
 @csrf_exempt
 def signin(request):
     if request.method == "POST":
@@ -76,14 +77,31 @@ def signin(request):
             data = json.loads(request.body)
             email = data.get("email")
             password = data.get("password")
+
             if not email or not password:
                 return JsonResponse({"error": "Email and password are required."}, status=400)
+
             result = supabase_signin(email, password)
-            print("Supabase response:" , result)
+
+            # Check if Supabase returned an error
+            if "error" in result:
+                error_message = str(result["error"])
+                
+                if "Email not confirmed" in error_message:
+                    return JsonResponse(
+                        {"error": "Your email is not confirmed. Please check your inbox for the verification email."}, 
+                        status=403
+                    )
+                return JsonResponse({"error": error_message}, status=400)
             return JsonResponse(result)
+        except json.JSONDecodeError:
+            return JsonResponse({"error": "Invalid JSON data received."}, status=400)
+        except AuthApiError as e:
+            return JsonResponse({"error": f"Authentication failed: {str(e)}"}, status=401)
         except Exception as e:
-            return JsonResponse({"error ", e}, status=500)
+            return JsonResponse({"error": f"An unexpected error occurred: {str(e)}"}, status=500)
     return JsonResponse({"error": "Invalid request method."}, status=400)
+
 
 
 # New supporting views
