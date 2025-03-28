@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .supabase_auth import supabase_signup, supabase_signin,signin_with_google
+from .supabase_config import supabase_signup, supabase_signin,signin_with_google
 from supabase import AuthApiError
 
 from .serializers import UserProfileSerializer

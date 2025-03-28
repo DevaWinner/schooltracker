@@ -9,7 +9,7 @@ load_dotenv()
 # .env variables
 SUPABASE_URL = os.environ.get('Supabase_Project_URL') 
 SUPABASE_API_KEY = os.environ.get('Supabase_API_KEY')
-SUPABASE_BUCKET = os.environ.get('SUPABASE_BUCKET')
+SUPABASE_BUCKET = "media"
 
 # Initialize Supabase new client/user
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_API_KEY)

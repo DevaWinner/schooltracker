@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from .models import UserProfile
 from .utils.country_names import COUNTRY_CHOICES
 from .utils.country_codes import COUNTRY_CODE_CHOICES
-from .supabase_auth import upload_file
+from .supabase_config import upload_file
 
 CustomUser = get_user_model()
 
