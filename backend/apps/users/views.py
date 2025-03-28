@@ -1,11 +1,13 @@
+import json
+from django.http import JsonResponse
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-import json
-from .auth import supabase_signup, supabase_signin,signin_with_google
+from django.contrib.auth import get_user_model
 
-# Testing the 'users' app
-# def register_user(request):
-#     return JsonResponse({"message": "User registration endpoint is working!"})
+from .supabase_auth import supabase_signup, supabase_signin,signin_with_google
+from .models import UserProfile
+
+User = get_user_model()
 
 #function to register users
 @csrf_exempt
@@ -15,16 +17,57 @@ def register_user(request):
             data = json.loads(request.body)
             email = data.get("email")
             password = data.get("password")
+            first_name = data.get("first_name")
+            last_name = data.get("last_name")
+
             response = supabase_signup(email, password)
-            print("Supabase response:", response)  # Debug: Print the response from supabase_signup
-            return JsonResponse(response)
-        except json.JSONDecodeError as e:
-            print("JSON decode error:", e)  # Debug: Print JSON decode errors
+
+            if response.get("status") == "success" and "user" in response:
+                user_data = response["user"]
+                supabase_uid = user_data["id"]
+
+                # Create or update user record in Django
+                user, created = User.objects.update_or_create(
+                    email=email,
+                    defaults={
+                        "username": email,
+                        "supabase_uid": supabase_uid,
+                        "first_name": first_name,
+                        "last_name": last_name
+                    }
+                )
+
+                if created:
+                    user.set_password(password)
+                    user.save()
+
+                # Ensure UserProfile exists
+                UserProfile.objects.get_or_create(user=user)
+
+                # Return formatted response
+                return JsonResponse(
+                    {
+                        "status": "User registered successfully",
+                        "user": {
+                            "id": user_data["id"],
+                            "email": user_data["email"],
+                            "created_at": user_data["created_at"],
+                            "updated_at": user_data.get("updated_at", user_data["created_at"]),
+                        },
+                    },
+                    status=201,  # HTTP 201 Created
+                )
+            else:
+                return JsonResponse(
+                    {"error": "Registration failed", "details": response},
+                    status=400,  # HTTP 400 Bad Request
+                )
+        except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
         except Exception as e:
-            print("Internal error:", e)  # Debug: Print unexpected errors
-            return JsonResponse({"error": e}, status=500)
-    return JsonResponse({"error": "Invalid request method"}, safe=False, status=405)
+            return JsonResponse({"error": str(e)}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 @csrf_exempt
 def signin(request):
