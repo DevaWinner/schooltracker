@@ -1,55 +1,32 @@
-import { useState, useEffect } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import { mockFetchUserInfo } from "../../mocks/userMock";
 import { timezones } from "../../utils/timezones";
 import { getLanguageByCode } from "../../utils/languages";
 import UserSettingsModal from "./modals/UserSettingsModal";
+import { UserMeta } from "../../types/user";
 
-interface UserSettings {
-	language: string;
-	timezone: string;
-	notification_email: boolean;
-	notification_sms: boolean;
-	notification_push: boolean;
-	marketing_emails: boolean;
+interface Props {
+	userInfo: UserMeta | null;
 }
 
-export default function UserSettingsCard() {
+export default function UserSettingsCard({ userInfo }: Props) {
 	const { isOpen, openModal, closeModal } = useModal();
-	const [loading, setLoading] = useState(true);
-	const [settings, setSettings] = useState<UserSettings | null>(null);
-
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const data = await mockFetchUserInfo();
-				setSettings({
-					language: data.language,
-					timezone: data.timezone,
-					notification_email: data.notification_email,
-					notification_sms: data.notification_sms,
-					notification_push: data.notification_push,
-					marketing_emails: data.marketing_emails,
-				});
-			} catch (error) {
-				console.error("Error fetching settings:", error);
-			} finally {
-				setLoading(false);
-			}
-		};
-		fetchData();
-	}, []);
 
 	const handleSave = () => {
 		console.log("Saving settings...");
 		closeModal();
 	};
 
-	if (loading)
-		return <div className="p-5 text-center">Loading settings...</div>;
-	if (!settings)
-		return <div className="p-5 text-center">Settings not available.</div>;
+	if (!userInfo) return null;
+
+	const settings = {
+		language: userInfo.language,
+		timezone: userInfo.timezone,
+		notification_email: userInfo.notification_email,
+		notification_sms: userInfo.notification_sms,
+		notification_push: userInfo.notification_push,
+		marketing_emails: userInfo.marketing_emails,
+	};
 
 	return (
 		<>

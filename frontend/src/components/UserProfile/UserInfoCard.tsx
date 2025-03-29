@@ -1,41 +1,21 @@
-import { useState, useEffect } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import { mockFetchUserInfo } from "../../mocks/userMock";
 import UserInfoModal from "./modals/UserInfoModal";
+import { UserMeta } from "../../types/user";
 
-export default function UserInfoCard() {
+interface Props {
+	userInfo: UserMeta | null;
+}
+
+export default function UserInfoCard({ userInfo }: Props) {
 	const { isOpen, openModal, closeModal } = useModal();
-	const [userInfo, setUserInfo] = useState<any>(null);
-	const [loading, setLoading] = useState(true);
-
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const data = await mockFetchUserInfo();
-				setUserInfo(data);
-			} catch (error) {
-				console.error("Error fetching user data:", error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchData();
-	}, []);
 
 	const handleSave = () => {
-		// Handle save logic here
 		console.log("Saving changes...");
 		closeModal();
 	};
 
-	if (loading)
-		return <div className="p-5 text-center">Loading user information...</div>;
-	if (!userInfo)
-		return (
-			<div className="p-5 text-center">User information not available.</div>
-		);
+	if (!userInfo) return null;
 
 	return (
 		<div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">

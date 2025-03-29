@@ -1,50 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import { mockFetchUserInfo } from "../../mocks/userMock";
 import UserAddressModal from "./modals/UserAddressModal";
+import { UserMeta } from "../../types/user";
 
-interface UserAddress {
-	address: string;
-	city: string;
-	state: string;
-	country: string;
-	zip: string;
+interface Props {
+	userInfo: UserMeta | null;
 }
 
-export default function UserAddressCard() {
+export default function UserAddressCard({ userInfo }: Props) {
 	const { isOpen, openModal, closeModal } = useModal();
-	const [loading, setLoading] = useState(true);
-	const [userAddress, setUserAddress] = useState<UserAddress | null>(null);
-	const [selectedCountry, setSelectedCountry] = useState<string>("");
-
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const data = await mockFetchUserInfo();
-				setUserAddress({
-					address: data.address,
-					city: data.city,
-					state: data.state,
-					country: data.country,
-					zip: data.zip,
-				});
-				setSelectedCountry(data.country);
-			} catch (error) {
-				console.error("Error fetching user data:", error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchData();
-	}, []);
+	const [selectedCountry, setSelectedCountry] = useState(
+		userInfo?.country || ""
+	);
 
 	const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		setSelectedCountry(e.target.value);
-		if (userAddress) {
-			setUserAddress({ ...userAddress, country: e.target.value });
-		}
 	};
 
 	const handleSave = () => {
@@ -52,14 +23,7 @@ export default function UserAddressCard() {
 		closeModal();
 	};
 
-	if (loading)
-		return (
-			<div className="p-5 text-center">Loading address information...</div>
-		);
-	if (!userAddress)
-		return (
-			<div className="p-5 text-center">Address information not available.</div>
-		);
+	if (!userInfo) return null;
 
 	return (
 		<>
@@ -76,7 +40,7 @@ export default function UserAddressCard() {
 									Country
 								</p>
 								<p className="text-sm font-medium text-gray-800 dark:text-white/90">
-									{userAddress.country}
+									{userInfo.country}
 								</p>
 							</div>
 
@@ -85,7 +49,7 @@ export default function UserAddressCard() {
 									City/State
 								</p>
 								<p className="text-sm font-medium text-gray-800 dark:text-white/90">
-									{userAddress.city}, {userAddress.state}
+									{userInfo.city}, {userInfo.state}
 								</p>
 							</div>
 
@@ -94,7 +58,7 @@ export default function UserAddressCard() {
 									Address
 								</p>
 								<p className="text-sm font-medium text-gray-800 dark:text-white/90">
-									{userAddress.address}
+									{userInfo.address}
 								</p>
 							</div>
 
@@ -103,7 +67,7 @@ export default function UserAddressCard() {
 									Postal Code
 								</p>
 								<p className="text-sm font-medium text-gray-800 dark:text-white/90">
-									{userAddress.zip}
+									{userInfo.zip}
 								</p>
 							</div>
 						</div>
@@ -134,7 +98,7 @@ export default function UserAddressCard() {
 			</div>
 			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
 				<UserAddressModal
-					userAddress={userAddress}
+					userAddress={userInfo}
 					selectedCountry={selectedCountry}
 					onSave={handleSave}
 					onClose={closeModal}
