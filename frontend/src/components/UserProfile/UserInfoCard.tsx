@@ -1,13 +1,9 @@
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import UserInfoModal from "./modals/UserInfoModal";
-import { UserMeta } from "../../types/user";
+import { UserCardProps } from "../../types/user";
 
-interface Props {
-	userInfo: UserMeta | null;
-}
-
-export default function UserInfoCard({ userInfo }: Props) {
+export default function UserInfoCard({ userInfo }: UserCardProps) {
 	const { isOpen, openModal, closeModal } = useModal();
 
 	const handleSave = () => {

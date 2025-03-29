@@ -1,12 +1,7 @@
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
-
-interface UserInfoModalProps {
-	userInfo: any;
-	onSave: () => void;
-	onClose: () => void;
-}
+import { UserInfoModalProps } from "../../../types/user";
 
 export default function UserInfoModal({
 	userInfo,

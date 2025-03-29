@@ -1,12 +1,7 @@
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
-
-interface UserMetaModalProps {
-	userInfo: any;
-	onSave: () => void;
-	onClose: () => void;
-}
+import { UserMetaModalProps } from "../../../types/user";
 
 export default function UserMetaModal({
 	userInfo,

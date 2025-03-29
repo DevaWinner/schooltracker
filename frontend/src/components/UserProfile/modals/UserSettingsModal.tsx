@@ -2,19 +2,7 @@ import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import { timezones } from "../../../utils/timezones";
 import { languages } from "../../../utils/languages";
-
-interface UserSettingsModalProps {
-	settings: {
-		language: string;
-		timezone: string;
-		notification_email: boolean;
-		notification_sms: boolean;
-		notification_push: boolean;
-		marketing_emails: boolean;
-	};
-	onSave: () => void;
-	onClose: () => void;
-}
+import { UserSettingsModalProps } from "../../../types/user";
 
 export default function UserSettingsModal({
 	settings,

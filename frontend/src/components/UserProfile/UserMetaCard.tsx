@@ -1,19 +1,17 @@
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import UserMetaModal from "./modals/UserMetaModal";
-import { UserMeta } from "../../types/user";
+import { UserCardProps } from "../../types/user";
 
-interface Props {
-	userInfo: UserMeta | null;
-}
-
-export default function UserMetaCard({ userInfo }: Props) {
+export default function UserMetaCard({ userInfo }: UserCardProps) {
 	const { isOpen, openModal, closeModal } = useModal();
 
 	const handleSave = () => {
 		console.log("Saving changes...");
 		closeModal();
 	};
+
+	if (!userInfo) return null;
 
 	return (
 		<>
@@ -151,7 +149,7 @@ export default function UserMetaCard({ userInfo }: Props) {
 			</div>
 			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
 				<UserMetaModal
-					userInfo={userInfo}
+					userInfo={userInfo} // Now userInfo is guaranteed to be non-null
 					onSave={handleSave}
 					onClose={closeModal}
 				/>

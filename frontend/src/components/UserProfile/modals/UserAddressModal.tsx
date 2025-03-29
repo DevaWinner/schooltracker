@@ -2,20 +2,7 @@ import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import { countries } from "../../../utils/countries";
-
-interface UserAddressModalProps {
-	userAddress: {
-		address: string;
-		city: string;
-		state: string;
-		country: string;
-		zip: string;
-	};
-	selectedCountry: string;
-	onSave: () => void;
-	onClose: () => void;
-	onCountryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-}
+import { UserAddressModalProps } from "../../../types/user";
 
 export default function UserAddressModal({
 	userAddress,
