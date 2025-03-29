@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { ROUTES } from "./constants/Routes";
 import NotFound from "./pages/OtherPage/NotFound";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
@@ -24,7 +25,8 @@ import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 
 // User Profile
-import UserProfiles from "./pages/UserProfiles";
+import UserProfiles from "./pages/UserProfile/UserProfileInformation";
+import UserBackground from "./pages/UserProfile/UserBackground";
 
 export default function App() {
 	return (
@@ -34,36 +36,52 @@ export default function App() {
 				<Routes>
 					{/* Dashboard Layout */}
 					<Route element={<AppLayout />}>
-						<Route index path="/" element={<Home />} />
+						<Route index path={ROUTES.App.main} element={<Home />} />
 
 						{/* Applications Routes */}
 						<Route
-							path="/applications/tracker"
+							path={ROUTES.Applications.tracker}
 							element={<ApplicationTracker />}
 						/>
 						<Route
-							path="/applications/status"
+							path={ROUTES.Applications.status}
 							element={<ApplicationStatus />}
 						/>
 
 						{/* Documents Routes */}
-						<Route path="/documents/upload" element={<DocumentUpload />} />
-						<Route path="/documents/library" element={<DocumentLibrary />} />
+						<Route
+							path={ROUTES.Documents.upload}
+							element={<DocumentUpload />}
+						/>
+						<Route
+							path={ROUTES.Documents.library}
+							element={<DocumentLibrary />}
+						/>
 
 						{/* Directory Routes */}
-						<Route path="/directory/search" element={<SchoolSearch />} />
+						<Route path={ROUTES.Directory.search} element={<SchoolSearch />} />
 
 						{/* Other Main Routes */}
-						<Route path="/calendar" element={<Calendar />} />
-						<Route path="/recommendations" element={<Recommendations />} />
+						<Route path={ROUTES.Other.calendar} element={<Calendar />} />
+						<Route
+							path={ROUTES.Other.recommendations}
+							element={<Recommendations />}
+						/>
 
 						{/* Account Routes */}
-						<Route path="/profile" element={<UserProfiles />} />
+						<Route
+							path={ROUTES.Profile.information}
+							element={<UserProfiles />}
+						/>
+						<Route
+							path={ROUTES.Profile.background}
+							element={<UserBackground />}
+						/>
 					</Route>
 
 					{/* Authentication Routes */}
-					<Route path="/signin" element={<SignIn />} />
-					<Route path="/signup" element={<SignUp />} />
+					<Route path={ROUTES.Auth.signin} element={<SignIn />} />
+					<Route path={ROUTES.Auth.signup} element={<SignUp />} />
 
 					{/* Fallback Route */}
 					<Route path="*" element={<NotFound />} />

@@ -1,3 +1,13 @@
+interface AcademicBackground {
+	institution_name: string;
+	degree: string;
+	field_of_study: string;
+	start_date: string;
+	end_date: string;
+	gpa: string;
+	description: string;
+}
+
 interface UserInfo {
 	id: number;
 	username: string;
@@ -32,6 +42,7 @@ interface UserInfo {
 	notification_sms: boolean;
 	notification_push: boolean;
 	marketing_emails: boolean;
+	academic_background: AcademicBackground[];
 }
 
 export const mockFetchUserInfo = (): Promise<UserInfo> => {
@@ -71,6 +82,26 @@ export const mockFetchUserInfo = (): Promise<UserInfo> => {
 				notification_sms: false,
 				notification_push: true,
 				marketing_emails: false,
+				academic_background: [
+					{
+						institution_name: "Brigham Young University Idaho",
+						degree: "Bachelor's",
+						field_of_study: "Computer Science",
+						start_date: "2021-09-01",
+						end_date: "2024-04-30",
+						gpa: "3.8",
+						description: "Dean's List, Computer Science Club President",
+					},
+					{
+						institution_name: "Community College",
+						degree: "Associate",
+						field_of_study: "General Studies",
+						start_date: "2019-09-01",
+						end_date: "2021-05-30",
+						gpa: "3.9",
+						description: "Honor Roll Student",
+					},
+				],
 			});
 		}, 500);
 	});
