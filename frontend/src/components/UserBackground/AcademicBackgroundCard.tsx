@@ -1,32 +1,22 @@
-import { useState, useEffect } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import { mockFetchUserInfo } from "../../mocks/userMock";
 import AcademicBackgroundModal from "./modals/AcademicBackgroundModal";
+import { UserCardProps } from "../../types/user";
 
-export default function AcademicBackgroundCard() {
+export default function AcademicBackgroundCard({ userInfo }: UserCardProps) {
 	const { isOpen, openModal, closeModal } = useModal();
-	const [userInfo, setUserInfo] = useState<any>(null);
-
-	useEffect(() => {
-		const fetchData = async () => {
-			const data = await mockFetchUserInfo();
-			setUserInfo(data);
-		};
-		fetchData();
-	}, []);
 
 	const handleSave = () => {
 		console.log("Saving changes...");
 		closeModal();
 	};
 
-	if (!userInfo) return <div>Loading...</div>;
+	if (!userInfo) return null;
 
 	return (
 		<>
 			<div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-				{userInfo.academic_background.map((academic: any, index: number) => (
+				{userInfo.academic_background.map((academic, index) => (
 					<div key={index} className="mb-6 last:mb-0">
 						<div className="flex justify-between items-center mb-4">
 							<h4 className="text-lg font-semibold text-gray-800 dark:text-white/90">
