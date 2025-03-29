@@ -23,46 +23,52 @@ import SchoolSearch from "./pages/Directory/Search";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 
+// User Profile
+import UserProfiles from "./pages/UserProfiles";
+
 export default function App() {
-  return (
-    <>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
+	return (
+		<>
+			<Router>
+				<ScrollToTop />
+				<Routes>
+					{/* Dashboard Layout */}
+					<Route element={<AppLayout />}>
+						<Route index path="/" element={<Home />} />
 
-            {/* Applications Routes */}
-            <Route
-              path="/applications/tracker"
-              element={<ApplicationTracker />}
-            />
-            <Route
-              path="/applications/status"
-              element={<ApplicationStatus />}
-            />
+						{/* Applications Routes */}
+						<Route
+							path="/applications/tracker"
+							element={<ApplicationTracker />}
+						/>
+						<Route
+							path="/applications/status"
+							element={<ApplicationStatus />}
+						/>
 
-            {/* Documents Routes */}
-            <Route path="/documents/upload" element={<DocumentUpload />} />
-            <Route path="/documents/library" element={<DocumentLibrary />} />
+						{/* Documents Routes */}
+						<Route path="/documents/upload" element={<DocumentUpload />} />
+						<Route path="/documents/library" element={<DocumentLibrary />} />
 
-            {/* Directory Routes */}
-            <Route path="/directory/search" element={<SchoolSearch />} />
+						{/* Directory Routes */}
+						<Route path="/directory/search" element={<SchoolSearch />} />
 
-            {/* Other Main Routes */}
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/recommendations" element={<Recommendations />} />
-          </Route>
+						{/* Other Main Routes */}
+						<Route path="/calendar" element={<Calendar />} />
+						<Route path="/recommendations" element={<Recommendations />} />
 
-          {/* Authentication Routes */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+						{/* Account Routes */}
+						<Route path="/profile" element={<UserProfiles />} />
+					</Route>
 
-          {/* Fallback Route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    </>
-  );
+					{/* Authentication Routes */}
+					<Route path="/signin" element={<SignIn />} />
+					<Route path="/signup" element={<SignUp />} />
+
+					{/* Fallback Route */}
+					<Route path="*" element={<NotFound />} />
+				</Routes>
+			</Router>
+		</>
+	);
 }
