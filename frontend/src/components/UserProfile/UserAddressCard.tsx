@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
-import Label from "../form/Label";
 import { mockFetchUserInfo } from "../../mocks/userMock";
-import { countries, Country } from "../../utils/countries";
 import UserAddressModal from "./modals/UserAddressModal";
 
 interface UserAddress {

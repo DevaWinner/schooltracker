@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import Button from "../ui/button/Button";
-import Label from "../form/Label";
 import { mockFetchUserInfo } from "../../mocks/userMock";
 import { timezones } from "../../utils/timezones";
-import { languages, getLanguageByCode } from "../../utils/languages";
+import { getLanguageByCode } from "../../utils/languages";
 import UserSettingsModal from "./modals/UserSettingsModal";
 
 interface UserSettings {
