@@ -10,7 +10,7 @@ import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import Badge from "../ui/badge/Badge";
 import ApplicationTableModal from "./modals/ApplicationTableModal";
-//import { Application } from "../../types/applications";
+import { Application } from "../../types/applications";
 import { tableData } from "./placeholderData";
 
 export default function ApplicationTable() {
@@ -19,6 +19,13 @@ export default function ApplicationTable() {
   const handleSave = () => {
     console.log("Saving changes...");
     closeModal();
+  };
+  const hasScholarship = (application: Application) => {
+    if (application.scholarship) {
+      return "Has Scholarship";
+    } else {
+      return "No Scholarship";
+    }
   };
 
   return (
@@ -45,7 +52,11 @@ export default function ApplicationTable() {
         Add Application
       </button>
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-        <ApplicationTableModal onSave={handleSave} onClose={closeModal} />
+        <ApplicationTableModal
+          onSave={handleSave}
+          onClose={closeModal}
+          data={tableData}
+        />
       </Modal>
       <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
         <div className="max-w-full overflow-x-auto">
@@ -63,7 +74,7 @@ export default function ApplicationTable() {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Country
+                  Website
                 </TableCell>
                 <TableCell
                   isHeader
@@ -94,10 +105,10 @@ export default function ApplicationTable() {
                     <div className="flex items-center gap-3">
                       <div>
                         <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                          {order.institution.name}
+                          {order.institution}
                         </span>
                         <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                          {order.institution.tag}
+                          {order.tag}
                         </span>
                       </div>
                     </div>
@@ -106,7 +117,9 @@ export default function ApplicationTable() {
                     {order.website}
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-                    <div className="flex -space-x-2">{order.scholarship}</div>
+                    <div className="flex -space-x-2">
+                      {hasScholarship(order)}
+                    </div>
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                     <Badge

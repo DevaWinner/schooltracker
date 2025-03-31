@@ -1,16 +1,72 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
+import { useState } from "react";
 
 interface ApplicationTableModalProps {
+  data: any;
   onSave: () => void;
   onClose: () => void;
 }
 
 export default function ApplicationTableModal({
+  data,
   onSave,
   onClose,
 }: ApplicationTableModalProps) {
+  const [formData, setFormData] = useState({
+    institution: "",
+    tag: "",
+    website: "",
+    scholarship: false,
+    status: "Pending",
+    deadline: "",
+  });
+  // Updates values when the form is updated
+  const changeForm = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+  // Updates select values when the form is updated
+  const changeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+  // Posts the data upon submission
+  // Unique id should be provided in backend
+  const submitForm = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      // Requires the API link to post the form
+      /*const response = await fetch("", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+      if (response.ok) {
+        console.log("Data submitted successfully");
+      } else {
+        console.error("Error submitting data");
+      }*/
+
+      // This portion interacts with placeholder data
+      // it should be replaced on integration
+      data.push(formData);
+      onSave();
+    } catch (error) {
+      console.error("Network error:", error);
+    }
+  };
+
   return (
     <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
       <div className="px-2 pr-14">
@@ -19,38 +75,63 @@ export default function ApplicationTableModal({
         </h4>
       </div>
 
-      <form className="flex flex-col">
+      <form onSubmit={submitForm} className="flex flex-col">
         <div className="custom-scrollbar h-[350px] overflow-y-auto px-2 pb-3">
           <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
             <div>
               <Label>Institution Name</Label>
-              <Input type="text" placeholder="Enter institution name" />
+              <Input
+                type="text"
+                id="institution"
+                name="institution"
+                placeholder="Enter institution name"
+                value={formData.institution}
+                onChange={changeForm}
+              />
             </div>
             <div>
               <Label>Institution Type</Label>
               <Input
                 type="text"
+                id="tag"
+                name="tag"
                 placeholder="Community college, university, etc."
+                value={formData.tag}
+                onChange={changeForm}
               />
             </div>
             <div>
               <Label>Website</Label>
-              <Input type="text" placeholder="Enter institution site link" />
+              <Input
+                type="text"
+                id="website"
+                name="website"
+                placeholder="Enter institution site link"
+                value={formData.website}
+                onChange={changeForm}
+              />
             </div>
             <div>
               <Label>Scholarship</Label>
               <select
                 className="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                id="booleanSelect"
-                name="booleanSelect"
+                id="scholarship"
+                name="scholarship"
+                onChange={changeSelect}
               >
-                <option value="true">True</option>
                 <option value="false">False</option>
+                <option value="true">True</option>
               </select>
             </div>
             <div>
               <Label>Deadline</Label>
-              <Input type="date" />
+              <Input
+                type="date"
+                id="deadline"
+                name="deadline"
+                onChange={changeForm}
+                value={formData.deadline}
+              />
             </div>
           </div>
         </div>
@@ -58,9 +139,9 @@ export default function ApplicationTableModal({
           <Button size="sm" variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button size="sm" onClick={onSave}>
-            Save
-          </Button>
+          <button className="bg-brand-500 text-white shadow-theme-xs hover:bg-brand-600 disabled:bg-brand-300 px-4 py-3 text-sm inline-flex items-center justify-center gap-2 rounded-lg transition">
+            Add
+          </button>
         </div>
       </form>
     </div>
