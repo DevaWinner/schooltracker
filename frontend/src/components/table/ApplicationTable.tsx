@@ -12,6 +12,7 @@ import Badge from "../ui/badge/Badge";
 import ApplicationTableModal from "./modals/ApplicationTableModal";
 import { Application } from "../../types/applications";
 import { tableData } from "./placeholderData";
+import Button from "../ui/button/Button";
 
 export default function ApplicationTable() {
   const { isOpen, openModal, closeModal } = useModal();
@@ -26,6 +27,11 @@ export default function ApplicationTable() {
     } else {
       return "No Scholarship";
     }
+  };
+  // This method will be replaced with a delete method interacting
+  // with the official database
+  const deleteItem = () => {
+    console.log("Deleting application...");
   };
 
   return (
@@ -94,6 +100,12 @@ export default function ApplicationTable() {
                 >
                   Deadline
                 </TableCell>
+                <TableCell
+                  isHeader
+                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+                >
+                  Delete
+                </TableCell>
               </TableRow>
             </TableHeader>
 
@@ -137,6 +149,11 @@ export default function ApplicationTable() {
                   </TableCell>
                   <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
                     {order.deadline}
+                  </TableCell>
+                  <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+                    <Button size="sm" variant="outline" onClick={deleteItem}>
+                      Delete
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

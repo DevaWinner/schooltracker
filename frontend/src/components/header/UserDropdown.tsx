@@ -3,19 +3,30 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { Link } from "react-router";
 import { mockFetchUserInfo } from "../../mocks/userMock";
+interface UserInfo {
+	id: number;
+	first_name: string;
+	last_name: string;
+	email: string;
+	profile_picture: string;
+	role: string;
+}
 
 export default function UserDropdown() {
 	const [isOpen, setIsOpen] = useState(false);
-	const [userInfo, setUserInfo] = useState({
-		name: "",
-		email: "",
-		imageUrl: "",
-	});
+	const [loading, setLoading] = useState(true);
+	const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
 	useEffect(() => {
 		const fetchUserInfo = async () => {
-			const data = await mockFetchUserInfo();
-			setUserInfo(data);
+			try {
+				const data = await mockFetchUserInfo();
+				setUserInfo(data);
+			} catch (error) {
+				console.error("Error fetching user data:", error);
+			} finally {
+				setLoading(false);
+			}
 		};
 		fetchUserInfo();
 	}, []);
@@ -27,6 +38,20 @@ export default function UserDropdown() {
 	function closeDropdown() {
 		setIsOpen(false);
 	}
+
+	if (loading) {
+		return (
+			<div className="flex items-center gap-2">
+				<div className="h-11 w-11 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700"></div>
+				<div className="h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+			</div>
+		);
+	}
+
+	if (!userInfo) return null;
+
+	const fullName = `${userInfo.first_name} ${userInfo.last_name}`;
+
 	return (
 		<div className="relative">
 			<button
@@ -34,12 +59,10 @@ export default function UserDropdown() {
 				className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
 			>
 				<span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-					<img src={userInfo.imageUrl} alt="User" />
+					<img src={userInfo.profile_picture} alt={fullName} />
 				</span>
 
-				<span className="block mr-1 font-medium text-theme-sm">
-					{userInfo.name}
-				</span>
+				<span className="block mr-1 font-medium text-theme-sm">{fullName}</span>
 				<svg
 					className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
 						isOpen ? "rotate-180" : ""
@@ -67,7 +90,7 @@ export default function UserDropdown() {
 			>
 				<div>
 					<span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-						{userInfo.name}
+						{fullName}
 					</span>
 					<span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
 						{userInfo.email}
@@ -79,7 +102,7 @@ export default function UserDropdown() {
 						<DropdownItem
 							onItemClick={closeDropdown}
 							tag="a"
-							to="/profile"
+							to="/profile/information"
 							className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
 						>
 							<svg
@@ -104,7 +127,7 @@ export default function UserDropdown() {
 						<DropdownItem
 							onItemClick={closeDropdown}
 							tag="a"
-							to="/profile"
+							to="/profile/background"
 							className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
 						>
 							<svg
