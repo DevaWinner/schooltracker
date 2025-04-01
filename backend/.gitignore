@@ -44,7 +44,7 @@ coverage.xml
 test-results/
 
 # Migrations
-**/migrations/*.py
+# **/migrations/*.py
 **/migrations/__init__.py
 
 # Python Byte-compiled
