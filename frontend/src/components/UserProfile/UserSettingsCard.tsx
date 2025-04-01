@@ -1,29 +1,32 @@
-import { useState } from "react";
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import UserAddressModal from "./modals/UserAddressModal";
+import { timezones } from "../../utils/timezones";
+import { getLanguageByCode } from "../../utils/languages";
+import UserSettingsModal from "./modals/UserSettingsModal";
 import { UserMeta } from "../../types/user";
 
 interface Props {
 	userInfo: UserMeta | null;
 }
 
-export default function UserAddressCard({ userInfo }: Props) {
+export default function UserSettingsCard({ userInfo }: Props) {
 	const { isOpen, openModal, closeModal } = useModal();
-	const [selectedCountry, setSelectedCountry] = useState(
-		userInfo?.country || ""
-	);
-
-	const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		setSelectedCountry(e.target.value);
-	};
 
 	const handleSave = () => {
-		console.log("Saving changes...");
+		console.log("Saving settings...");
 		closeModal();
 	};
 
 	if (!userInfo) return null;
+
+	const settings = {
+		language: userInfo.language,
+		timezone: userInfo.timezone,
+		notification_email: userInfo.notification_email,
+		notification_sms: userInfo.notification_sms,
+		notification_push: userInfo.notification_push,
+		marketing_emails: userInfo.marketing_emails,
+	};
 
 	return (
 		<>
@@ -31,43 +34,42 @@ export default function UserAddressCard({ userInfo }: Props) {
 				<div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
 					<div>
 						<h4 className="text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-6">
-							Address
+							Settings
 						</h4>
 
 						<div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
 							<div>
 								<p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-									Country
+									Language
 								</p>
 								<p className="text-sm font-medium text-gray-800 dark:text-white/90">
-									{userInfo.country}
+									{getLanguageByCode(settings.language)?.name ||
+										settings.language}
 								</p>
 							</div>
 
 							<div>
 								<p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-									City/State
+									Timezone
 								</p>
 								<p className="text-sm font-medium text-gray-800 dark:text-white/90">
-									{userInfo.city}, {userInfo.state}
+									{timezones.find((tz) => tz.value === settings.timezone)
+										?.label || settings.timezone}
 								</p>
 							</div>
 
 							<div>
 								<p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-									Address
+									Notifications
 								</p>
 								<p className="text-sm font-medium text-gray-800 dark:text-white/90">
-									{userInfo.address}
-								</p>
-							</div>
-
-							<div>
-								<p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
-									Postal Code
-								</p>
-								<p className="text-sm font-medium text-gray-800 dark:text-white/90">
-									{userInfo.zip}
+									{[
+										settings.notification_email && "Email",
+										settings.notification_sms && "SMS",
+										settings.notification_push && "Push",
+									]
+										.filter(Boolean)
+										.join(", ") || "None"}
 								</p>
 							</div>
 						</div>
@@ -96,13 +98,12 @@ export default function UserAddressCard({ userInfo }: Props) {
 					</button>
 				</div>
 			</div>
+
 			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-				<UserAddressModal
-					userAddress={userInfo}
-					selectedCountry={selectedCountry}
+				<UserSettingsModal
+					settings={settings}
 					onSave={handleSave}
 					onClose={closeModal}
-					onCountryChange={handleCountryChange}
 				/>
 			</Modal>
 		</>
