@@ -124,10 +124,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 # CORS_ORIGIN_ALLOW_ALL = True
 
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000", 
-    # "https://your-production-domain.com",
-]
+CORS_ALLOW_CREDENTIALS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
