@@ -31,7 +31,7 @@ axiosInstance.interceptors.request.use(
 export const signUp = async (data: SignUpRequest): Promise<SignUpResponse> => {
 	try {
 		const response = await axiosInstance.post<SignUpResponse>(
-			"/register", // changed: added leading slash
+			"/register/",
 			data
 		);
 		return response.data;
@@ -43,10 +43,7 @@ export const signUp = async (data: SignUpRequest): Promise<SignUpResponse> => {
 // Function to authenticate a user
 export const signIn = async (data: SignInRequest): Promise<SignInResponse> => {
 	try {
-		const response = await axiosInstance.post<SignInResponse>(
-			"/signin", // changed: added leading slash
-			data
-		);
+		const response = await axiosInstance.post<SignInResponse>("/signin/", data);
 		return response.data;
 	} catch (error) {
 		throw error;

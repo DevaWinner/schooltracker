@@ -43,9 +43,21 @@ export default function SignUpForm() {
 				navigate("/signin");
 			}
 		} catch (err: any) {
-			// Get the error message from the response if available
-			const errorMessage =
-				err.response?.data?.message || "Sign up failed. Please try again.";
+			// Enhanced error message extraction
+			let errorMessage = "Sign up failed. Please try again.";
+			if (err.response?.data) {
+				// Check for various error message formats
+				errorMessage =
+					err.response.data.message ||
+					err.response.data.detail ||
+					err.response.data.error ||
+					(typeof err.response.data === "string"
+						? err.response.data
+						: errorMessage);
+			} else if (err.message) {
+				errorMessage = err.message;
+			}
+
 			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);

@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
@@ -32,9 +32,21 @@ export default function SignInForm() {
 				navigate("/");
 			}
 		} catch (err: any) {
-			// Get the error message from the response if available
-			const errorMessage =
-				err.response?.data?.message || "Sign in failed. Please try again.";
+			// Enhanced error message extraction
+			let errorMessage = "Sign in failed. Please try again.";
+			if (err.response?.data) {
+				// Check for various error message formats
+				errorMessage =
+					err.response.data.message ||
+					err.response.data.detail ||
+					err.response.data.error ||
+					(typeof err.response.data === "string"
+						? err.response.data
+						: errorMessage);
+			} else if (err.message) {
+				errorMessage = err.message;
+			}
+
 			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
