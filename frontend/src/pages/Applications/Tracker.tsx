@@ -1,10 +1,10 @@
 import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import AddApplication from "../../components/table/AddApplication";
-import ApplicationTable from "../../components/table/ApplicationTable";
+import AddApplication from "../../components/ApplicationTracker/AddApplication";
+import ApplicationTable from "../../components/ApplicationTracker/ApplicationTable";
 // Placeholder data. Should be replaced on integration
-import { tableData } from "../../components/table/placeholderData";
+import { tableData } from "../../components/ApplicationTracker/placeholderData";
 
 export default function ApplicationTracker() {
   return (

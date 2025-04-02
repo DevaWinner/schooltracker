@@ -6,14 +6,13 @@ import {
   TableRow,
 } from "../ui/table";
 
-import { ApplicationProps } from "../../types/applications";
-// Placeholder data. Should be replaced on integrationimport { tableData } from "./placeholderData";
-import ApplicationCard from "./ApplicationCard";
+import StatusCard from "./StatusCard";
+import { tableData as data } from "../ApplicationTracker/placeholderData";
 
-export default function ApplicationTable({ data }: ApplicationProps) {
+export default function ApplicationStatus() {
   const hasData = () => {
     if (data) {
-      return data.map((data) => <ApplicationCard data={data} />);
+      return data.map((data) => <StatusCard data={data} />);
     } else {
       return "";
     }
@@ -37,18 +36,6 @@ export default function ApplicationTable({ data }: ApplicationProps) {
                   isHeader
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
-                  Website
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Scholarship
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
                   Status
                 </TableCell>
                 <TableCell
@@ -62,12 +49,6 @@ export default function ApplicationTable({ data }: ApplicationProps) {
                   className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
                 >
                   Edit
-                </TableCell>
-                <TableCell
-                  isHeader
-                  className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
-                >
-                  Delete
                 </TableCell>
               </TableRow>
             </TableHeader>

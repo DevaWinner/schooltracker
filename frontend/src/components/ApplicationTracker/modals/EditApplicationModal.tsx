@@ -20,8 +20,6 @@ export default function EditApplicationModal({
     tag: data.tag,
     website: data.website,
     scholarship: data.scholarship,
-    status: data.status,
-    deadline: data.deadline,
   });
   // Updates values when the form is updated
   const changeForm = (
@@ -48,7 +46,7 @@ export default function EditApplicationModal({
       </div>
 
       <form onSubmit={submitForm} className="flex flex-col">
-        <div className="custom-scrollbar h-[300px] overflow-y-auto px-2 pb-3">
+        <div className="custom-scrollbar h-[200px] overflow-y-auto px-2 pb-3">
           <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
             <div>
               <Label>Institution Name</Label>
@@ -94,16 +92,6 @@ export default function EditApplicationModal({
                 <option value="false">False</option>
                 <option value="true">True</option>
               </select>
-            </div>
-            <div>
-              <Label>Deadline</Label>
-              <Input
-                type="date"
-                id="deadline"
-                name="deadline"
-                onChange={changeForm}
-                value={formData.deadline}
-              />
             </div>
           </div>
         </div>
