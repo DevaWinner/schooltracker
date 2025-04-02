@@ -1,4 +1,3 @@
-// src/components/auth/SignInForm.tsx
 import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -22,6 +21,7 @@ export default function SignInForm() {
 		signIn: updateAuth,
 		accessToken,
 		setProfile,
+		setIsFirstLogin,
 	} = useContext(AuthContext);
 
 	// If already signed in, redirect away
@@ -37,17 +37,30 @@ export default function SignInForm() {
 		try {
 			const response = await signIn({ email, password });
 			if (response.status === "success") {
+				// Store persistence preference
+				if (isChecked) {
+					localStorage.setItem("rememberMe", "true");
+				}
+
+				// Update auth context with user info and token
 				updateAuth(response.user, response.access_token);
+
 				// Fetch user profile using the new token
 				const profileData = await getProfile(response.access_token);
 				setProfile(profileData);
+
 				toast.success("Successfully signed in!");
 
 				// Check if profile is new (for example, if created_at equals updated_at)
-				if (profileData.created_at === profileData.updated_at) {
-					navigate("/profile/information");
+				const isFirstTimeUser =
+					profileData.created_at === profileData.updated_at;
+				setIsFirstLogin(isFirstTimeUser);
+
+				// Redirect based on whether it's first login or not
+				if (isFirstTimeUser) {
+					setTimeout(() => navigate("/profile/information"), 100);
 				} else {
-					navigate("/");
+					setTimeout(() => navigate("/"), 100);
 				}
 			}
 		} catch (err: any) {

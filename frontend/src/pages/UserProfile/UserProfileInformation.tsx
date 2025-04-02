@@ -7,9 +7,11 @@ import UserInfoCard from "../../components/UserProfile/UserInfoCard";
 import UserAddressCard from "../../components/UserProfile/UserAddressCard";
 import UserSettingsCard from "../../components/UserProfile/UserSettingsCard";
 import PageMeta from "../../components/common/PageMeta";
+import { toast } from "react-toastify";
 
 export default function UserProfiles() {
-	const { profile, accessToken, setProfile } = useContext(AuthContext);
+	const { profile, accessToken, setProfile, isFirstLogin } =
+		useContext(AuthContext);
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
@@ -20,6 +22,7 @@ export default function UserProfiles() {
 					setProfile(data);
 				} catch (error) {
 					console.error("Error fetching profile:", error);
+					toast.error("Failed to load profile. Please try again.");
 				} finally {
 					setLoading(false);
 				}
@@ -35,6 +38,15 @@ export default function UserProfiles() {
 		}
 	}, [accessToken, profile, setProfile]);
 
+	// Display a welcome message for first-time users
+	useEffect(() => {
+		if (isFirstLogin && profile) {
+			toast.info(
+				`Welcome, ${profile.first_name}! Please complete your profile information.`
+			);
+		}
+	}, [isFirstLogin, profile]);
+
 	return (
 		<>
 			<PageMeta
@@ -44,7 +56,7 @@ export default function UserProfiles() {
 			<PageBreadcrumb pageTitle="Profile Information" />
 			<div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
 				<h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-					Profile Information
+					{isFirstLogin ? "Complete Your Profile" : "Profile Information"}
 				</h3>
 				<div className="space-y-6">
 					{loading ? (
