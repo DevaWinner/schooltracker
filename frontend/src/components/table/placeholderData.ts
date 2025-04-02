@@ -9,7 +9,7 @@ export const tableData: Application[] = [
     website: "Agency Website",
     scholarship: true,
     status: "Active",
-    deadline: "04-12-2025"
+    deadline: "2025-04-12"
   },
   {
     id: 2,
@@ -18,7 +18,7 @@ export const tableData: Application[] = [
     website: "Agency Website",
     scholarship: true,
     status: "Cancel",
-    deadline: "03-24-2025"
+    deadline: "2025-03-24"
   },
   {
     id: 3,
@@ -27,6 +27,6 @@ export const tableData: Application[] = [
     website: "Agency Website",
     scholarship: false,
     status: "Pending",
-    deadline: "04-12-2025"
+    deadline: "2025-04-12"
   }
 ];

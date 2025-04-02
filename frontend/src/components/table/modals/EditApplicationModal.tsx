@@ -4,55 +4,51 @@ import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import { useState } from "react";
 
-interface ApplicationTableModalProps {
+interface EditApplicationModalProps {
   data: any;
   onSave: () => void;
   onClose: () => void;
 }
 
-export default function ApplicationTableModal({
+export default function EditApplicationModal({
   data,
   onSave,
   onClose,
-}: ApplicationTableModalProps) {
-  const [formData, setFormData] = useState({
-    institution: "",
-    tag: "",
-    website: "",
-    scholarship: false,
-    status: "Pending",
-    deadline: "",
+}: EditApplicationModalProps) {
+  const [formData, setData] = useState({
+    institution: data.institution,
+    tag: data.tag,
+    website: data.website,
+    scholarship: data.scholarship,
+    status: data.status,
+    deadline: data.deadline,
   });
   // Updates values when the form is updated
   const changeForm = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
+    setData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   };
-  const submitForm = async (e: React.FormEvent) => {
+
+  const submitForm = (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      data.push(formData);
-      onSave();
-    } catch (error) {
-      console.error("Network error:", error);
-    }
+    onSave();
   };
 
   return (
     <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
       <div className="px-2 pr-14">
         <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-          Add Application
+          Edit Application
         </h4>
       </div>
 
       <form onSubmit={submitForm} className="flex flex-col">
-        <div className="custom-scrollbar h-[350px] overflow-y-auto px-2 pb-3">
+        <div className="custom-scrollbar h-[300px] overflow-y-auto px-2 pb-3">
           <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
             <div>
               <Label>Institution Name</Label>
@@ -116,7 +112,7 @@ export default function ApplicationTableModal({
             Cancel
           </Button>
           <Button size="sm" type="submit">
-            Add
+            Save
           </Button>
         </div>
       </form>
