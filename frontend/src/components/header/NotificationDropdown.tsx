@@ -8,10 +8,6 @@ export default function NotificationDropdown() {
 		setIsOpen(!isOpen);
 	}
 
-	function closeDropdown() {
-		setIsOpen(false);
-	}
-
 	const handleClick = () => {
 		toggleDropdown();
 		setNotifying(false);
