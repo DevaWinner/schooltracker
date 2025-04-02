@@ -9,7 +9,6 @@ interface AcademicBackgroundModalProps {
 }
 
 export default function AcademicBackgroundModal({
-	userInfo,
 	onSave,
 	onClose,
 }: AcademicBackgroundModalProps) {
