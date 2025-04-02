@@ -1,32 +1,39 @@
-import { useState, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import { getProfile } from "../../api/profile";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import UserMetaCard from "../../components/UserProfile/UserMetaCard";
 import UserInfoCard from "../../components/UserProfile/UserInfoCard";
 import UserAddressCard from "../../components/UserProfile/UserAddressCard";
 import UserSettingsCard from "../../components/UserProfile/UserSettingsCard";
 import PageMeta from "../../components/common/PageMeta";
-import { mockFetchUserInfo } from "../../mocks/userMock";
-import { UserInfo } from "../../types/user";
 
 export default function UserProfiles() {
+	const { profile, accessToken, setProfile } = useContext(AuthContext);
 	const [loading, setLoading] = useState(true);
-	const [userData, setUserData] = useState<UserInfo | null>(null);
 
 	useEffect(() => {
-		const fetchUserData = async () => {
-			try {
-				setLoading(true);
-				const data = await mockFetchUserInfo();
-				setUserData(data);
-			} catch (error) {
-				console.error("Error fetching user data:", error);
-			} finally {
+		const fetchProfile = async () => {
+			if (accessToken) {
+				try {
+					const data = await getProfile(accessToken);
+					setProfile(data);
+				} catch (error) {
+					console.error("Error fetching profile:", error);
+				} finally {
+					setLoading(false);
+				}
+			} else {
 				setLoading(false);
 			}
 		};
 
-		fetchUserData();
-	}, []);
+		if (!profile && accessToken) {
+			fetchProfile();
+		} else {
+			setLoading(false);
+		}
+	}, [accessToken, profile, setProfile]);
 
 	return (
 		<>
@@ -46,10 +53,10 @@ export default function UserProfiles() {
 						</div>
 					) : (
 						<>
-							<UserMetaCard userInfo={userData} />
-							<UserInfoCard userInfo={userData} />
-							<UserAddressCard userInfo={userData} />
-							<UserSettingsCard userInfo={userData} />
+							<UserMetaCard userInfo={profile} />
+							<UserInfoCard userInfo={profile} />
+							<UserAddressCard userInfo={profile} />
+							<UserSettingsCard userInfo={profile} />
 						</>
 					)}
 				</div>

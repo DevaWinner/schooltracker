@@ -1,4 +1,5 @@
-import { useState, useContext } from "react";
+// src/components/auth/SignInForm.tsx
+import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
@@ -7,6 +8,7 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
 import { signIn } from "../../api/auth";
+import { getProfile } from "../../api/profile";
 import { AuthContext } from "../../context/AuthContext";
 
 export default function SignInForm() {
@@ -16,7 +18,18 @@ export default function SignInForm() {
 	const [password, setPassword] = useState("");
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
-	const { signIn: updateAuth } = useContext(AuthContext);
+	const {
+		signIn: updateAuth,
+		accessToken,
+		setProfile,
+	} = useContext(AuthContext);
+
+	// If already signed in, redirect away
+	useEffect(() => {
+		if (accessToken) {
+			navigate("/");
+		}
+	}, [accessToken, navigate]);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -24,18 +37,22 @@ export default function SignInForm() {
 		try {
 			const response = await signIn({ email, password });
 			if (response.status === "success") {
-				// Update the global auth context
 				updateAuth(response.user, response.access_token);
-				// Show success toast
+				// Fetch user profile using the new token
+				const profileData = await getProfile(response.access_token);
+				setProfile(profileData);
 				toast.success("Successfully signed in!");
-				// Redirect to the home page after successful sign in
-				navigate("/");
+
+				// Check if profile is new (for example, if created_at equals updated_at)
+				if (profileData.created_at === profileData.updated_at) {
+					navigate("/profile/information");
+				} else {
+					navigate("/");
+				}
 			}
 		} catch (err: any) {
-			// Enhanced error message extraction
 			let errorMessage = "Sign in failed. Please try again.";
 			if (err.response?.data) {
-				// Check for various error message formats
 				errorMessage =
 					err.response.data.message ||
 					err.response.data.detail ||
@@ -46,7 +63,6 @@ export default function SignInForm() {
 			} else if (err.message) {
 				errorMessage = err.message;
 			}
-
 			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);

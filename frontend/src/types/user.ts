@@ -99,3 +99,20 @@ export interface UserSettingsModalProps {
 export interface UserCardProps {
 	userInfo: UserInfo | null;
 }
+
+export interface UserProfileUpdateRequest {
+	first_name: string;
+	last_name: string;
+	country_code: string;
+	phone_number: string;
+	age: number;
+	gender: string;
+	date_of_birth: string;
+	country: string;
+	profile_avatar: string;
+}
+
+export interface UserProfileUpdateResponse {
+	message: string;
+	profile: UserInfo;
+}
