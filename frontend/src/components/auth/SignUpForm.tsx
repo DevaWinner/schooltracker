@@ -1,13 +1,57 @@
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
+import { signUp } from "../../api/auth";
+import { SignUpRequest } from "../../interfaces/auth";
 
 export default function SignUpForm() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [isChecked, setIsChecked] = useState(false);
+	const [firstName, setFirstName] = useState("");
+	const [lastName, setLastName] = useState("");
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const navigate = useNavigate();
+
+	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+		e.preventDefault();
+
+		if (!isChecked) {
+			toast.warn("Please agree to the Terms and Conditions");
+			return;
+		}
+
+		setIsLoading(true);
+		const payload: SignUpRequest = {
+			email,
+			password,
+			first_name: firstName,
+			last_name: lastName,
+		};
+
+		try {
+			const response = await signUp(payload);
+			if (response.status === "User registered successfully") {
+				// Show success toast
+				toast.success("Account created successfully! Please sign in.");
+				// Redirect to sign in page after a successful signup
+				navigate("/signin");
+			}
+		} catch (err: any) {
+			// Get the error message from the response if available
+			const errorMessage =
+				err.response?.data?.message || "Sign up failed. Please try again.";
+			toast.error(errorMessage);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	return (
 		<div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
 			<div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
@@ -21,10 +65,10 @@ export default function SignUpForm() {
 						</p>
 					</div>
 					<div>
-						<form>
+						<form onSubmit={handleSubmit}>
 							<div className="space-y-5">
 								<div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-									{/* <!-- First Name --> */}
+									{/* First Name */}
 									<div className="sm:col-span-1">
 										<Label>
 											First Name<span className="text-error-500">*</span>
@@ -34,9 +78,12 @@ export default function SignUpForm() {
 											id="fname"
 											name="fname"
 											placeholder="Enter your first name"
+											value={firstName}
+											onChange={(e) => setFirstName(e.target.value)}
+											required
 										/>
 									</div>
-									{/* <!-- Last Name --> */}
+									{/* Last Name */}
 									<div className="sm:col-span-1">
 										<Label>
 											Last Name<span className="text-error-500">*</span>
@@ -46,10 +93,13 @@ export default function SignUpForm() {
 											id="lname"
 											name="lname"
 											placeholder="Enter your last name"
+											value={lastName}
+											onChange={(e) => setLastName(e.target.value)}
+											required
 										/>
 									</div>
 								</div>
-								{/* <!-- Email --> */}
+								{/* Email */}
 								<div>
 									<Label>
 										Email<span className="text-error-500">*</span>
@@ -59,9 +109,12 @@ export default function SignUpForm() {
 										id="email"
 										name="email"
 										placeholder="Enter your email"
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
+										required
 									/>
 								</div>
-								{/* <!-- Password --> */}
+								{/* Password */}
 								<div>
 									<Label>
 										Password<span className="text-error-500">*</span>
@@ -70,6 +123,9 @@ export default function SignUpForm() {
 										<Input
 											placeholder="Enter your password"
 											type={showPassword ? "text" : "password"}
+											value={password}
+											onChange={(e) => setPassword(e.target.value)}
+											required
 										/>
 										<span
 											onClick={() => setShowPassword(!showPassword)}
@@ -83,7 +139,7 @@ export default function SignUpForm() {
 										</span>
 									</div>
 								</div>
-								{/* <!-- Checkbox --> */}
+								{/* Checkbox */}
 								<div className="flex items-center gap-3">
 									<Checkbox
 										className="w-5 h-5"
@@ -101,18 +157,21 @@ export default function SignUpForm() {
 										</span>
 									</p>
 								</div>
-								{/* <!-- Button --> */}
+								{/* Button */}
 								<div>
-									<button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
-										Sign Up
+									<button
+										type="submit"
+										disabled={isLoading}
+										className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:bg-gray-300"
+									>
+										{isLoading ? "Creating Account..." : "Sign Up"}
 									</button>
 								</div>
 							</div>
 						</form>
-
 						<div className="mt-5">
 							<p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-								Already have an account? {""}
+								Already have an account?{" "}
 								<Link
 									to="/signin"
 									className="text-brand-500 hover:text-brand-600 dark:text-brand-400"

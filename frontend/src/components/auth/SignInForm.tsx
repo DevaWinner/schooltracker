@@ -1,14 +1,46 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { useState, useContext } from "react";
+import { Link, useNavigate } from "react-router";
+import { toast } from "react-toastify";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
+import { signIn } from "../../api/auth";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function SignInForm() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [isChecked, setIsChecked] = useState(false);
+	const [email, setEmail] = useState("");
+	const [password, setPassword] = useState("");
+	const [isLoading, setIsLoading] = useState(false);
+	const navigate = useNavigate();
+	const { signIn: updateAuth } = useContext(AuthContext);
+
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsLoading(true);
+		try {
+			const response = await signIn({ email, password });
+			if (response.status === "success") {
+				// Update the global auth context
+				updateAuth(response.user, response.access_token);
+				// Show success toast
+				toast.success("Successfully signed in!");
+				// Redirect to the home page after successful sign in
+				navigate("/");
+			}
+		} catch (err: any) {
+			// Get the error message from the response if available
+			const errorMessage =
+				err.response?.data?.message || "Sign in failed. Please try again.";
+			toast.error(errorMessage);
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
 	return (
 		<div className="flex flex-col flex-1">
 			<div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
@@ -22,22 +54,31 @@ export default function SignInForm() {
 						</p>
 					</div>
 					<div>
-						<form>
+						<form onSubmit={handleSubmit}>
 							<div className="space-y-6">
 								<div>
 									<Label>
-										Email <span className="text-error-500">*</span>{" "}
+										Email <span className="text-error-500">*</span>
 									</Label>
-									<Input placeholder="info@gmail.com" />
+									<Input
+										type="email"
+										placeholder="info@gmail.com"
+										value={email}
+										onChange={(e) => setEmail(e.target.value)}
+										required
+									/>
 								</div>
 								<div>
 									<Label>
-										Password <span className="text-error-500">*</span>{" "}
+										Password <span className="text-error-500">*</span>
 									</Label>
 									<div className="relative">
 										<Input
 											type={showPassword ? "text" : "password"}
 											placeholder="Enter your password"
+											value={password}
+											onChange={(e) => setPassword(e.target.value)}
+											required
 										/>
 										<span
 											onClick={() => setShowPassword(!showPassword)}
@@ -66,16 +107,20 @@ export default function SignInForm() {
 									</Link>
 								</div>
 								<div>
-									<Button className="w-full" size="sm">
-										Sign in
+									<Button
+										className="w-full"
+										size="sm"
+										type="submit"
+										disabled={isLoading}
+									>
+										{isLoading ? "Signing in..." : "Sign in"}
 									</Button>
 								</div>
 							</div>
 						</form>
-
 						<div className="mt-5">
 							<p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-								Don&apos;t have an account? {""}
+								Don&apos;t have an account?{" "}
 								<Link
 									to="/signup"
 									className="text-brand-500 hover:text-brand-600 dark:text-brand-400"
