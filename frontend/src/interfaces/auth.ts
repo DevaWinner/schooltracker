@@ -3,6 +3,10 @@ export interface SignUpRequest {
 	password: string;
 	first_name: string;
 	last_name: string;
+	phone?: string;
+	date_of_birth?: string; // ISO date string (YYYY-MM-DD)
+	gender?: "Male" | "Female" | "Other";
+	country: string;
 }
 
 export interface SignUpResponse {

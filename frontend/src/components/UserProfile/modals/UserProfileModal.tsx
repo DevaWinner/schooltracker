@@ -7,26 +7,23 @@ import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import { ComponentCardProps } from "../../../types/user";
 
-export default function UserInfoModal({
-	userInfo,
+export default function UserProfileModal({
+	userProfile,
 	onSave,
 	onClose,
 }: ComponentCardProps) {
 	const { accessToken } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
-		first_name: userInfo?.first_name || "",
-		last_name: userInfo?.last_name || "",
-		email: userInfo?.email || "",
-		phone: userInfo?.phone || "",
-		date_of_birth: userInfo?.date_of_birth || "",
-		gender: userInfo?.gender || "",
-		country: userInfo?.country || "",
+		bio: userProfile?.bio || "",
+		profile_picture: userProfile?.profile_picture || "",
+		facebook: userProfile?.facebook || "",
+		twitter: userProfile?.twitter || "",
+		linkedin: userProfile?.linkedin || "",
+		instagram: userProfile?.instagram || "",
 	});
 
-	const handleChange = (
-		e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-	) => {
+	const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
@@ -36,11 +33,17 @@ export default function UserInfoModal({
 		if (!accessToken) return;
 		setLoading(true);
 		try {
-			await updatePartialProfile(accessToken, formData);
-			toast.success("User information updated successfully");
-			if (onSave) onSave();
+			const { bio, profile_picture, facebook, twitter, linkedin, instagram } =
+				formData;
+			await updatePartialProfile(accessToken, {
+				bio,
+				profile_picture,
+				social_links: { facebook, twitter, linkedin, instagram },
+			});
+			toast.success("User profile updated successfully");
+			if (onSave) onSave(); // Add null check here
 		} catch (error) {
-			toast.error("Failed to update user information");
+			toast.error("Failed to update user profile");
 			console.error("Update error:", error);
 		} finally {
 			setLoading(false);
@@ -51,79 +54,65 @@ export default function UserInfoModal({
 		<div className="relative w-full p-4 overflow-y-auto bg-white rounded-3xl dark:bg-gray-900 lg:p-11">
 			<div className="px-2 pr-14">
 				<h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-					Edit Personal Information
+					Edit Profile Details
 				</h4>
 				<p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-					Update your personal details.
+					Update your bio and social links.
 				</p>
 			</div>
 			<form className="flex flex-col" onSubmit={handleSubmit}>
-				<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<div className="mb-4">
+					<Label>Bio</Label>
+					<Input
+						type="text"
+						name="bio"
+						value={formData.bio}
+						onChange={handleChange}
+					/>
+				</div>
+				<div className="mb-4">
+					<Label>Profile Picture URL</Label>
+					<Input
+						type="text"
+						name="profile_picture"
+						value={formData.profile_picture}
+						onChange={handleChange}
+					/>
+				</div>
+				<div className="grid grid-cols-1 gap-4 md:grid-cols-2">
 					<div>
-						<Label>First Name</Label>
+						<Label>Facebook</Label>
 						<Input
 							type="text"
-							name="first_name"
-							value={formData.first_name}
+							name="facebook"
+							value={formData.facebook}
 							onChange={handleChange}
 						/>
 					</div>
 					<div>
-						<Label>Last Name</Label>
+						<Label>Twitter</Label>
 						<Input
 							type="text"
-							name="last_name"
-							value={formData.last_name}
+							name="twitter"
+							value={formData.twitter}
 							onChange={handleChange}
 						/>
 					</div>
 					<div>
-						<Label>Email</Label>
-						<Input
-							type="email"
-							name="email"
-							value={formData.email}
-							onChange={handleChange}
-						/>
-					</div>
-					<div>
-						<Label>Phone</Label>
+						<Label>LinkedIn</Label>
 						<Input
 							type="text"
-							name="phone"
-							value={formData.phone}
+							name="linkedin"
+							value={formData.linkedin}
 							onChange={handleChange}
 						/>
 					</div>
 					<div>
-						<Label>Date of Birth</Label>
-						<Input
-							type="date"
-							name="date_of_birth"
-							value={formData.date_of_birth}
-							onChange={handleChange}
-						/>
-					</div>
-					<div>
-						<Label>Gender</Label>
-						<select
-							name="gender"
-							value={formData.gender}
-							onChange={handleChange}
-							className="w-full rounded-lg border border-gray-300 p-2"
-						>
-							<option value="">Select gender</option>
-							<option value="Male">Male</option>
-							<option value="Female">Female</option>
-							<option value="Other">Other</option>
-						</select>
-					</div>
-					<div className="lg:col-span-2">
-						<Label>Country</Label>
+						<Label>Instagram</Label>
 						<Input
 							type="text"
-							name="country"
-							value={formData.country}
+							name="instagram"
+							value={formData.instagram}
 							onChange={handleChange}
 						/>
 					</div>

@@ -5,6 +5,8 @@ import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import { signUp } from "../../api/auth";
 import { SignUpRequest } from "../../interfaces/auth";
 
@@ -15,6 +17,11 @@ export default function SignUpForm() {
 	const [lastName, setLastName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
+	const [phone, setPhone] = useState<string>("");
+	const [dateOfBirth, setDateOfBirth] = useState("");
+	const [gender, setGender] = useState("");
+	const [country, setCountry] = useState("");
+
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
 
@@ -32,21 +39,22 @@ export default function SignUpForm() {
 			password,
 			first_name: firstName,
 			last_name: lastName,
+			phone,
+			date_of_birth: dateOfBirth,
+			gender:
+				gender === "" ? undefined : (gender as "Male" | "Female" | "Other"),
+			country,
 		};
 
 		try {
 			const response = await signUp(payload);
 			if (response.status === "User registered successfully") {
-				// Show success toast
 				toast.success("Account created successfully! Please sign in.");
-				// Redirect to sign in page after a successful signup
 				navigate("/signin");
 			}
 		} catch (err: any) {
-			// Enhanced error message extraction
 			let errorMessage = "Sign up failed. Please try again.";
 			if (err.response?.data) {
-				// Check for various error message formats
 				errorMessage =
 					err.response.data.message ||
 					err.response.data.detail ||
@@ -57,7 +65,6 @@ export default function SignUpForm() {
 			} else if (err.message) {
 				errorMessage = err.message;
 			}
-
 			toast.error(errorMessage);
 		} finally {
 			setIsLoading(false);
@@ -73,14 +80,13 @@ export default function SignUpForm() {
 							Sign Up
 						</h1>
 						<p className="text-sm text-gray-500 dark:text-gray-400">
-							Enter your email and password to sign up!
+							Enter your details to sign up!
 						</p>
 					</div>
 					<div>
 						<form onSubmit={handleSubmit}>
 							<div className="space-y-5">
 								<div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-									{/* First Name */}
 									<div className="sm:col-span-1">
 										<Label>
 											First Name<span className="text-error-500">*</span>
@@ -95,7 +101,6 @@ export default function SignUpForm() {
 											required
 										/>
 									</div>
-									{/* Last Name */}
 									<div className="sm:col-span-1">
 										<Label>
 											Last Name<span className="text-error-500">*</span>
@@ -111,7 +116,6 @@ export default function SignUpForm() {
 										/>
 									</div>
 								</div>
-								{/* Email */}
 								<div>
 									<Label>
 										Email<span className="text-error-500">*</span>
@@ -126,7 +130,6 @@ export default function SignUpForm() {
 										required
 									/>
 								</div>
-								{/* Password */}
 								<div>
 									<Label>
 										Password<span className="text-error-500">*</span>
@@ -151,7 +154,54 @@ export default function SignUpForm() {
 										</span>
 									</div>
 								</div>
-								{/* Checkbox */}
+								<div>
+									<Label>Phone</Label>
+									<PhoneInput
+										defaultCountry="US"
+										value={phone}
+										onChange={(phoneNumber) => setPhone(phoneNumber || "")}
+										className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3  dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+									/>
+								</div>
+								<div>
+									<Label>Date of Birth</Label>
+									<Input
+										type="date"
+										id="dateOfBirth"
+										name="dateOfBirth"
+										value={dateOfBirth}
+										onChange={(e) => setDateOfBirth(e.target.value)}
+									/>
+								</div>
+								<div>
+									<Label>Gender</Label>
+									<select
+										id="gender"
+										name="gender"
+										value={gender}
+										onChange={(e) => setGender(e.target.value)}
+										className="w-full rounded-lg border border-gray-300 p-2"
+									>
+										<option value="">Select your gender</option>
+										<option value="Male">Male</option>
+										<option value="Female">Female</option>
+										<option value="Other">Other</option>
+									</select>
+								</div>
+								<div>
+									<Label>
+										Country<span className="text-error-500">*</span>
+									</Label>
+									<Input
+										type="text"
+										id="country"
+										name="country"
+										placeholder="Enter your country"
+										value={country}
+										onChange={(e) => setCountry(e.target.value)}
+										required
+									/>
+								</div>
 								<div className="flex items-center gap-3">
 									<Checkbox
 										className="w-5 h-5"
@@ -159,7 +209,7 @@ export default function SignUpForm() {
 										onChange={setIsChecked}
 									/>
 									<p className="inline-block font-normal text-gray-500 dark:text-gray-400">
-										By creating an account means you agree to the{" "}
+										By creating an account you agree to our{" "}
 										<span className="text-gray-800 dark:text-white/90">
 											Terms and Conditions,
 										</span>{" "}
@@ -169,7 +219,6 @@ export default function SignUpForm() {
 										</span>
 									</p>
 								</div>
-								{/* Button */}
 								<div>
 									<button
 										type="submit"

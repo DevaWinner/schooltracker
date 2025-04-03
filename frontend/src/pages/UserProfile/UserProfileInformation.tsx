@@ -2,12 +2,12 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { getProfile } from "../../api/profile";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import UserMetaCard from "../../components/UserProfile/UserMetaCard";
 import UserInfoCard from "../../components/UserProfile/UserInfoCard";
-import UserAddressCard from "../../components/UserProfile/UserAddressCard";
 import UserSettingsCard from "../../components/UserProfile/UserSettingsCard";
+import UserProfileCard from "../../components/UserProfile/UserProfileCard";
 import PageMeta from "../../components/common/PageMeta";
 import { toast } from "react-toastify";
+import { UserProfile, UserSettings } from "../../types/user";
 
 export default function UserProfiles() {
 	const { profile, accessToken, setProfile, isFirstLogin } =
@@ -47,6 +47,34 @@ export default function UserProfiles() {
 		}
 	}, [isFirstLogin, profile]);
 
+	// Extract profile data from combined API response
+	const userProfile: UserProfile | null = profile
+		? {
+				id: profile.id,
+				user_id: profile.id, // This was missing and causing the error
+				bio: profile.bio || "",
+				profile_picture: profile.profile_picture || "",
+				facebook: profile.facebook || "",
+				twitter: profile.twitter || "",
+				linkedin: profile.linkedin || "",
+				instagram: profile.instagram || "",
+		  }
+		: null;
+
+	// Extract settings from profile
+	const userSettings: UserSettings | null = profile
+		? {
+				id: profile.id,
+				user_id: profile.id,
+				language: profile.language || "en",
+				timezone: profile.timezone || "UTC",
+				notification_email: profile.notification_email || false,
+				notification_sms: profile.notification_sms || false,
+				notification_push: profile.notification_push || false,
+				marketing_emails: profile.marketing_emails || false,
+		  }
+		: null;
+
 	return (
 		<>
 			<PageMeta
@@ -65,10 +93,9 @@ export default function UserProfiles() {
 						</div>
 					) : (
 						<>
-							<UserMetaCard userInfo={profile} />
 							<UserInfoCard userInfo={profile} />
-							<UserAddressCard userInfo={profile} />
-							<UserSettingsCard userInfo={profile} />
+							<UserProfileCard userProfile={userProfile} />
+							<UserSettingsCard userSettings={userSettings} />
 						</>
 					)}
 				</div>
