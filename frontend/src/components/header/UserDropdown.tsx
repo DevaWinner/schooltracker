@@ -40,10 +40,28 @@ export default function UserDropdown() {
 				className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
 			>
 				<span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-					<img
-						src={profile.profile_picture || "https://via.placeholder.com/100"}
-						alt={fullName}
-					/>
+					{profile.profile_picture ? (
+						<img
+							src={profile.profile_picture}
+							alt={fullName}
+							className="w-full h-full object-cover"
+						/>
+					) : (
+						<div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
+							<svg
+								className="w-6 h-6 text-gray-400"
+								fill="currentColor"
+								viewBox="0 0 20 20"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									fillRule="evenodd"
+									d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+									clipRule="evenodd"
+								></path>
+							</svg>
+						</div>
+					)}
 				</span>
 
 				<span className="block mr-1 font-medium text-theme-sm">{fullName}</span>

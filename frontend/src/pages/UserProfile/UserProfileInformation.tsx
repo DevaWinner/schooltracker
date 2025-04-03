@@ -51,7 +51,7 @@ export default function UserProfiles() {
 	const userProfile: UserProfile | null = profile
 		? {
 				id: profile.id,
-				user_id: profile.id, // This was missing and causing the error
+				user_id: profile.id,
 				bio: profile.bio || "",
 				profile_picture: profile.profile_picture || "",
 				facebook: profile.facebook || "",
@@ -83,9 +83,6 @@ export default function UserProfiles() {
 			/>
 			<PageBreadcrumb pageTitle="Profile Information" />
 			<div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-				<h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-					{isFirstLogin ? "Complete Your Profile" : "Profile Information"}
-				</h3>
 				<div className="space-y-6">
 					{loading ? (
 						<div className="flex items-center justify-center min-h-[400px]">
@@ -93,8 +90,8 @@ export default function UserProfiles() {
 						</div>
 					) : (
 						<>
+							<UserProfileCard userProfile={userProfile} userInfo={profile} />
 							<UserInfoCard userInfo={profile} />
-							<UserProfileCard userProfile={userProfile} />
 							<UserSettingsCard userSettings={userSettings} />
 						</>
 					)}
