@@ -135,3 +135,21 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'schooltracker-backend-b2gt.onrender.
 CORS_ALLOW_ALL_ORIGINS = True
 INSTALLED_APPS += ['corsheaders']
 MIDDLEWARE.insert(2, 'corsheaders.middleware.CorsMiddleware')
+
+# Add Swagger settings
+SWAGGER_SETTINGS = {
+    'LOGIN_URL': '/admin/login/',
+    'LOGOUT_URL': '/admin/logout/',
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'Type in the *\'Value\'* input box below: **\'Bearer &lt;JWT&gt;\'**, where JWT is the token',
+        },
+    },
+    'VALIDATOR_URL': None,
+    'DEFAULT_MODEL_RENDERING': 'example',
+    'PERSIST_AUTH': True,
+}
