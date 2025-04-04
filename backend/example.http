@@ -1,3 +1,21 @@
 ### 1. Initiate Google Login
-GET http://localhost:8000/api/auth/sigin_google/
-Accept: application/json
+# GET http://localhost:8000/api/auth/sigin_google/
+# Accept: application/json
+
+@baseUrl = http://localhost:8000
+@supabaseUrl = ""
+@apiKey = ""
+
+
+### Store Document Metadata Only
+# POST {{baseUrl}}/api/supabase_config
+# Content-Type: application/json
+# Authorization: Bearer {{apiKey}}
+
+# {
+#   "document_type": "invoice",
+#   "file_name": "invoice_2023.pdf",
+#   "file_url": "{{supabaseUrl}}/storage/v1/object/public/documents/uuid-invoice.pdf",
+#   "file_size": 25489,
+#   "user_id": "user_123"
+# }

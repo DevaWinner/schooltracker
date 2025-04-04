@@ -122,3 +122,72 @@ def upload_file(file, folder):
         return {"status": "success", "url": file_url}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+# Function for the users documents inserted into the documents table 
+def upload_users_documents(file, document_type, file_name, folder="documents"):
+    """
+    Uploads a file to Supabase Storage and stores metadata in the database.
+    
+    Args:
+        file: The file object (Byte File)
+        document_type: Type of document (e.g., "contract", "invoice", "id_proof")
+        file_name: Original name of the file (e.g., "employment_contract.pdf")
+        folder: Storage folder name (default: "documents")
+    
+    Returns:
+        dict: {
+            "status": "success"|"error",
+            "message": str,
+            "file_url": str,
+            "document_id": int
+        }
+    """
+    try:
+        # 1. Upload to Supabase Storage
+        ext = file_name.split('.')[-1]
+        unique_filename = f"{uuid.uuid4()}.{ext}"
+        file_path = f"{folder}/{unique_filename}"
+        
+        file.seek(0)
+        file_content = file.read()
+        
+        # Storage upload
+        storage_response = supabase.storage.from_(SUPABASE_BUCKET).upload(
+            file_path, 
+            file_content
+        )
+        
+        if hasattr(storage_response, "error") and storage_response.error:
+            return {"status": "error", "message": storage_response.error.message}
+        
+        # Generate public URL
+        file_url = f"{SUPABASE_URL}/storage/v1/object/public/{SUPABASE_BUCKET}/{file_path}"
+        
+        # 2. Store metadata in database
+        document_data = {
+            "document_type": document_type,
+            "original_filename": file_name,
+            "stored_filename": unique_filename,
+            "file_url": file_url,
+            "file_size": len(file_content),
+            "file_extension": ext,
+            "storage_path": file_path
+        }
+        
+        db_response = supabase.table("documents").insert(document_data).execute()
+        
+        if hasattr(db_response, "error") and db_response.error:
+            # Attempt to delete the uploaded file if DB insert fails
+            supabase.storage.from_(SUPABASE_BUCKET).remove([file_path])
+            return {"status": "error", "message": db_response.error.message}
+        
+        return {
+            "status": "success",
+            "message": "Document uploaded successfully",
+            "file_url": file_url,
+            "document_id": db_response.data[0]["id"]
+        }
+        
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
