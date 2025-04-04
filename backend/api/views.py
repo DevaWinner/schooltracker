@@ -9,35 +9,67 @@ from .serializers import RegisterSerializer, LoginSerializer, UserInfoSerializer
 
 class RegisterAPIView(APIView):
     """
-    post:
-    Register a new user.
+    Register a new user account
     
-    This endpoint registers a new user with the provided information.
+    Creates a new user account with the provided information and returns authentication tokens.
     
-    **Request Body:**
+    ---
+    ## Request Body
     
-    - **email**: User email address (string, required)
-    - **password**: User password (string, required)
-    - **first_name**: First name (string, required)
-    - **last_name**: Last name (string, required)
-    - **phone**: Phone number (string, optional)
-    - **date_of_birth**: Date of birth (YYYY-MM-DD, optional)
-    - **gender**: Gender ('Male', 'Female', 'Other'; optional)
-    - **country**: Country (string, required)
+    | Field | Type | Required | Description |
+    | ----- | ---- | -------- | ----------- |
+    | email | string (email) | Yes | User's email address (must be unique) |
+    | password | string | Yes | User's password (min length: 8 characters) |
+    | first_name | string | Yes | User's first name |
+    | last_name | string | Yes | User's last name |
+    | phone | string | No | User's phone number |
+    | date_of_birth | string (YYYY-MM-DD) | No | User's date of birth |
+    | gender | string (enum) | No | User's gender: "Male", "Female", or "Other" |
+    | country | string | Yes | User's country |
     
-    **Response (201 Created):**
+    ## Responses
     
+    ### 201 Created
+    User account created successfully
     ```json
     {
         "status": "User registered successfully",
-        "user": { ...user info... },
-        "access_token": "access_token_here",
-        "refresh_token": "refresh_token_here"
+        "user": {
+            "id": 1,
+            "email": "user@example.com",
+            "first_name": "John",
+            "last_name": "Doe",
+            "phone": "1234567890",
+            "date_of_birth": "1990-01-01",
+            "gender": "Male",
+            "country": "United States",
+            "created_at": "2024-05-10T12:00:00Z",
+            "updated_at": "2024-05-10T12:00:00Z"
+        },
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
     }
     ```
     
-    **Error Response (400 Bad Request):**
-    Invalid input data.
+    ### 400 Bad Request
+    Invalid or missing required fields
+    ```json
+    {
+        "email": ["This field is required."],
+        "password": ["This field is required."],
+        "first_name": ["This field is required."],
+        "last_name": ["This field is required."],
+        "country": ["This field is required."]
+    }
+    ```
+    
+    ### 400 Bad Request
+    Email already exists
+    ```json
+    {
+        "email": ["User with this email already exists."]
+    }
+    ```
     """
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -55,29 +87,63 @@ class RegisterAPIView(APIView):
 
 class LoginAPIView(APIView):
     """
-    post:
-    Log in an existing user.
+    Authenticate and log in a user
     
-    This endpoint authenticates the user using email and password and returns JWT tokens.
+    Authenticates a user with their email and password, then returns JWT tokens for authorization.
     
-    **Request Body:**
+    ---
+    ## Request Body
     
-    - **email**: User email address (string, required)
-    - **password**: User password (string, required)
+    | Field | Type | Required | Description |
+    | ----- | ---- | -------- | ----------- |
+    | email | string (email) | Yes | User's registered email address |
+    | password | string | Yes | User's password |
     
-    **Response (200 OK):**
+    ## Responses
     
+    ### 200 OK
+    Login successful
     ```json
     {
         "status": "success",
-        "user": { ...user info... },
-        "access_token": "access_token_here",
-        "refresh_token": "refresh_token_here"
+        "user": {
+            "id": 1,
+            "email": "user@example.com",
+            "first_name": "John",
+            "last_name": "Doe",
+            "phone": "1234567890",
+            "date_of_birth": "1990-01-01",
+            "gender": "Male",
+            "country": "United States",
+            "created_at": "2024-05-10T12:00:00Z",
+            "updated_at": "2024-05-10T12:00:00Z"
+        },
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
     }
     ```
     
-    **Error Response (401 Unauthorized):**
-    Invalid email or password.
+    ### 400 Bad Request
+    Missing or invalid fields
+    ```json
+    {
+        "email": ["This field is required."],
+        "password": ["This field is required."]
+    }
+    ```
+    
+    ### 401 Unauthorized
+    Invalid credentials
+    ```json
+    {
+        "error": "Invalid email or password"
+    }
+    ```
+    
+    ## Usage Notes
+    - The access token expires after 5 minutes
+    - Use the refresh token to obtain a new access token
+    - Include the access token in the Authorization header for protected endpoints: `Authorization: Bearer {access_token}`
     """
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -99,16 +165,20 @@ class LoginAPIView(APIView):
 
 class UserInfoAPIView(APIView):
     """
-    get:
-    Retrieve user information.
+    Retrieve authenticated user's profile information
     
-    This endpoint returns the authenticated user's information.
+    Returns the profile information for the currently authenticated user.
     
-    **Security:**
-    Requires Bearer JWT token.
+    ---
+    ## Authorization
     
-    **Response (200 OK):**
+    Requires a valid JWT access token in the Authorization header:
+    `Authorization: Bearer {access_token}`
     
+    ## Responses
+    
+    ### 200 OK
+    User information retrieved successfully
     ```json
     {
         "id": 1,
@@ -118,14 +188,35 @@ class UserInfoAPIView(APIView):
         "phone": "1234567890",
         "date_of_birth": "1990-01-01",
         "gender": "Male",
-        "country": "CountryName",
-        "created_at": "2024-01-01T12:00:00Z",
-        "updated_at": "2024-01-01T12:00:00Z"
+        "country": "United States",
+        "created_at": "2024-05-10T12:00:00Z",
+        "updated_at": "2024-05-10T12:00:00Z"
     }
     ```
     
-    **Error Response (401 Unauthorized):**
-    Invalid or missing authentication token.
+    ### 401 Unauthorized
+    Missing or invalid token
+    ```json
+    {
+        "detail": "Authentication credentials were not provided."
+    }
+    ```
+    
+    ### 401 Unauthorized
+    Expired token
+    ```json
+    {
+        "detail": "Given token not valid for any token type",
+        "code": "token_not_valid",
+        "messages": [
+            {
+                "token_class": "AccessToken",
+                "token_type": "access",
+                "message": "Token is invalid or expired"
+            }
+        ]
+    }
+    ```
     """
     permission_classes = [IsAuthenticated]
 
