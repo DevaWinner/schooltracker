@@ -233,3 +233,43 @@ class UserInfoView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class UserSettingsView(APIView):
+    """
+    API endpoint to retrieve and update user settings.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        try:
+            if request.user.id != user_id:
+                return Response(
+                    {"error": "You are not authorized to access this profile."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            user_settings, _ = UserSettings.objects.get_or_create(user=request.user)
+            serializer = UserSettingsSerializer(user_settings)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, user_id):
+        try:
+            if request.user.id != user_id:
+                return Response(
+                    {"error": "You are not authorized to access this profile."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            user_settings, _ = UserSettings.objects.get_or_create(user=request.user)
+            serializer = UserSettingsSerializer(user_settings)
+            serializer = UserSettingsSerializer(user_settings, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                {"message": "User settings updated successfully", "user settings": serializer.data},
+                status=status.HTTP_200_OK
+            )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
