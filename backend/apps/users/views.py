@@ -22,16 +22,32 @@ def register_user(request):
             data = json.loads(request.body)
             email = data.get("email")
             password = data.get("password")
+            password2 = data.get("password2")
             first_name = data.get("first_name")
             last_name = data.get("last_name")
 
+            # Password match check
+            if password != password2:
+                return JsonResponse(
+                    {"error": "Registration failed! Passwords do not match"},
+                    status=400,
+                )
+
+            # Email already exists check
+            if User.objects.filter(email=email).exists():
+                return JsonResponse(
+                    {"error": "Registration failed! Email already exists"},
+                    status=400,
+                )
+
+            # Register user with Supabase
             response = supabase_signup(email, password)
 
             if response.get("status") == "success" and "user" in response:
                 user_data = response["user"]
                 supabase_uid = user_data["id"]
 
-                # Create or update user record in Django
+                # Create or update Django user
                 user, created = User.objects.update_or_create(
                     email=email,
                     defaults={
@@ -46,10 +62,9 @@ def register_user(request):
                     user.set_password(password)
                     user.save()
 
-                # Ensure UserProfile exists
+                # Create user profile if not exists
                 UserProfile.objects.get_or_create(user=user)
 
-                # Return formatted response
                 return JsonResponse(
                     {
                         "status": "User registered successfully",
@@ -60,15 +75,17 @@ def register_user(request):
                             "updated_at": user_data.get("updated_at", user_data["created_at"]),
                         },
                     },
-                    status=201,  # HTTP 201 Created
+                    status=201,
                 )
             else:
                 return JsonResponse(
                     {"error": "Registration failed", "details": response},
-                    status=400,  # HTTP 400 Bad Request
+                    status=400,
                 )
+
         except json.JSONDecodeError:
             return JsonResponse({"error": "Invalid JSON data"}, status=400)
+
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
 
