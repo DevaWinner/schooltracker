@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import UserProfile
+from .models import UserProfile, UserInfo, UserSettings
 from .utils.country_names import COUNTRY_CHOICES
 from .utils.country_codes import COUNTRY_CODE_CHOICES
 from .supabase_config import upload_file
@@ -75,3 +75,15 @@ class UserProfileSerializer(serializers.ModelSerializer):
         instance.save()
         
         return instance
+
+
+class UserInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserInfo
+        fields = ['bio', 'facebook', 'twitter', 'linkedin', 'instagram', 'created_at', 'updated_at']
+
+
+class UserSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSettings
+        fields = ['language', 'timezone', 'email_notification', 'created_at', 'updated_at']
