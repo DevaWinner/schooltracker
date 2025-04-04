@@ -1,7 +1,7 @@
 import { useState, ChangeEvent, FormEvent, useContext } from "react";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../../context/AuthContext";
-import { updateBasicInfo } from "../../../api/profile"; // Changed from updateProfile
+import { updateBasicInfo, UserInfoUpdateRequest } from "../../../api/profile";
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
@@ -39,8 +39,19 @@ export default function UserInfoModal({
 		}
 		setLoading(true);
 		try {
+			// Create properly typed request object
+			const updateData: UserInfoUpdateRequest = {
+				first_name: formData.first_name,
+				last_name: formData.last_name,
+				phone: formData.phone,
+				date_of_birth: formData.date_of_birth,
+				country: formData.country,
+				// Convert string gender to the appropriate type
+				gender: formData.gender as "Male" | "Female" | "Other" | undefined,
+			};
+
 			// Send update request to API using updateBasicInfo for /user/info/ endpoint
-			const updatedProfile = await updateBasicInfo(accessToken, formData);
+			const updatedProfile = await updateBasicInfo(accessToken, updateData);
 
 			// Update the global profile state
 			setProfile(updatedProfile);

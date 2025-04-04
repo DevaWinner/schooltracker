@@ -50,12 +50,17 @@ export interface ProfileUpdateRequest {
 	instagram?: string;
 }
 
-// Get user profile (bio, social links)
+// Get user profile (bio, social links) - Improve error handling
 export const getUserProfile = async (token: string): Promise<UserProfile> => {
-	const response = await axiosInstance.get<UserProfile>("/user/profile/", {
-		headers: { Authorization: `Bearer ${token}` },
-	});
-	return response.data;
+	try {
+		const response = await axiosInstance.get<UserProfile>("/user/profile/", {
+			headers: { Authorization: `Bearer ${token}` },
+		});
+		return response.data;
+	} catch (error) {
+		console.error("Failed to fetch user profile:", error);
+		throw error;
+	}
 };
 
 // Update user profile (bio, social links)
@@ -84,12 +89,17 @@ export interface SettingsUpdateRequest {
 	marketing_emails?: boolean;
 }
 
-// Get user settings
+// Get user settings - Improve error handling
 export const getUserSettings = async (token: string): Promise<UserSettings> => {
-	const response = await axiosInstance.get<UserSettings>("/user/settings/", {
-		headers: { Authorization: `Bearer ${token}` },
-	});
-	return response.data;
+	try {
+		const response = await axiosInstance.get<UserSettings>("/user/settings/", {
+			headers: { Authorization: `Bearer ${token}` },
+		});
+		return response.data;
+	} catch (error) {
+		console.error("Failed to fetch user settings:", error);
+		throw error;
+	}
 };
 
 // Update user settings
