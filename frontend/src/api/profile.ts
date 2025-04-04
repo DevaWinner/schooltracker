@@ -33,7 +33,6 @@ export const updateBasicInfo = async (
 	token: string,
 	data: UserInfoUpdateRequest
 ): Promise<UserInfo> => {
-	console.log("Updating basic info with:", data);
 	const response = await axiosInstance.put<UserInfo>("/user/info/", data, {
 		headers: { Authorization: `Bearer ${token}` },
 	});
@@ -58,7 +57,6 @@ export const getUserProfile = async (token: string): Promise<UserProfile> => {
 		});
 		return response.data;
 	} catch (error) {
-		console.error("Failed to fetch user profile:", error);
 		throw error;
 	}
 };
@@ -68,7 +66,6 @@ export const updateUserProfile = async (
 	token: string,
 	data: ProfileUpdateRequest
 ): Promise<UserProfile> => {
-	console.log("Updating profile with:", data);
 	const response = await axiosInstance.put<UserProfile>(
 		"/user/profile/",
 		data,
@@ -97,7 +94,6 @@ export const getUserSettings = async (token: string): Promise<UserSettings> => {
 		});
 		return response.data;
 	} catch (error) {
-		console.error("Failed to fetch user settings:", error);
 		throw error;
 	}
 };
@@ -107,7 +103,6 @@ export const updateUserSettings = async (
 	token: string,
 	data: SettingsUpdateRequest
 ): Promise<UserSettings> => {
-	console.log("Updating settings with:", data);
 	const response = await axiosInstance.put<UserSettings>(
 		"/user/settings/",
 		data,

@@ -18,10 +18,9 @@ const axiosInstance = axios.create({
 	withCredentials: true,
 });
 
-// Add request interceptor for debugging
+// Simple request interceptor without console.log
 axiosInstance.interceptors.request.use(
 	(config) => {
-		console.log("Request URL:",);
 		return config;
 	},
 	(error) => {

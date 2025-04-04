@@ -101,12 +101,33 @@ export default function UserProfileModal({
 			toast.success("Profile updated successfully");
 			if (onSave) onSave();
 		} catch (error: any) {
-			const errorMessage =
-				error.response?.data?.message ||
-				error.response?.data?.detail ||
-				"Failed to update profile";
+			// Improved error handling
+			let errorMessage = "Failed to update profile";
+
+			if (error.response?.data) {
+				if (typeof error.response.data === "string") {
+					errorMessage = error.response.data;
+				} else if (error.response.data.message) {
+					errorMessage = error.response.data.message;
+				} else if (error.response.data.detail) {
+					errorMessage = error.response.data.detail;
+				} else if (error.response.data.error) {
+					errorMessage = error.response.data.error;
+				} else if (Object.keys(error.response.data).length > 0) {
+					// Handle field-specific errors
+					const fieldErrors = Object.entries(error.response.data)
+						.map(([field, msgs]) => {
+							const messages = Array.isArray(msgs) ? msgs.join(", ") : msgs;
+							return `${field}: ${messages}`;
+						})
+						.join("; ");
+					if (fieldErrors) errorMessage = fieldErrors;
+				}
+			} else if (error.message) {
+				errorMessage = error.message;
+			}
+
 			toast.error(errorMessage);
-			console.error("Update error:", error);
 		} finally {
 			setLoading(false);
 		}

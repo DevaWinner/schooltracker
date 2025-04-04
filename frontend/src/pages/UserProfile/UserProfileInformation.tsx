@@ -78,9 +78,25 @@ export default function UserProfiles() {
 
 				// Update global profile
 				setProfile(basicInfoResponse);
-			} catch (error) {
-				console.error("Error fetching profile data:", error);
-				toast.error("Failed to load profile. Please try again.");
+			} catch (error: any) {
+				// Improved error handling
+				let errorMessage = "Failed to load profile. Please try again.";
+
+				if (error.response?.data) {
+					if (typeof error.response.data === "string") {
+						errorMessage = error.response.data;
+					} else if (error.response.data.message) {
+						errorMessage = error.response.data.message;
+					} else if (error.response.data.detail) {
+						errorMessage = error.response.data.detail;
+					} else if (error.response.data.error) {
+						errorMessage = error.response.data.error;
+					}
+				} else if (error.message) {
+					errorMessage = error.message;
+				}
+
+				toast.error(errorMessage);
 			} finally {
 				setLoading(false);
 			}
