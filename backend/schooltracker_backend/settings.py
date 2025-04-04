@@ -127,7 +127,29 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Ensure Whitenoise is configured properly
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'  # Changed from CompressedManifestStaticFilesStorage
+
+# Add static files finder
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
+
+# Configure whitenoise to handle static in production
+WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_USE_FINDERS = True
+
+# Make sure staticfiles app is included
+if 'django.contrib.staticfiles' not in INSTALLED_APPS:
+    INSTALLED_APPS.append('django.contrib.staticfiles')
+
+# Make sure whitenoise middleware is positioned correctly
+if 'whitenoise.middleware.WhiteNoiseMiddleware' in MIDDLEWARE:
+    MIDDLEWARE.remove('whitenoise.middleware.WhiteNoiseMiddleware')
+    # Add it right after security middleware
+    security_index = MIDDLEWARE.index('django.middleware.security.SecurityMiddleware')
+    MIDDLEWARE.insert(security_index + 1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
 # Update allowed hosts to include your specific Render URL
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'schooltracker-backend-b2gt.onrender.com', '.vercel.app', '.now.sh', '.onrender.com']

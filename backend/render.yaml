@@ -3,9 +3,11 @@ services:
     name: schooltracker-backend
     env: python
     region: oregon
-    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    buildCommand: chmod +x build.sh && ./build.sh
     startCommand: gunicorn schooltracker_backend.wsgi:application
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
       - key: DATABASE_URL
         fromDatabase:
           name: schooltracker-db
@@ -13,11 +15,12 @@ services:
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
-        value: false
+        value: False
       - key: DJANGO_ALLOWED_HOSTS
         value: .onrender.com
       - key: PYTHONUNBUFFERED
         value: 1
+    staticPublishPath: ./staticfiles
 
 databases:
   - name: schooltracker-db
