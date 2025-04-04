@@ -25,9 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.vercel.app', '.now.sh', '.onrender.com']
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,7 +41,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -126,5 +123,15 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CSRF settings for Render
-CSRF_TRUSTED_ORIGINS = ['https://*.onrender.com']
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Update allowed hosts to include your specific Render URL
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'schooltracker-backend-b2gt.onrender.com', '.vercel.app', '.now.sh', '.onrender.com']
+
+# Add CORS settings
+CORS_ALLOW_ALL_ORIGINS = True
+INSTALLED_APPS += ['corsheaders']
+MIDDLEWARE.insert(2, 'corsheaders.middleware.CorsMiddleware')
