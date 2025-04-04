@@ -1,7 +1,7 @@
 import { useState, ChangeEvent, FormEvent, useContext } from "react";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../../context/AuthContext";
-import { updatePartialProfile } from "../../../api/profile";
+import { updateBasicInfo } from "../../../api/profile"; // Changed from updateProfile
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
@@ -12,7 +12,7 @@ export default function UserInfoModal({
 	onSave,
 	onClose,
 }: ComponentCardProps) {
-	const { accessToken } = useContext(AuthContext);
+	const { accessToken, setProfile } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		first_name: userInfo?.first_name || "",
@@ -33,14 +33,26 @@ export default function UserInfoModal({
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		if (!accessToken) return;
+		if (!accessToken) {
+			toast.error("Authentication required");
+			return;
+		}
 		setLoading(true);
 		try {
-			await updatePartialProfile(accessToken, formData);
+			// Send update request to API using updateBasicInfo for /user/info/ endpoint
+			const updatedProfile = await updateBasicInfo(accessToken, formData);
+
+			// Update the global profile state
+			setProfile(updatedProfile);
+
 			toast.success("User information updated successfully");
 			if (onSave) onSave();
-		} catch (error) {
-			toast.error("Failed to update user information");
+		} catch (error: any) {
+			const errorMessage =
+				error.response?.data?.message ||
+				error.response?.data?.detail ||
+				"Failed to update user information";
+			toast.error(errorMessage);
 			console.error("Update error:", error);
 		} finally {
 			setLoading(false);

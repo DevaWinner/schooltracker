@@ -1,7 +1,7 @@
 import { useState, FormEvent, useContext } from "react";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../../context/AuthContext";
-import { updatePartialProfile } from "../../../api/profile";
+import { updateUserSettings } from "../../../api/profile";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
 import { timezones } from "../../../utils/timezones";
@@ -13,11 +13,9 @@ export default function UserSettingsModal({
 	onSave,
 	onClose,
 }: ComponentCardProps) {
-	const { accessToken } = useContext(AuthContext);
+	const { accessToken, setProfile, profile } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
-		id: userSettings?.id || 0,
-		user_id: userSettings?.user_id || 0,
 		language: userSettings?.language || "en",
 		timezone: userSettings?.timezone || "UTC",
 		notification_email: userSettings?.notification_email || false,
@@ -28,14 +26,43 @@ export default function UserSettingsModal({
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		if (!accessToken) return;
+		if (!accessToken || !profile) {
+			toast.error("Authentication required");
+			return;
+		}
+
 		setLoading(true);
 		try {
-			await updatePartialProfile(accessToken, { settings: formData });
+			// Prepare settings data
+			const settingsData = {
+				language: formData.language,
+				timezone: formData.timezone,
+				notification_email: formData.notification_email,
+				notification_sms: formData.notification_sms,
+				notification_push: formData.notification_push,
+				marketing_emails: formData.marketing_emails,
+			};
+
+			// Send update request directly to settings API
+			const updatedSettingsData = await updateUserSettings(
+				accessToken,
+				settingsData
+			);
+
+			// Update the global profile state
+			setProfile({
+				...profile,
+				...updatedSettingsData,
+			});
+
 			toast.success("Settings updated successfully");
-			if (onSave) onSave(); // Add null check here
-		} catch (error) {
-			toast.error("Failed to update settings");
+			if (onSave) onSave();
+		} catch (error: any) {
+			const errorMessage =
+				error.response?.data?.message ||
+				error.response?.data?.detail ||
+				"Failed to update settings";
+			toast.error(errorMessage);
 			console.error("Update error:", error);
 		} finally {
 			setLoading(false);
@@ -106,7 +133,7 @@ export default function UserSettingsModal({
 							<label className="flex items-center space-x-2">
 								<input
 									type="checkbox"
-									checked={formData.notification_sms || false}
+									checked={formData.notification_sms}
 									onChange={(e) =>
 										setFormData({
 											...formData,
@@ -120,7 +147,7 @@ export default function UserSettingsModal({
 							<label className="flex items-center space-x-2">
 								<input
 									type="checkbox"
-									checked={formData.notification_push || false}
+									checked={formData.notification_push}
 									onChange={(e) =>
 										setFormData({
 											...formData,
@@ -134,7 +161,7 @@ export default function UserSettingsModal({
 							<label className="flex items-center space-x-2">
 								<input
 									type="checkbox"
-									checked={formData.marketing_emails || false}
+									checked={formData.marketing_emails}
 									onChange={(e) =>
 										setFormData({
 											...formData,

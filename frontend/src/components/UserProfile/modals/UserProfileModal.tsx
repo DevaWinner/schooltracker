@@ -1,7 +1,7 @@
 import { useState, ChangeEvent, FormEvent, useContext, useRef } from "react";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../../context/AuthContext";
-import { updatePartialProfile } from "../../../api/profile";
+import { updateUserProfile } from "../../../api/profile";
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
@@ -12,12 +12,13 @@ export default function UserProfileModal({
 	onSave,
 	onClose,
 }: ComponentCardProps) {
-	const { accessToken } = useContext(AuthContext);
+	const { accessToken, setProfile, profile } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [imagePreview, setImagePreview] = useState<string | null>(
 		userProfile?.profile_picture || null
 	);
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const [imageFile, setImageFile] = useState<File | null>(null);
 
 	const [formData, setFormData] = useState({
 		bio: userProfile?.bio || "",
@@ -35,32 +36,32 @@ export default function UserProfileModal({
 		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+	const handleImageChange = async (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
-			// For now we'll create a temporary URL for preview and later upload this to server.
+			// Create preview for UI display
 			const imageUrl = URL.createObjectURL(file);
 			setImagePreview(imageUrl);
+			setImageFile(file);
 
-			// In a production app, you would upload the file to a server/cloud storage
-			// and get back a URL to use. For this demo we'll simulate with local URL.
+			// In a real implementation, you would:
+			// 1. Upload the file to your server or cloud storage
+			// 2. Get the URL from the response
+			// 3. Update the profile_picture field with that URL
+
+			// For now, we'll simulate this by storing the local preview URL
 			setFormData((prev) => ({ ...prev, profile_picture: imageUrl }));
-
-			// Note: In a real implementation you would:
-			// 1. Upload image to server/cloud
-			// 2. Get back permanent URL
-			// 3. Set that URL in the form data
 		}
 	};
 
 	const handleImageClick = () => {
-		// Programmatically click the hidden file input
 		fileInputRef.current?.click();
 	};
 
 	const handleRemoveImage = () => {
 		setImagePreview(null);
 		setFormData((prev) => ({ ...prev, profile_picture: "" }));
+		setImageFile(null);
 		if (fileInputRef.current) {
 			fileInputRef.current.value = "";
 		}
@@ -68,20 +69,43 @@ export default function UserProfileModal({
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		if (!accessToken) return;
+		if (!accessToken || !profile) {
+			toast.error("Authentication required");
+			return;
+		}
+
 		setLoading(true);
 		try {
-			const { bio, profile_picture, facebook, twitter, linkedin, instagram } =
-				formData;
-			await updatePartialProfile(accessToken, {
-				bio,
-				profile_picture,
-				social_links: { facebook, twitter, linkedin, instagram },
+			// Create update payload
+			const updateData = {
+				bio: formData.bio,
+				profile_picture: formData.profile_picture,
+				facebook: formData.facebook,
+				twitter: formData.twitter,
+				linkedin: formData.linkedin,
+				instagram: formData.instagram,
+			};
+
+			// Send update request directly to profile API
+			const updatedProfileData = await updateUserProfile(
+				accessToken,
+				updateData
+			);
+
+			// Update the global profile state
+			setProfile({
+				...profile,
+				...updatedProfileData,
 			});
-			toast.success("User profile updated successfully");
+
+			toast.success("Profile updated successfully");
 			if (onSave) onSave();
-		} catch (error) {
-			toast.error("Failed to update user profile");
+		} catch (error: any) {
+			const errorMessage =
+				error.response?.data?.message ||
+				error.response?.data?.detail ||
+				"Failed to update profile";
+			toast.error(errorMessage);
 			console.error("Update error:", error);
 		} finally {
 			setLoading(false);

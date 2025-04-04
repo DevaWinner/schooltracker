@@ -2,15 +2,18 @@ import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
 import UserProfileModal from "./modals/UserProfileModal";
 import { ComponentCardProps } from "../../types/user";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function UserProfileCard({
 	userProfile,
 	userInfo,
 }: ComponentCardProps) {
 	const { isOpen, openModal, closeModal } = useModal();
+	const { profile } = useContext(AuthContext);
 
 	const handleSave = () => {
-		console.log("User profile updated");
+		// Handle successful update, modal will close automatically
 		closeModal();
 	};
 

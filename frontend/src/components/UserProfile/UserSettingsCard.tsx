@@ -4,12 +4,15 @@ import UserSettingsModal from "./modals/UserSettingsModal";
 import { ComponentCardProps } from "../../types/user";
 import { timezones } from "../../utils/timezones";
 import { getLanguageByCode } from "../../utils/languages";
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function UserSettingsCard({ userSettings }: ComponentCardProps) {
 	const { isOpen, openModal, closeModal } = useModal();
+	const { profile } = useContext(AuthContext);
 
 	const handleSave = () => {
-		console.log("User settings updated");
+		// Handle successful update, modal will close automatically
 		closeModal();
 	};
 
