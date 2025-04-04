@@ -21,6 +21,11 @@ class UserManager(BaseUserManager):
         )
         user.set_password(password)
         user.save(using=self._db)
+        
+        # Create default profile and settings for the user
+        UserProfile.objects.create(user=user)
+        UserSettings.objects.create(user=user)
+        
         return user
 
     def create_superuser(self, email, first_name, last_name, country, password=None, **extra_fields):
@@ -29,6 +34,7 @@ class UserManager(BaseUserManager):
         return self.create_user(email, first_name, last_name, country, password, **extra_fields)
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """User information collected at registration"""
     email = models.EmailField(unique=True, max_length=100)
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
@@ -48,3 +54,30 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
+class UserProfile(models.Model):
+    """User profile information updated after sign-in"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    bio = models.TextField(blank=True, null=True)
+    profile_picture = models.CharField(max_length=255, blank=True, null=True)
+    facebook = models.CharField(max_length=255, blank=True, null=True)
+    twitter = models.CharField(max_length=255, blank=True, null=True)
+    linkedin = models.CharField(max_length=255, blank=True, null=True)
+    instagram = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.user.email}'s profile"
+
+class UserSettings(models.Model):
+    """User settings updated after sign-in"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='settings')
+    language = models.CharField(max_length=10, default='en')
+    timezone = models.CharField(max_length=50, default='UTC')
+    notification_email = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.user.email}'s settings"

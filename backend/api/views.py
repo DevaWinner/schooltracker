@@ -5,7 +5,9 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .serializers import RegisterSerializer, LoginSerializer, UserInfoSerializer
+from .models import UserProfile, UserSettings
+from .serializers import (RegisterSerializer, LoginSerializer, UserInfoSerializer,
+                         UserProfileSerializer, UserSettingsSerializer)
 
 class RegisterAPIView(APIView):
     """
@@ -165,9 +167,9 @@ class LoginAPIView(APIView):
 
 class UserInfoAPIView(APIView):
     """
-    Retrieve authenticated user's profile information
+    Retrieve authenticated user's basic information
     
-    Returns the profile information for the currently authenticated user.
+    Returns the basic registration information for the currently authenticated user.
     
     ---
     ## Authorization
@@ -201,25 +203,192 @@ class UserInfoAPIView(APIView):
         "detail": "Authentication credentials were not provided."
     }
     ```
-    
-    ### 401 Unauthorized
-    Expired token
-    ```json
-    {
-        "detail": "Given token not valid for any token type",
-        "code": "token_not_valid",
-        "messages": [
-            {
-                "token_class": "AccessToken",
-                "token_type": "access",
-                "message": "Token is invalid or expired"
-            }
-        ]
-    }
-    ```
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
         serializer = UserInfoSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+class UserProfileAPIView(APIView):
+    """
+    Manage user profile
+    
+    Retrieve or update the authenticated user's profile information.
+    
+    ---
+    ## Authorization
+    
+    Requires a valid JWT access token in the Authorization header:
+    `Authorization: Bearer {access_token}`
+    
+    ## Endpoints
+    
+    ### GET
+    Retrieve the user's profile
+    
+    #### Responses
+    
+    ##### 200 OK
+    Profile retrieved successfully
+    ```json
+    {
+        "id": 1,
+        "user_id": 1,
+        "email": "user@example.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "bio": "Software developer with 5 years of experience",
+        "profile_picture": "https://example.com/avatar.jpg",
+        "facebook": "https://facebook.com/johndoe",
+        "twitter": "https://twitter.com/johndoe",
+        "linkedin": "https://linkedin.com/in/johndoe",
+        "instagram": "https://instagram.com/johndoe",
+        "created_at": "2024-05-10T12:00:00Z",
+        "updated_at": "2024-05-10T12:00:00Z"
+    }
+    ```
+    
+    ### PUT
+    Update the user's profile
+    
+    #### Request Body
+    
+    | Field | Type | Required | Description |
+    | ----- | ---- | -------- | ----------- |
+    | bio | string | No | User's biography or description |
+    | profile_picture | string (URL) | No | URL to user's profile picture |
+    | facebook | string (URL) | No | User's Facebook profile URL |
+    | twitter | string (URL) | No | User's Twitter profile URL |
+    | linkedin | string (URL) | No | User's LinkedIn profile URL |
+    | instagram | string (URL) | No | User's Instagram profile URL |
+    
+    #### Responses
+    
+    ##### 200 OK
+    Profile updated successfully
+    ```json
+    {
+        "id": 1,
+        "user_id": 1,
+        "email": "user@example.com",
+        "first_name": "John",
+        "last_name": "Doe",
+        "bio": "Updated bio information",
+        "profile_picture": "https://example.com/new-avatar.jpg",
+        "facebook": "https://facebook.com/johndoe",
+        "twitter": "https://twitter.com/johndoe",
+        "linkedin": "https://linkedin.com/in/johndoe",
+        "instagram": "https://instagram.com/johndoe",
+        "created_at": "2024-05-10T12:00:00Z",
+        "updated_at": "2024-05-10T12:30:00Z"
+    }
+    ```
+    
+    ##### 400 Bad Request
+    Invalid input data
+    ```json
+    {
+        "profile_picture": ["Enter a valid URL."]
+    }
+    ```
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        profile = UserProfile.objects.get(user=request.user)
+        serializer = UserProfileSerializer(profile)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        profile = UserProfile.objects.get(user=request.user)
+        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class UserSettingsAPIView(APIView):
+    """
+    Manage user settings
+    
+    Retrieve or update the authenticated user's preference settings.
+    
+    ---
+    ## Authorization
+    
+    Requires a valid JWT access token in the Authorization header:
+    `Authorization: Bearer {access_token}`
+    
+    ## Endpoints
+    
+    ### GET
+    Retrieve the user's settings
+    
+    #### Responses
+    
+    ##### 200 OK
+    Settings retrieved successfully
+    ```json
+    {
+        "id": 1,
+        "user_id": 1,
+        "language": "en",
+        "timezone": "UTC",
+        "notification_email": true,
+        "created_at": "2024-05-10T12:00:00Z",
+        "updated_at": "2024-05-10T12:00:00Z"
+    }
+    ```
+    
+    ### PUT
+    Update the user's settings
+    
+    #### Request Body
+    
+    | Field | Type | Required | Description |
+    | ----- | ---- | -------- | ----------- |
+    | language | string | No | User's preferred language (default: 'en') |
+    | timezone | string | No | User's timezone (default: 'UTC') |
+    | notification_email | boolean | No | Whether to receive email notifications (default: true) |
+    
+    #### Responses
+    
+    ##### 200 OK
+    Settings updated successfully
+    ```json
+    {
+        "id": 1,
+        "user_id": 1,
+        "language": "fr",
+        "timezone": "Europe/Paris",
+        "notification_email": false,
+        "created_at": "2024-05-10T12:00:00Z",
+        "updated_at": "2024-05-10T12:30:00Z"
+    }
+    ```
+    
+    ##### 400 Bad Request
+    Invalid input data
+    ```json
+    {
+        "language": ["Ensure this field has no more than 10 characters."]
+    }
+    ```
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        settings = UserSettings.objects.get(user=request.user)
+        serializer = UserSettingsSerializer(settings)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        settings = UserSettings.objects.get(user=request.user)
+        serializer = UserSettingsSerializer(settings, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
