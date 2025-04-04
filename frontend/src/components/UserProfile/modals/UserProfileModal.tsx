@@ -38,8 +38,7 @@ export default function UserProfileModal({
 	const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
-			// For now we'll create a temporary URL for preview
-			// In a real app, you might want to upload this to your server or cloudinary first
+			// For now we'll create a temporary URL for preview and later upload this to server.
 			const imageUrl = URL.createObjectURL(file);
 			setImagePreview(imageUrl);
 

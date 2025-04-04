@@ -16,6 +16,13 @@ export default defineConfig({
 		}),
 	],
 	server: {
-		port: 3000,
+		port: 3001,
+		proxy: {
+			"/api": {
+				target: "https://schooltracker-backend-b2gt.onrender.com",
+				changeOrigin: true,
+				secure: false,
+			},
+		},
 	},
 });

@@ -3,6 +3,7 @@ import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
+import { clearAuthTokens } from "../../api/auth";
 
 export default function UserDropdown() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,8 @@ export default function UserDropdown() {
 	}
 
 	const handleSignOut = () => {
+		// Clear stored tokens
+		clearAuthTokens();
 		signOut();
 		navigate("/signin");
 	};
@@ -32,6 +35,9 @@ export default function UserDropdown() {
 	}
 
 	const fullName = `${profile.first_name} ${profile.last_name}`;
+	const profileInitials = `${profile.first_name.charAt(
+		0
+	)}${profile.last_name.charAt(0)}`.toUpperCase();
 
 	return (
 		<div className="relative">
@@ -47,19 +53,8 @@ export default function UserDropdown() {
 							className="w-full h-full object-cover"
 						/>
 					) : (
-						<div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
-							<svg
-								className="w-6 h-6 text-gray-400"
-								fill="currentColor"
-								viewBox="0 0 20 20"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									fillRule="evenodd"
-									d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-									clipRule="evenodd"
-								></path>
-							</svg>
+						<div className="w-full h-full flex items-center justify-center bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 font-semibold">
+							{profileInitials}
 						</div>
 					)}
 				</span>

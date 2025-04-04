@@ -6,9 +6,9 @@ import Label from "../form/Label";
 import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import Button from "../ui/button/Button";
-import { signIn } from "../../api/auth";
-import { getProfile } from "../../api/profile";
+import { signIn, storeAuthTokens } from "../../api/auth";
 import { AuthContext } from "../../context/AuthContext";
+import { adaptUserDataToUserInfo } from "../../utils/userAdapter";
 
 export default function SignInForm() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -37,23 +37,25 @@ export default function SignInForm() {
 		try {
 			const response = await signIn({ email, password });
 			if (response.status === "success") {
-				// Store persistence preference
-				if (isChecked) {
-					localStorage.setItem("rememberMe", "true");
-				}
+				// Store auth tokens with persistence preference
+				storeAuthTokens(
+					response.access_token,
+					response.refresh_token,
+					isChecked
+				);
 
 				// Update auth context with user info and token
 				updateAuth(response.user, response.access_token);
 
-				// Fetch user profile using the new token
-				const profileData = await getProfile(response.access_token);
-				setProfile(profileData);
+				// Convert UserData to UserInfo before setting profile
+				const userInfo = adaptUserDataToUserInfo(response.user);
+				setProfile(userInfo);
 
 				toast.success("Successfully signed in!");
 
 				// Check if profile is new (for example, if created_at equals updated_at)
 				const isFirstTimeUser =
-					profileData.created_at === profileData.updated_at;
+					response.user.created_at === response.user.updated_at;
 				setIsFirstLogin(isFirstTimeUser);
 
 				// Redirect based on whether it's first login or not
@@ -66,13 +68,18 @@ export default function SignInForm() {
 		} catch (err: any) {
 			let errorMessage = "Sign in failed. Please try again.";
 			if (err.response?.data) {
-				errorMessage =
-					err.response.data.message ||
-					err.response.data.detail ||
-					err.response.data.error ||
-					(typeof err.response.data === "string"
-						? err.response.data
-						: errorMessage);
+				// Handle specific API error responses
+				if (err.response.status === 401) {
+					errorMessage = "Invalid email or password";
+				} else {
+					errorMessage =
+						err.response.data.error ||
+						err.response.data.message ||
+						err.response.data.detail ||
+						(typeof err.response.data === "string"
+							? err.response.data
+							: errorMessage);
+				}
 			} else if (err.message) {
 				errorMessage = err.message;
 			}

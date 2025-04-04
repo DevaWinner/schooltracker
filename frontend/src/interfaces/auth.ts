@@ -9,14 +9,24 @@ export interface SignUpRequest {
 	country: string;
 }
 
+export interface UserData {
+	id: number;
+	email: string;
+	first_name: string;
+	last_name: string;
+	phone?: string;
+	date_of_birth?: string;
+	gender?: "Male" | "Female" | "Other"; // Updated to match UserInfo
+	country: string;
+	created_at: string;
+	updated_at: string;
+}
+
 export interface SignUpResponse {
 	status: string;
-	user: {
-		id: string;
-		email: string;
-		created_at: string;
-		updated_at: string;
-	};
+	user: UserData;
+	access_token: string;
+	refresh_token: string;
 }
 
 export interface SignInRequest {
@@ -26,10 +36,7 @@ export interface SignInRequest {
 
 export interface SignInResponse {
 	status: string;
-	user: {
-		id: string;
-		email: string;
-	};
+	user: UserData;
 	access_token: string;
 	refresh_token: string;
 }

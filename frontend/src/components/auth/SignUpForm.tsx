@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
@@ -7,8 +7,10 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import { signUp } from "../../api/auth";
+import { signUp, storeAuthTokens } from "../../api/auth";
 import { SignUpRequest } from "../../interfaces/auth";
+import { AuthContext } from "../../context/AuthContext";
+import { adaptUserDataToUserInfo } from "../../utils/userAdapter";
 
 export default function SignUpForm() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -24,6 +26,11 @@ export default function SignUpForm() {
 
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
+	const {
+		signIn: updateAuth,
+		setProfile,
+		setIsFirstLogin,
+	} = useContext(AuthContext);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -49,19 +56,47 @@ export default function SignUpForm() {
 		try {
 			const response = await signUp(payload);
 			if (response.status === "User registered successfully") {
-				toast.success("Account created successfully! Please sign in.");
-				navigate("/signin");
+				// Store tokens
+				storeAuthTokens(response.access_token, response.refresh_token);
+
+				// Update auth context with user info and token
+				updateAuth(response.user, response.access_token);
+
+				// Convert UserData to UserInfo before setting profile
+				const userInfo = adaptUserDataToUserInfo(response.user);
+				setProfile(userInfo);
+
+				setIsFirstLogin(true);
+
+				toast.success("Account created successfully!");
+				navigate("/profile/information");
 			}
 		} catch (err: any) {
 			let errorMessage = "Sign up failed. Please try again.";
 			if (err.response?.data) {
-				errorMessage =
-					err.response.data.message ||
-					err.response.data.detail ||
-					err.response.data.error ||
-					(typeof err.response.data === "string"
-						? err.response.data
-						: errorMessage);
+				// Handle specific API error responses
+				const errorData = err.response.data;
+				if (typeof errorData === "object" && !Array.isArray(errorData)) {
+					// Extract field-specific errors
+					const fieldErrors = Object.entries(errorData)
+						.map(([field, errors]) => {
+							if (Array.isArray(errors)) {
+								return `${field}: ${errors.join(", ")}`;
+							}
+							return `${field}: ${errors}`;
+						})
+						.join("; ");
+
+					errorMessage = fieldErrors || errorMessage;
+				} else {
+					errorMessage =
+						err.response.data.message ||
+						err.response.data.detail ||
+						err.response.data.error ||
+						(typeof err.response.data === "string"
+							? err.response.data
+							: errorMessage);
+				}
 			} else if (err.message) {
 				errorMessage = err.message;
 			}
@@ -72,7 +107,7 @@ export default function SignUpForm() {
 	};
 
 	return (
-		<div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
+		<div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1 no-scrollbar">
 			<div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
 				<div>
 					<div className="mb-5 sm:mb-8">
