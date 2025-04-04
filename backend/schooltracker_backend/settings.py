@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 from decouple import config
 import dj_database_url
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -136,20 +137,57 @@ CORS_ALLOW_ALL_ORIGINS = True
 INSTALLED_APPS += ['corsheaders']
 MIDDLEWARE.insert(2, 'corsheaders.middleware.CorsMiddleware')
 
-# Add Swagger settings
+# Better CORS configuration for Swagger UI
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# Make sure corsheaders is in INSTALLED_APPS and its middleware is correctly positioned
+if 'corsheaders' not in INSTALLED_APPS:
+    INSTALLED_APPS.append('corsheaders')
+    
+if 'corsheaders.middleware.CorsMiddleware' not in MIDDLEWARE:
+    # Add it right after the security middleware
+    security_index = MIDDLEWARE.index('django.middleware.security.SecurityMiddleware')
+    MIDDLEWARE.insert(security_index + 1, 'corsheaders.middleware.CorsMiddleware')
+
+# Improved Swagger settings for production
 SWAGGER_SETTINGS = {
-    'LOGIN_URL': '/admin/login/',
-    'LOGOUT_URL': '/admin/logout/',
     'USE_SESSION_AUTH': False,
     'SECURITY_DEFINITIONS': {
         'Bearer': {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header',
-            'description': 'Type in the *\'Value\'* input box below: **\'Bearer &lt;JWT&gt;\'**, where JWT is the token',
+            'description': 'JWT Token: Format as "Bearer {your_token}"',
         },
     },
     'VALIDATOR_URL': None,
     'DEFAULT_MODEL_RENDERING': 'example',
     'PERSIST_AUTH': True,
+    'REFETCH_SCHEMA_WITH_AUTH': True,
+    'REFETCH_SCHEMA_ON_LOGOUT': True,
 }
+
+# For Render deployment, set the correct URL
+RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    SWAGGER_URL = f"https://{RENDER_EXTERNAL_HOSTNAME}"
