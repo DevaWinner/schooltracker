@@ -6,11 +6,19 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .supabase_config import supabase_signup, supabase_signin,signin_with_google
+from .supabase_config import (
+    supabase_signup,
+    supabase_signin,
+    signin_with_google
+)
 from supabase import AuthApiError
 
-from .serializers import UserProfileSerializer
-from .models import UserProfile
+from .serializers import (
+    UserProfileSerializer,
+    UserInfoSerializer,
+    UserSettingsSerializer
+)
+from .models import UserProfile, UserInfo, UserSettings
 
 User = get_user_model()
 
@@ -186,3 +194,42 @@ class UserProfileView(APIView):
             )
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserInfoView(APIView):
+    """
+    API endpoint to retrieve and update user info.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        try:
+            if request.user.id != user_id:
+                return Response(
+                    {"error": "You are not authorized to access this profile."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            user_info, _ = UserInfo.objects.get_or_create(user=request.user)
+            serializer = UserInfoSerializer(user_info)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    def put(self, request, user_id):
+        try:
+            if request.user.id != user_id:
+                return Response(
+                    {"error": "You are not authorized to access this profile."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            user_info, _ = UserInfo.objects.get_or_create(user=request.user)
+            serializer = UserInfoSerializer(user_info, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(
+                    {"message": "User info updated successfully", "user info": serializer.data},
+                    status=status.HTTP_200_OK
+                )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
