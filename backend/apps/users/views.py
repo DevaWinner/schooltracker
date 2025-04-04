@@ -157,21 +157,31 @@ class UserProfileView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def get(self, request, user_id):
         """Retrieve authenticated user's profile, including User and UserProfile fields."""
+        if request.user.id != user_id:
+            return Response(
+                {"error": "You are not authorized to access this profile."},
+                status=status.HTTP_403_FORBIDDEN
+            )
         user_profile = request.user.user_profile
         serializer = UserProfileSerializer(user_profile)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def put(self, request):
+    def put(self, request, user_id):
         """Update the authenticated user's profile, including first_name and last_name."""
+        if request.user.id != user_id:
+            return Response(
+                {"error": "You are not authorized to access this profile."},
+                status=status.HTTP_403_FORBIDDEN
+            )
         user_profile = request.user.user_profile
         serializer = UserProfileSerializer(user_profile, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
             return Response(
-                {"message": "Profile updated successfully", "profile": serializer.data},
+                {"message": "Profile updated successfully", "user profile": serializer.data},
                 status=status.HTTP_200_OK
             )
 
