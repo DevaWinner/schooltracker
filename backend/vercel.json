@@ -1,18 +1,18 @@
 {
-	"version": 2,
-	"builds": [
-		{
-			"src": "schooltracker_backend/asgi.py",
-			"use": "@vercel/python",
-			"config": {
-				"maxLambdaSize": "50mb"
-			}
-		}
-	],
-	"routes": [
-		{
-			"src": "/(.*)",
-			"dest": "schooltracker_backend/asgi.py"
-		}
-	]
+    "version": 2,
+    "builds": [
+        {
+            "src": "schooltracker_backend/wsgi.py",
+            "use": "@vercel/python",
+            "config": {
+                "maxLambdaSize": "50mb"
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "schooltracker_backend/wsgi.py"
+        }
+    ]
 }
