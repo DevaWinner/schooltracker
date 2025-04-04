@@ -219,4 +219,11 @@ SWAGGER_SETTINGS = {
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
-    SWAGGER_URL = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+
+# Supabase configuration
+SUPABASE_URL = config('SUPABASE_URL', default='')
+SUPABASE_KEY = config('SUPABASE_KEY', default='')
+SUPABASE_BUCKET = config('SUPABASE_BUCKET', default='profile-pictures')
+
+# File upload settings
+MAX_UPLOAD_SIZE = 52428800  # 50 MB in bytes

@@ -20,6 +20,12 @@ services:
         value: .onrender.com
       - key: PYTHONUNBUFFERED
         value: 1
+      - key: SUPABASE_URL
+        sync: false # This means you'll set it in Render's dashboard
+      - key: SUPABASE_KEY
+        sync: false # This means you'll set it in Render's dashboard
+      - key: SUPABASE_BUCKET
+        value: profile-pictures
     staticPublishPath: ./staticfiles
 
 databases:

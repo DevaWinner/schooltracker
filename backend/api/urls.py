@@ -4,7 +4,9 @@ from .views import (
     LoginAPIView, 
     UserInfoAPIView, 
     UserProfileAPIView, 
-    UserSettingsAPIView
+    UserSettingsAPIView,
+    UploadProfilePictureAPIView,
+    DeleteUserAPIView
 )
 
 urlpatterns = [
@@ -13,4 +15,6 @@ urlpatterns = [
     path('user/info/', UserInfoAPIView.as_view(), name='user_info'),
     path('user/profile/', UserProfileAPIView.as_view(), name='user_profile'),
     path('user/settings/', UserSettingsAPIView.as_view(), name='user_settings'),
+    path('user/upload-profile-picture/', UploadProfilePictureAPIView.as_view(), name='upload_profile_picture'),
+    path('user/delete-account/', DeleteUserAPIView.as_view(), name='delete_user'),
 ]
