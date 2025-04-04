@@ -5,15 +5,21 @@ from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import UserProfile, UserSettings
-from .serializers import (RegisterSerializer, LoginSerializer, UserInfoSerializer,
-                         UserProfileSerializer, UserSettingsSerializer)
+from .models import Userinfo, UserProfile, UserSettings
+from .serializers import (
+    RegisterSerializer, 
+    LoginSerializer, 
+    UserInfoSerializer, 
+    UserProfileSerializer, 
+    UserSettingsSerializer
+)
 
 class RegisterAPIView(APIView):
     """
-    Register a new user account
+    Register a new user
     
     Creates a new user account with the provided information and returns authentication tokens.
+    Also automatically creates associated profile and settings records.
     
     ---
     ## Request Body
@@ -21,7 +27,7 @@ class RegisterAPIView(APIView):
     | Field | Type | Required | Description |
     | ----- | ---- | -------- | ----------- |
     | email | string (email) | Yes | User's email address (must be unique) |
-    | password | string | Yes | User's password (min length: 8 characters) |
+    | password | string | Yes | User's password |
     | first_name | string | Yes | User's first name |
     | last_name | string | Yes | User's last name |
     | phone | string | No | User's phone number |
@@ -141,11 +147,6 @@ class LoginAPIView(APIView):
         "error": "Invalid email or password"
     }
     ```
-    
-    ## Usage Notes
-    - The access token expires after 5 minutes
-    - Use the refresh token to obtain a new access token
-    - Include the access token in the Authorization header for protected endpoints: `Authorization: Bearer {access_token}`
     """
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -167,9 +168,9 @@ class LoginAPIView(APIView):
 
 class UserInfoAPIView(APIView):
     """
-    Retrieve authenticated user's basic information
+    Retrieve or update user basic information
     
-    Returns the basic registration information for the currently authenticated user.
+    Get or update the authenticated user's basic registration information.
     
     ---
     ## Authorization
@@ -177,9 +178,12 @@ class UserInfoAPIView(APIView):
     Requires a valid JWT access token in the Authorization header:
     `Authorization: Bearer {access_token}`
     
-    ## Responses
+    ## GET
+    Retrieves the user's basic information
     
-    ### 200 OK
+    ### Responses
+    
+    #### 200 OK
     User information retrieved successfully
     ```json
     {
@@ -196,11 +200,44 @@ class UserInfoAPIView(APIView):
     }
     ```
     
-    ### 401 Unauthorized
-    Missing or invalid token
+    ## PUT
+    Updates the user's basic information
+    
+    ### Request Body
+    
+    | Field | Type | Required | Description |
+    | ----- | ---- | -------- | ----------- |
+    | first_name | string | No | User's first name |
+    | last_name | string | No | User's last name |
+    | phone | string | No | User's phone number |
+    | date_of_birth | string (YYYY-MM-DD) | No | User's date of birth |
+    | gender | string (enum) | No | User's gender: "Male", "Female", or "Other" |
+    | country | string | No | User's country |
+    
+    ### Responses
+    
+    #### 200 OK
+    User information updated successfully
     ```json
     {
-        "detail": "Authentication credentials were not provided."
+        "id": 1,
+        "email": "user@example.com",
+        "first_name": "Updated First",
+        "last_name": "Updated Last",
+        "phone": "9876543210",
+        "date_of_birth": "1992-02-02",
+        "gender": "Female",
+        "country": "Canada",
+        "created_at": "2024-05-10T12:00:00Z",
+        "updated_at": "2024-05-10T13:00:00Z"
+    }
+    ```
+    
+    #### 400 Bad Request
+    Invalid input data
+    ```json
+    {
+        "gender": ["\"Invalid\" is not a valid choice."]
     }
     ```
     """
@@ -209,12 +246,19 @@ class UserInfoAPIView(APIView):
     def get(self, request):
         serializer = UserInfoSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def put(self, request):
+        serializer = UserInfoSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserProfileAPIView(APIView):
     """
-    Manage user profile
+    Retrieve or update user profile
     
-    Retrieve or update the authenticated user's profile information.
+    Get or update the authenticated user's extended profile information.
     
     ---
     ## Authorization
@@ -222,22 +266,17 @@ class UserProfileAPIView(APIView):
     Requires a valid JWT access token in the Authorization header:
     `Authorization: Bearer {access_token}`
     
-    ## Endpoints
+    ## GET
+    Retrieves the user's profile information
     
-    ### GET
-    Retrieve the user's profile
+    ### Responses
     
-    #### Responses
-    
-    ##### 200 OK
-    Profile retrieved successfully
+    #### 200 OK
+    User profile retrieved successfully
     ```json
     {
         "id": 1,
         "user_id": 1,
-        "email": "user@example.com",
-        "first_name": "John",
-        "last_name": "Doe",
         "bio": "Software developer with 5 years of experience",
         "profile_picture": "https://example.com/avatar.jpg",
         "facebook": "https://facebook.com/johndoe",
@@ -249,10 +288,10 @@ class UserProfileAPIView(APIView):
     }
     ```
     
-    ### PUT
-    Update the user's profile
+    ## PUT
+    Updates the user's profile information
     
-    #### Request Body
+    ### Request Body
     
     | Field | Type | Required | Description |
     | ----- | ---- | -------- | ----------- |
@@ -263,17 +302,14 @@ class UserProfileAPIView(APIView):
     | linkedin | string (URL) | No | User's LinkedIn profile URL |
     | instagram | string (URL) | No | User's Instagram profile URL |
     
-    #### Responses
+    ### Responses
     
-    ##### 200 OK
-    Profile updated successfully
+    #### 200 OK
+    User profile updated successfully
     ```json
     {
         "id": 1,
         "user_id": 1,
-        "email": "user@example.com",
-        "first_name": "John",
-        "last_name": "Doe",
         "bio": "Updated bio information",
         "profile_picture": "https://example.com/new-avatar.jpg",
         "facebook": "https://facebook.com/johndoe",
@@ -281,11 +317,11 @@ class UserProfileAPIView(APIView):
         "linkedin": "https://linkedin.com/in/johndoe",
         "instagram": "https://instagram.com/johndoe",
         "created_at": "2024-05-10T12:00:00Z",
-        "updated_at": "2024-05-10T12:30:00Z"
+        "updated_at": "2024-05-10T13:00:00Z"
     }
     ```
     
-    ##### 400 Bad Request
+    #### 400 Bad Request
     Invalid input data
     ```json
     {
@@ -311,9 +347,9 @@ class UserProfileAPIView(APIView):
 
 class UserSettingsAPIView(APIView):
     """
-    Manage user settings
+    Retrieve or update user settings
     
-    Retrieve or update the authenticated user's preference settings.
+    Get or update the authenticated user's preference settings.
     
     ---
     ## Authorization
@@ -321,15 +357,13 @@ class UserSettingsAPIView(APIView):
     Requires a valid JWT access token in the Authorization header:
     `Authorization: Bearer {access_token}`
     
-    ## Endpoints
+    ## GET
+    Retrieves the user's settings
     
-    ### GET
-    Retrieve the user's settings
+    ### Responses
     
-    #### Responses
-    
-    ##### 200 OK
-    Settings retrieved successfully
+    #### 200 OK
+    User settings retrieved successfully
     ```json
     {
         "id": 1,
@@ -342,10 +376,10 @@ class UserSettingsAPIView(APIView):
     }
     ```
     
-    ### PUT
-    Update the user's settings
+    ## PUT
+    Updates the user's settings
     
-    #### Request Body
+    ### Request Body
     
     | Field | Type | Required | Description |
     | ----- | ---- | -------- | ----------- |
@@ -353,10 +387,10 @@ class UserSettingsAPIView(APIView):
     | timezone | string | No | User's timezone (default: 'UTC') |
     | notification_email | boolean | No | Whether to receive email notifications (default: true) |
     
-    #### Responses
+    ### Responses
     
-    ##### 200 OK
-    Settings updated successfully
+    #### 200 OK
+    User settings updated successfully
     ```json
     {
         "id": 1,
@@ -365,11 +399,11 @@ class UserSettingsAPIView(APIView):
         "timezone": "Europe/Paris",
         "notification_email": false,
         "created_at": "2024-05-10T12:00:00Z",
-        "updated_at": "2024-05-10T12:30:00Z"
+        "updated_at": "2024-05-10T13:00:00Z"
     }
     ```
     
-    ##### 400 Bad Request
+    #### 400 Bad Request
     Invalid input data
     ```json
     {

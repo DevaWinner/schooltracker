@@ -99,7 +99,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = 'api.User'
+# Update AUTH_USER_MODEL to point to the lowercase model
+AUTH_USER_MODEL = 'api.userinfo'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
