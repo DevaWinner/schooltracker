@@ -3,7 +3,7 @@ services:
     name: schooltracker-backend
     env: python
     region: oregon
-    buildCommand: chmod +x build.sh && ./build.sh
+    buildCommand: bash ./build.sh
     startCommand: gunicorn schooltracker_backend.wsgi:application
     envVars:
       - key: PYTHON_VERSION
