@@ -42,8 +42,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Must be first!
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -151,15 +152,20 @@ if 'whitenoise.middleware.WhiteNoiseMiddleware' in MIDDLEWARE:
     security_index = MIDDLEWARE.index('django.middleware.security.SecurityMiddleware')
     MIDDLEWARE.insert(security_index + 1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
-# Update allowed hosts to include your specific Render URL
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'schooltracker-backend-b2gt.onrender.com', '.vercel.app', '.now.sh', '.onrender.com']
+# Update allowed hosts to include all Render domains
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'schooltracker-backend-b2gt.onrender.com', 'schooltracker-backend.onrender.com', '.vercel.app', '.now.sh', '.onrender.com']
 
-# Add CORS settings
+# Fix CORS configuration
 CORS_ALLOW_ALL_ORIGINS = True
-INSTALLED_APPS += ['corsheaders']
-MIDDLEWARE.insert(2, 'corsheaders.middleware.CorsMiddleware')
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "https://schooltracker-frontend.vercel.app",
+    "https://schooltracker.vercel.app",
+]
 
-# Better CORS configuration for Swagger UI
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
