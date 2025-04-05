@@ -20,6 +20,8 @@ export interface UserInfo {
 	notification_sms?: boolean;
 	notification_push?: boolean;
 	marketing_emails?: boolean;
+	created_at: string; // ISO datetime string
+	updated_at: string; // ISO datetime string
 }
 
 export interface UserProfile {
