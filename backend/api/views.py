@@ -507,7 +507,7 @@ class UploadProfilePictureAPIView(APIView):
                     status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
                 )
             
-            # Validate file type using file extension first (fallback method)
+            # Validate file type using file extension (primary method)
             _, file_extension = os.path.splitext(file.name)
             file_extension = file_extension.lower()
             
@@ -520,30 +520,27 @@ class UploadProfilePictureAPIView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Try to validate with python-magic, but don't fail if it doesn't work
+            # Additional validation using built-in Python methods
             try:
-                import magic
+                # Read a bit of the file to check if it's a valid image
                 file_content = file.read()
                 file.seek(0)  # Reset file pointer after reading
                 
-                mime = magic.Magic(mime=True)
-                file_type = mime.from_buffer(file_content)
+                # Try using the built-in imghdr module to detect image type
+                import imghdr
+                img_type = imghdr.what(None, file_content)
                 
-                allowed_types = ['image/jpeg', 'image/png', 'image/gif']
-                if file_type not in allowed_types:
-                    print(f"Invalid file type detected: {file_type}")
+                valid_img_types = ['jpeg', 'jpg', 'png', 'gif']
+                if img_type not in valid_img_types:
+                    print(f"Invalid image type detected: {img_type}")
                     return Response(
-                        {"error": f"Invalid file type detected: {file_type}. Only JPEG, PNG, and GIF are allowed."},
+                        {"error": "The file is not a valid image. Only JPEG, PNG, and GIF are allowed."},
                         status=status.HTTP_400_BAD_REQUEST
                     )
             except Exception as e:
-                # If python-magic fails, log the error but continue with the upload
+                # If imghdr validation fails, log the error but continue with the upload
                 # since we've already validated the file extension
-                print(f"Warning: python-magic validation failed: {str(e)}")
-                # Read the file content if it hasn't been read yet
-                if 'file_content' not in locals():
-                    file_content = file.read()
-                    file.seek(0)
+                print(f"Warning: image validation failed: {str(e)}")
             
             # Generate unique filename
             unique_filename = f"user_{request.user.id}_{uuid.uuid4()}{file_extension}"

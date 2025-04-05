@@ -20,8 +20,6 @@ services:
         value: .onrender.com
       - key: PYTHONUNBUFFERED
         value: 1
-      - key: MAGIC_USE_FALLBACK
-        value: "True"
       - key: SUPABASE_URL
         sync: false
       - key: SUPABASE_KEY

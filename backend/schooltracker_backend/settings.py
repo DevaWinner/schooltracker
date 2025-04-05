@@ -227,6 +227,3 @@ SUPABASE_BUCKET = config('SUPABASE_BUCKET', default='profile-pictures')
 
 # File upload settings
 MAX_UPLOAD_SIZE = 52428800  # 50 MB in bytes
-
-# Set MAGIC_USE_FALLBACK to True to use file extension validation instead of python-magic
-MAGIC_USE_FALLBACK = config('MAGIC_USE_FALLBACK', default=False, cast=bool)
