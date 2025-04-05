@@ -11,6 +11,9 @@ import { signUp, storeAuthTokens } from "../../api/auth";
 import { SignUpRequest } from "../../interfaces/auth";
 import { AuthContext } from "../../context/AuthContext";
 import { adaptUserDataToUserInfo } from "../../utils/userAdapter";
+import { countries } from "../../utils/countries";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function SignUpForm() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -31,6 +34,10 @@ export default function SignUpForm() {
 		setProfile,
 		setIsFirstLogin,
 	} = useContext(AuthContext);
+
+	const handleDateChange = (date: Date | null) => {
+		setDateOfBirth(date ? date.toISOString().split("T")[0] : "");
+	};
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -107,8 +114,8 @@ export default function SignUpForm() {
 	};
 
 	return (
-		<div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1 no-scrollbar">
-			<div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
+		<div className="flex flex-col flex-1 w-full lg:w-full">
+			<div className="flex flex-col justify-center flex-1 w-full max-w-2xl mx-auto">
 				<div>
 					<div className="mb-5 sm:mb-8">
 						<h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">
@@ -151,93 +158,125 @@ export default function SignUpForm() {
 										/>
 									</div>
 								</div>
-								<div>
-									<Label>
-										Email<span className="text-error-500">*</span>
-									</Label>
-									<Input
-										type="email"
-										id="email"
-										name="email"
-										placeholder="Enter your email"
-										value={email}
-										onChange={(e) => setEmail(e.target.value)}
-										required
-									/>
-								</div>
-								<div>
-									<Label>
-										Password<span className="text-error-500">*</span>
-									</Label>
-									<div className="relative">
+
+								<div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+									<div>
+										<Label>
+											Email<span className="text-error-500">*</span>
+										</Label>
 										<Input
-											placeholder="Enter your password"
-											type={showPassword ? "text" : "password"}
-											value={password}
-											onChange={(e) => setPassword(e.target.value)}
+											type="email"
+											id="email"
+											name="email"
+											placeholder="Enter your email"
+											value={email}
+											onChange={(e) => setEmail(e.target.value)}
 											required
 										/>
-										<span
-											onClick={() => setShowPassword(!showPassword)}
-											className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
-										>
-											{showPassword ? (
-												<EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-											) : (
-												<EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
-											)}
-										</span>
+									</div>
+									<div>
+										<Label>
+											Password<span className="text-error-500">*</span>
+										</Label>
+										<div className="relative">
+											<Input
+												placeholder="Enter your password"
+												type={showPassword ? "text" : "password"}
+												value={password}
+												onChange={(e) => setPassword(e.target.value)}
+												required
+											/>
+											<span
+												onClick={() => setShowPassword(!showPassword)}
+												className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2"
+											>
+												{showPassword ? (
+													<EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+												) : (
+													<EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />
+												)}
+											</span>
+										</div>
 									</div>
 								</div>
-								<div>
-									<Label>Phone</Label>
-									<PhoneInput
-										defaultCountry="US"
-										value={phone}
-										onChange={(phoneNumber) => setPhone(phoneNumber || "")}
-										className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3  dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
-									/>
+
+								<div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+									<div>
+										<Label>Phone</Label>
+										<PhoneInput
+											defaultCountry="US"
+											value={phone}
+											onChange={(phoneNumber) => setPhone(phoneNumber || "")}
+											className="h-11 w-full rounded-lg border appearance-none px-4 py-2.5 text-sm shadow-theme-xs placeholder:text-gray-400 focus:outline-hidden focus:ring-3  dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+										/>
+									</div>
+									<div>
+										<Label>Date of Birth</Label>
+										<div className="w-full">
+											<DatePicker
+												selected={dateOfBirth ? new Date(dateOfBirth) : null}
+												onChange={handleDateChange}
+												wrapperClassName="w-full"
+												className="w-full h-11 rounded-lg border border-gray-300 p-2 dark:bg-gray-900 dark:text-white/90"
+												dateFormat="yyyy-MM-dd"
+												placeholderText="Select your date of birth"
+												showMonthDropdown
+												showYearDropdown
+												dropdownMode="select"
+												yearDropdownItemNumber={100}
+												scrollableYearDropdown
+												customInput={
+													<Input
+														type="text"
+														id="dateOfBirth"
+														name="dateOfBirth"
+														className="w-full"
+													/>
+												}
+											/>
+										</div>
+									</div>
 								</div>
-								<div>
-									<Label>Date of Birth</Label>
-									<Input
-										type="date"
-										id="dateOfBirth"
-										name="dateOfBirth"
-										value={dateOfBirth}
-										onChange={(e) => setDateOfBirth(e.target.value)}
-									/>
+
+								<div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+									<div>
+										<Label>Gender</Label>
+										<select
+											id="gender"
+											name="gender"
+											value={gender}
+											onChange={(e) => setGender(e.target.value)}
+											className="w-full h-11 rounded-lg border border-gray-300 p-2 dark:bg-gray-900 dark:text-white/90"
+										>
+											<option value="">Select your gender</option>
+											<option value="Male">Male</option>
+											<option value="Female">Female</option>
+											<option value="Other">Other</option>
+										</select>
+									</div>
+									<div>
+										<Label>
+											Country<span className="text-error-500">*</span>
+										</Label>
+										<select
+											id="country"
+											name="country"
+											value={country}
+											onChange={(e) => setCountry(e.target.value)}
+											className="w-full h-11 rounded-lg border border-gray-300 p-2 dark:bg-gray-900 dark:text-white/90"
+											required
+										>
+											<option value="">Select your country</option>
+											{countries.map((country) => (
+												<option key={country.code} value={country.name}>
+													{country.name}
+												</option>
+											))}
+										</select>
+									</div>
 								</div>
-								<div>
-									<Label>Gender</Label>
-									<select
-										id="gender"
-										name="gender"
-										value={gender}
-										onChange={(e) => setGender(e.target.value)}
-										className="w-full rounded-lg border border-gray-300 p-2"
-									>
-										<option value="">Select your gender</option>
-										<option value="Male">Male</option>
-										<option value="Female">Female</option>
-										<option value="Other">Other</option>
-									</select>
-								</div>
-								<div>
-									<Label>
-										Country<span className="text-error-500">*</span>
-									</Label>
-									<Input
-										type="text"
-										id="country"
-										name="country"
-										placeholder="Enter your country"
-										value={country}
-										onChange={(e) => setCountry(e.target.value)}
-										required
-									/>
-								</div>
-								<div className="flex items-center gap-3">
+
+								<div className="flex items-center gap-3 mt-8">
 									<Checkbox
 										className="w-5 h-5"
 										checked={isChecked}
@@ -254,11 +293,11 @@ export default function SignUpForm() {
 										</span>
 									</p>
 								</div>
-								<div>
+								<div className="flex items-center justify-center ">
 									<button
 										type="submit"
 										disabled={isLoading}
-										className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:bg-gray-300"
+										className="flex items-center justify-center w-75 px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600 disabled:bg-gray-300"
 									>
 										{isLoading ? "Creating Account..." : "Sign Up"}
 									</button>

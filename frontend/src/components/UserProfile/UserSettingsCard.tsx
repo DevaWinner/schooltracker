@@ -7,12 +7,23 @@ import { getLanguageByCode } from "../../utils/languages";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
-export default function UserSettingsCard({ userSettings }: ComponentCardProps) {
+// Update the props to include refreshData function
+interface ExtendedCardProps extends ComponentCardProps {
+	refreshData?: () => void;
+}
+
+export default function UserSettingsCard({
+	userSettings,
+	refreshData,
+}: ExtendedCardProps) {
 	const { isOpen, openModal, closeModal } = useModal();
 	const { profile } = useContext(AuthContext);
 
 	const handleSave = () => {
-		// Handle successful update, modal will close automatically
+		// Call the refresh function when modal is saved
+		if (refreshData) {
+			refreshData();
+		}
 		closeModal();
 	};
 

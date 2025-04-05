@@ -76,6 +76,43 @@ export const updateUserProfile = async (
 	return response.data;
 };
 
+// Upload profile picture to Supabase Storage
+export const uploadProfilePicture = async (
+	token: string,
+	file: File
+): Promise<{ profile_picture: string }> => {
+	// Create form data for file upload
+	const formData = new FormData();
+	formData.append("profile_picture", file);
+
+	try {
+		// Special headers for multipart/form-data
+		const response = await axiosInstance.post<{ profile_picture: string }>(
+			"/user/upload-profile-picture/",
+			formData,
+			{
+				headers: {
+					Authorization: `Bearer ${token}`,
+					"Content-Type": "multipart/form-data",
+				},
+			}
+		);
+		return response.data;
+	} catch (error: any) {
+		// Extract detailed error message if available
+		let errorMessage = "Failed to upload profile picture";
+
+		if (error.response?.data?.error) {
+			errorMessage = error.response.data.error;
+		} else if (error.message) {
+			errorMessage = error.message;
+		}
+
+		const enhancedError = new Error(errorMessage);
+		throw enhancedError;
+	}
+};
+
 // Settings-specific interfaces and functions
 export interface SettingsUpdateRequest {
 	language?: string;

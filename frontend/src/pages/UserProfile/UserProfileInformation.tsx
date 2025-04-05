@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { getProfile, getUserProfile, getUserSettings } from "../../api/profile";
 import { getAccessToken } from "../../api/auth";
@@ -21,89 +21,98 @@ export default function UserProfiles() {
 		null
 	);
 	const [userInfoData, setUserInfoData] = useState<UserInfo | null>(null);
+	// Add a refresh trigger state
+	const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+	// Function to force refresh of profile data
+	const refreshProfileData = useCallback(() => {
+		setRefreshTrigger((prev) => prev + 1);
+	}, []);
 
 	// Main data fetching logic
-	useEffect(() => {
-		const fetchAllUserData = async () => {
-			// Get token from storage if not in context
-			const token = accessToken || getAccessToken();
+	const fetchAllUserData = useCallback(async () => {
+		// Get token from storage if not in context
+		const token = accessToken || getAccessToken();
 
-			if (!token) {
-				setLoading(false);
-				return;
+		if (!token) {
+			setLoading(false);
+			return;
+		}
+
+		setLoading(true);
+		try {
+			// Fetch all data in parallel
+			const [basicInfoResponse, profileResponse, settingsResponse] =
+				await Promise.all([
+					getProfile(token),
+					getUserProfile(token).catch(() => null),
+					getUserSettings(token).catch(() => null),
+				]);
+
+			// Update state with fetched data
+			setUserInfoData(basicInfoResponse);
+			if (profileResponse) {
+				setUserProfileData(profileResponse);
+			} else {
+				// Create default profile from basic info
+				setUserProfileData({
+					id: basicInfoResponse.id,
+					user_id: basicInfoResponse.id,
+					bio: basicInfoResponse.bio || "",
+					profile_picture: basicInfoResponse.profile_picture || "",
+					facebook: basicInfoResponse.facebook || "",
+					twitter: basicInfoResponse.twitter || "",
+					linkedin: basicInfoResponse.linkedin || "",
+					instagram: basicInfoResponse.instagram || "",
+				});
 			}
 
-			try {
-				// Fetch all data in parallel
-				const [basicInfoResponse, profileResponse, settingsResponse] =
-					await Promise.all([
-						getProfile(token),
-						getUserProfile(token).catch(() => null),
-						getUserSettings(token).catch(() => null),
-					]);
-
-				// Update state with fetched data
-				setUserInfoData(basicInfoResponse);
-				if (profileResponse) {
-					setUserProfileData(profileResponse);
-				} else {
-					// Create default profile from basic info
-					setUserProfileData({
-						id: basicInfoResponse.id,
-						user_id: basicInfoResponse.id,
-						bio: basicInfoResponse.bio || "",
-						profile_picture: basicInfoResponse.profile_picture || "",
-						facebook: basicInfoResponse.facebook || "",
-						twitter: basicInfoResponse.twitter || "",
-						linkedin: basicInfoResponse.linkedin || "",
-						instagram: basicInfoResponse.instagram || "",
-					});
-				}
-
-				if (settingsResponse) {
-					setUserSettingsData(settingsResponse);
-				} else {
-					// Create default settings from basic info
-					setUserSettingsData({
-						id: basicInfoResponse.id,
-						user_id: basicInfoResponse.id,
-						language: basicInfoResponse.language || "en",
-						timezone: basicInfoResponse.timezone || "UTC",
-						notification_email: basicInfoResponse.notification_email || false,
-						notification_sms: basicInfoResponse.notification_sms || false,
-						notification_push: basicInfoResponse.notification_push || false,
-						marketing_emails: basicInfoResponse.marketing_emails || false,
-					});
-				}
-
-				// Update global profile
-				setProfile(basicInfoResponse);
-			} catch (error: any) {
-				// Improved error handling
-				let errorMessage = "Failed to load profile. Please try again.";
-
-				if (error.response?.data) {
-					if (typeof error.response.data === "string") {
-						errorMessage = error.response.data;
-					} else if (error.response.data.message) {
-						errorMessage = error.response.data.message;
-					} else if (error.response.data.detail) {
-						errorMessage = error.response.data.detail;
-					} else if (error.response.data.error) {
-						errorMessage = error.response.data.error;
-					}
-				} else if (error.message) {
-					errorMessage = error.message;
-				}
-
-				toast.error(errorMessage);
-			} finally {
-				setLoading(false);
+			if (settingsResponse) {
+				setUserSettingsData(settingsResponse);
+			} else {
+				// Create default settings from basic info
+				setUserSettingsData({
+					id: basicInfoResponse.id,
+					user_id: basicInfoResponse.id,
+					language: basicInfoResponse.language || "en",
+					timezone: basicInfoResponse.timezone || "UTC",
+					notification_email: basicInfoResponse.notification_email || false,
+					notification_sms: basicInfoResponse.notification_sms || false,
+					notification_push: basicInfoResponse.notification_push || false,
+					marketing_emails: basicInfoResponse.marketing_emails || false,
+				});
 			}
-		};
 
-		fetchAllUserData();
+			// Update global profile
+			setProfile(basicInfoResponse);
+		} catch (error: any) {
+			// Error handling
+			let errorMessage = "Failed to load profile. Please try again.";
+
+			if (error.response?.data) {
+				if (typeof error.response.data === "string") {
+					errorMessage = error.response.data;
+				} else if (error.response.data.message) {
+					errorMessage = error.response.data.message;
+				} else if (error.response.data.detail) {
+					errorMessage = error.response.data.detail;
+				} else if (error.response.data.error) {
+					errorMessage = error.response.data.error;
+				}
+			} else if (error.message) {
+				errorMessage = error.message;
+			}
+
+			toast.error(errorMessage);
+		} finally {
+			setLoading(false);
+		}
 	}, [accessToken, setProfile]);
+
+	// Fetch data on mount and when refreshTrigger changes
+	useEffect(() => {
+		fetchAllUserData();
+	}, [fetchAllUserData, refreshTrigger]); // Add refreshTrigger as dependency
 
 	// Display a welcome message for first-time users
 	useEffect(() => {
@@ -163,9 +172,16 @@ export default function UserProfiles() {
 							<UserProfileCard
 								userProfile={displayProfileData}
 								userInfo={displayProfile}
+								refreshData={refreshProfileData}
 							/>
-							<UserInfoCard userInfo={displayProfile} />
-							<UserSettingsCard userSettings={displaySettingsData} />
+							<UserInfoCard
+								userInfo={displayProfile}
+								refreshData={refreshProfileData}
+							/>
+							<UserSettingsCard
+								userSettings={displaySettingsData}
+								refreshData={refreshProfileData}
+							/>
 						</>
 					)}
 				</div>

@@ -4,6 +4,7 @@ import { AuthContext } from "../../../context/AuthContext";
 import { updateUserSettings } from "../../../api/profile";
 import Button from "../../ui/button/Button";
 import Label from "../../form/Label";
+import Switch from "../../form/input/Switch";
 import { timezones } from "../../../utils/timezones";
 import { languages } from "../../../utils/languages";
 import { ComponentCardProps } from "../../../types/user";
@@ -19,10 +20,14 @@ export default function UserSettingsModal({
 		language: userSettings?.language || "en",
 		timezone: userSettings?.timezone || "UTC",
 		notification_email: userSettings?.notification_email || false,
-		notification_sms: userSettings?.notification_sms || false,
-		notification_push: userSettings?.notification_push || false,
-		marketing_emails: userSettings?.marketing_emails || false,
 	});
+
+	const handleNotificationChange = (checked: boolean) => {
+		setFormData((prev) => ({
+			...prev,
+			notification_email: checked,
+		}));
+	};
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
@@ -38,9 +43,6 @@ export default function UserSettingsModal({
 				language: formData.language,
 				timezone: formData.timezone,
 				notification_email: formData.notification_email,
-				notification_sms: formData.notification_sms,
-				notification_push: formData.notification_push,
-				marketing_emails: formData.marketing_emails,
 			};
 
 			// Send update request directly to settings API
@@ -105,7 +107,7 @@ export default function UserSettingsModal({
 					<div>
 						<Label>Language</Label>
 						<select
-							className="w-full rounded-lg border border-gray-300 p-2"
+							className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
 							value={formData.language}
 							onChange={(e) =>
 								setFormData({ ...formData, language: e.target.value })
@@ -121,7 +123,7 @@ export default function UserSettingsModal({
 					<div>
 						<Label>Timezone</Label>
 						<select
-							className="w-full rounded-lg border border-gray-300 p-2"
+							className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
 							value={formData.timezone}
 							onChange={(e) =>
 								setFormData({ ...formData, timezone: e.target.value })
@@ -136,63 +138,13 @@ export default function UserSettingsModal({
 					</div>
 					<div className="col-span-2">
 						<Label>Notifications</Label>
-						<div className="space-y-2">
-							<label className="flex items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={formData.notification_email}
-									onChange={(e) =>
-										setFormData({
-											...formData,
-											notification_email: e.target.checked,
-										})
-									}
-									className="rounded border-gray-300"
-								/>
-								<span>Email Notifications</span>
-							</label>
-							<label className="flex items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={formData.notification_sms}
-									onChange={(e) =>
-										setFormData({
-											...formData,
-											notification_sms: e.target.checked,
-										})
-									}
-									className="rounded border-gray-300"
-								/>
-								<span>SMS Notifications</span>
-							</label>
-							<label className="flex items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={formData.notification_push}
-									onChange={(e) =>
-										setFormData({
-											...formData,
-											notification_push: e.target.checked,
-										})
-									}
-									className="rounded border-gray-300"
-								/>
-								<span>Push Notifications</span>
-							</label>
-							<label className="flex items-center space-x-2">
-								<input
-									type="checkbox"
-									checked={formData.marketing_emails}
-									onChange={(e) =>
-										setFormData({
-											...formData,
-											marketing_emails: e.target.checked,
-										})
-									}
-									className="rounded border-gray-300"
-								/>
-								<span>Marketing Emails</span>
-							</label>
+						<div className="mt-2">
+							<Switch
+								label="Email Notifications"
+								defaultChecked={formData.notification_email}
+								onChange={handleNotificationChange}
+								color="blue"
+							/>
 						</div>
 					</div>
 				</div>

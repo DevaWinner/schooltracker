@@ -51,4 +51,5 @@ export interface ComponentCardProps {
 	userSettings?: UserSettings | null;
 	onSave?: () => void;
 	onClose?: () => void;
+	refreshData?: () => void; // Add this line
 }

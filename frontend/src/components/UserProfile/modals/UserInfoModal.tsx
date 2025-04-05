@@ -6,6 +6,9 @@ import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import { ComponentCardProps } from "../../../types/user";
+import { countries } from "../../../utils/countries";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 export default function UserInfoModal({
 	userInfo,
@@ -29,6 +32,13 @@ export default function UserInfoModal({
 	) => {
 		const { name, value } = e.target;
 		setFormData((prev) => ({ ...prev, [name]: value }));
+	};
+
+	const handleDateChange = (date: Date | null) => {
+		setFormData((prev) => ({
+			...prev,
+			date_of_birth: date ? date.toISOString().split("T")[0] : "",
+		}));
 	};
 
 	const handleSubmit = async (e: FormEvent) => {
@@ -141,12 +151,28 @@ export default function UserInfoModal({
 					</div>
 					<div>
 						<Label>Date of Birth</Label>
-						<Input
-							type="date"
-							name="date_of_birth"
-							value={formData.date_of_birth}
-							onChange={handleChange}
-						/>
+						<div className="w-full">
+							<DatePicker
+								selected={
+									formData.date_of_birth
+										? new Date(formData.date_of_birth)
+										: null
+								}
+								onChange={handleDateChange}
+								className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
+								wrapperClassName="w-full"
+								dateFormat="yyyy-MM-dd"
+								placeholderText="Select date"
+								showMonthDropdown
+								showYearDropdown
+								dropdownMode="select"
+								yearDropdownItemNumber={100}
+								scrollableYearDropdown
+								customInput={
+									<Input type="text" name="date_of_birth" className="w-full" />
+								}
+							/>
+						</div>
 					</div>
 					<div>
 						<Label>Gender</Label>
@@ -154,7 +180,7 @@ export default function UserInfoModal({
 							name="gender"
 							value={formData.gender}
 							onChange={handleChange}
-							className="w-full rounded-lg border border-gray-300 p-2"
+							className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
 						>
 							<option value="">Select gender</option>
 							<option value="Male">Male</option>
@@ -164,12 +190,19 @@ export default function UserInfoModal({
 					</div>
 					<div className="lg:col-span-2">
 						<Label>Country</Label>
-						<Input
-							type="text"
+						<select
 							name="country"
 							value={formData.country}
 							onChange={handleChange}
-						/>
+							className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
+						>
+							<option value="">Select country</option>
+							{countries.map((country) => (
+								<option key={country.code} value={country.name}>
+									{country.name}
+								</option>
+							))}
+						</select>
 					</div>
 				</div>
 				<div className="flex items-center gap-3 mt-6 lg:justify-end">
