@@ -4,29 +4,14 @@ import { Application } from "../../types/applications"
 export const tableData: Application[] = [
   {
     id: 1,
-    institution: "Nondescript College",
-    tag: "Community College",
-    website: "Agency Website",
-    scholarship: true,
-    status: "Active",
-    deadline: "2025-04-12"
-  },
-  {
-    id: 2,
-    institution: "Nondescript University",
-    tag: "University",
-    website: "Agency Website",
-    scholarship: true,
-    status: "Cancel",
-    deadline: "2025-03-24"
-  },
-  {
-    id: 3,
-    institution: "Other University",
-    tag: "University",
-    website: "Agency Website",
-    scholarship: false,
-    status: "Pending",
-    deadline: "2025-04-12"
+    user_id: 1234,
+    program_id: 1234,
+    status: "In Progress",
+    start_date: "2025-04-12",
+    submitted_date: "2025-04-12",
+    decision_date: "2025-04-12",
+    notes: "Note on the application.",
+    created_at: "1743812214",
+    updated_at: "1743812214"
   }
 ];

@@ -17,13 +17,6 @@ export default function ApplicationCard({ data }: data) {
     console.log("Saving addition...");
     closeModal();
   };
-  const hasScholarship = (application: Application) => {
-    if (application.scholarship) {
-      return "Has Scholarship";
-    } else {
-      return "No Scholarship";
-    }
-  };
   // This method will be replaced with a delete method interacting
   // with the official database
   const deleteItem = () => {
@@ -34,31 +27,25 @@ export default function ApplicationCard({ data }: data) {
     <>
       <TableRow key={data.id}>
         <TableCell className="px-5 py-4 sm:px-6 text-start">
-          <div className="flex items-center gap-3">
-            <div>
-              <span className="block font-medium text-gray-800 text-theme-sm dark:text-white/90">
-                {data.institution}
-              </span>
-              <span className="block text-gray-500 text-theme-xs dark:text-gray-400">
-                {data.tag}
-              </span>
-            </div>
-          </div>
+          {data.program_id}
         </TableCell>
         <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-          {data.website}
-        </TableCell>
-        <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
-          <div className="flex -space-x-2">{hasScholarship(data)}</div>
+          {data.start_date}
         </TableCell>
         <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
           <Badge
             size="sm"
             color={
-              data.status === "Active"
-                ? "success"
-                : data.status === "Pending"
+              data.status === "Draft"
+                ? "error"
+                : data.status === "In Progress"
                 ? "warning"
+                : data.status === "Submitted"
+                ? "primary"
+                : data.status === "Interview"
+                ? "info"
+                : data.status === "Accepted"
+                ? "success"
                 : "error"
             }
           >
@@ -66,7 +53,10 @@ export default function ApplicationCard({ data }: data) {
           </Badge>
         </TableCell>
         <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
-          {data.deadline}
+          {data.submitted_date}
+        </TableCell>
+        <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+          {data.decision_date}
         </TableCell>
         <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
           <Button size="sm" variant="outline" onClick={openModal}>

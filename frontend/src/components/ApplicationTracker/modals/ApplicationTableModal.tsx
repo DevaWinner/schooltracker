@@ -16,12 +16,12 @@ export default function ApplicationTableModal({
   onClose,
 }: ApplicationTableModalProps) {
   const [formData, setFormData] = useState({
-    institution: "",
-    tag: "",
-    website: "",
-    scholarship: false,
-    status: "Pending",
-    deadline: "",
+    program_id: data.program_id,
+    status: data.status,
+    start_date: data.start_date,
+    submitted_date: data.submitted_date,
+    decision_date: data.decision_date,
+    notes: data.notes,
   });
   // Updates values when the form is updated
   const changeForm = (
@@ -52,61 +52,74 @@ export default function ApplicationTableModal({
       </div>
 
       <form onSubmit={submitForm} className="flex flex-col">
-        <div className="custom-scrollbar h-[350px] overflow-y-auto px-2 pb-3">
+        <div className="custom-scrollbar h-[300px] overflow-y-auto px-2 pb-3">
           <div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
             <div>
-              <Label>Institution Name</Label>
+              <Label>Program</Label>
               <Input
                 type="text"
-                id="institution"
-                name="institution"
-                placeholder="Enter institution name"
-                value={formData.institution}
+                id="program_id"
+                name="program_id"
+                placeholder="Will be replaced or removed on integration"
+                value={formData.program_id}
                 onChange={changeForm}
               />
             </div>
             <div>
-              <Label>Institution Type</Label>
-              <Input
-                type="text"
-                id="tag"
-                name="tag"
-                placeholder="Community college, university, etc."
-                value={formData.tag}
-                onChange={changeForm}
-              />
-            </div>
-            <div>
-              <Label>Website</Label>
-              <Input
-                type="text"
-                id="website"
-                name="website"
-                placeholder="Enter institution site link"
-                value={formData.website}
-                onChange={changeForm}
-              />
-            </div>
-            <div>
-              <Label>Scholarship</Label>
+              <Label>Status</Label>
               <select
                 className="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                id="scholarship"
-                name="scholarship"
+                id="status"
+                name="status"
                 onChange={changeForm}
               >
-                <option value="false">False</option>
-                <option value="true">True</option>
+                <option value="Draft">Draft</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Submitted">Submitted</option>
+                <option value="Interview">In Progress</option>
+                <option value="Accepted">Accepted</option>
+                <option value="Rejected">Rejected</option>
               </select>
             </div>
             <div>
-              <Label>Deadline</Label>
+              <Label>Start Date</Label>
               <Input
                 type="date"
-                id="deadline"
-                name="deadline"
+                id="start_date"
+                name="start_date"
+                value={formData.start_date}
                 onChange={changeForm}
-                value={formData.deadline}
+              />
+            </div>
+            <div>
+              <Label>Submitted Date</Label>
+              <Input
+                type="date"
+                id="submitted_date"
+                name="submitted_date"
+                value={formData.submitted_date}
+                onChange={changeForm}
+              />
+            </div>
+            <div>
+              <Label>Decision Date</Label>
+              <Input
+                type="date"
+                id="decision_date"
+                name="decision_date"
+                value={formData.decision_date}
+                onChange={changeForm}
+              />
+            </div>
+            <div>
+              <Label>Notes</Label>
+              <Input
+                type="text"
+                id="notes"
+                name="notes"
+                placeholder="Notes:"
+                value={formData.notes}
+                onChange={changeForm}
               />
             </div>
           </div>
@@ -116,7 +129,7 @@ export default function ApplicationTableModal({
             Cancel
           </Button>
           <Button size="sm" type="submit">
-            Add
+            Save
           </Button>
         </div>
       </form>
