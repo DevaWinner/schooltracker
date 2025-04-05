@@ -222,7 +222,8 @@ if RENDER_EXTERNAL_HOSTNAME:
 
 # Supabase configuration
 SUPABASE_URL = config('SUPABASE_URL', default='')
-SUPABASE_KEY = config('SUPABASE_KEY', default='')
+SUPABASE_KEY = config('SUPABASE_KEY', default='')  # Public anon key
+SUPABASE_SERVICE_KEY = config('SUPABASE_SERVICE_KEY', default='')  # Optional service key with more permissions
 SUPABASE_BUCKET = config('SUPABASE_BUCKET', default='profile-pictures')
 
 # File upload settings

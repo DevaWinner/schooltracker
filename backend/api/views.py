@@ -542,14 +542,21 @@ class UploadProfilePictureAPIView(APIView):
                 # since we've already validated the file extension
                 print(f"Warning: image validation failed: {str(e)}")
             
-            # Generate unique filename
-            unique_filename = f"user_{request.user.id}_{uuid.uuid4()}{file_extension}"
+            # Generate unique filename with user folder structure for RLS
+            user_id = request.user.id
+            unique_filename = f"{user_id}/profile{uuid.uuid4()}{file_extension}"
             print(f"Generated unique filename: {unique_filename}")
             
             try:
                 # Initialize Supabase client
                 print(f"Initializing Supabase client with URL: {settings.SUPABASE_URL}")
-                supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+                
+                # Try with service key if available
+                service_key = getattr(settings, 'SUPABASE_SERVICE_KEY', None)
+                if service_key:
+                    supabase = create_client(settings.SUPABASE_URL, service_key)
+                else:
+                    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
                 
                 # Get the user's profile
                 profile = request.user.profile
@@ -558,12 +565,13 @@ class UploadProfilePictureAPIView(APIView):
                 if profile.profile_picture:
                     try:
                         # Extract filename from the URL
-                        current_filename = profile.profile_picture.split('/')[-1]
+                        current_path = profile.profile_picture.split('/public/')[1] if '/public/' in profile.profile_picture else None
                         
-                        # Delete the file from Supabase
-                        print(f"Attempting to delete previous profile picture: {current_filename}")
-                        supabase.storage.from_(settings.SUPABASE_BUCKET).remove([current_filename])
-                        print(f"Deleted previous profile picture: {current_filename}")
+                        if current_path:
+                            # Delete the file from Supabase
+                            print(f"Attempting to delete previous profile picture: {current_path}")
+                            supabase.storage.from_(settings.SUPABASE_BUCKET).remove([current_path])
+                            print(f"Deleted previous profile picture: {current_path}")
                     except Exception as e:
                         # Log the error but continue with the upload
                         print(f"Error deleting previous profile picture: {str(e)}")
@@ -583,11 +591,26 @@ class UploadProfilePictureAPIView(APIView):
                 
                 # Upload file to Supabase Storage
                 print(f"Uploading file to bucket: {settings.SUPABASE_BUCKET}")
-                result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
-                    path=unique_filename,
-                    file=file_content,
-                    file_options={"contentType": content_type}  # Note the correct casing of contentType
-                )
+                try:
+                    result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+                        path=unique_filename,
+                        file=file_content,
+                        file_options={"contentType": content_type}
+                    )
+                    
+                    # Add a small delay to ensure the file is available
+                    import time
+                    time.sleep(1)
+                    
+                except Exception as first_err:
+                    print(f"First upload attempt failed: {str(first_err)}")
+                    # Try with upsert flag (overwrite if exists)
+                    result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+                        path=unique_filename,
+                        file=file_content,
+                        file_options={"contentType": content_type},
+                        file_options_extra={"upsert": "true"}
+                    )
                 
                 # Get public URL for the uploaded file
                 file_url = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(unique_filename)
