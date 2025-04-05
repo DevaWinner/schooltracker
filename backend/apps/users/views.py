@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-from .supabase_config import supabase_signup, supabase_signin,signin_with_google,upload_users_documents
+from .supabase_config import supabase_signup, supabase_signin,signin_with_google,upload_file_documents
 from supabase import AuthApiError
 
 from .serializers import UserProfileSerializer
@@ -164,27 +164,20 @@ class UserProfileView(APIView):
 
 # View for the users documents inserted into the documents table 
 @csrf_exempt
-def upload_users_documents(request):
-    if request.method == 'POST' and request.FILES.get('document'):
-        uploaded_file = request.FILES['document']
-        
-        result = upload_users_documents(
-            file=uploaded_file,
-            document_type=request.POST.get('document_type', 'unknown'),
-            file_name=uploaded_file.name,
-            folder=request.POST.get('folder', 'documents')
-        )
-        
-        if result['status'] == 'success':
-            return JsonResponse({
-                'success': True,
-                'document_id': result['document_id'],
-                'file_url': result['file_url']
-            })
-        else:
-            return JsonResponse({
-                'success': False,
-                'error': result['message']
-            }, status=400)
+def upload_view_documents(request):
+    if request.method != 'POST':
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
     
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+    if 'file' not in request.FILES:
+        return JsonResponse({"error": "No file provided"}, status=400)
+    
+    try:
+        # Extract document_type from POST data
+        document_type = request.POST.get("document_type", "unspecified")
+        
+        # Upload file
+        result = upload_file_documents(request.FILES['file'], document_type=document_type)
+        return JsonResponse(result, status=201)
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
