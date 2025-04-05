@@ -23,3 +23,28 @@ class SchoolListCreateAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class SchoolDetailAPIView(APIView):
+    def get_object(self, pk):
+        try:
+            return School.objects.get(pk=pk)
+        except School.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        school = self.get_object(pk)
+        if not school:
+            return Response({'detail': 'School not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = SchoolSerializer(school)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        school = self.get_object(pk)
+        if not school:
+            return Response({'detail': 'School not found'}, status=status.HTTP_404_NOT_FOUND)
+        serializer = SchoolSerializer(school, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
