@@ -5,5 +5,6 @@ from apps.schools import views
 app_name = 'schools'
 
 urlpatterns = [
-    path('', views.schools, name='schools-directory'),
+    path('', views.SchoolListCreateAPIView.as_view(), name='schools-directory'),
+    path('<int:pk>/', views.SchoolDetailAPIView.as_view(), name='school-detail'),
 ]
