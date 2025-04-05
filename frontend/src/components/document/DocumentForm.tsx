@@ -3,8 +3,9 @@ import Input from "../form/input/InputField";
 import FileInput from "../form/input/FileInput";
 import Label from "../form/Label";
 import { useState } from "react";
+import { ApplicationProps } from "../../types/applications";
 
-export default function DocumentForm() {
+export default function DocumentForm({ data }: ApplicationProps) {
   const [formData, setFormData] = useState({
     application_id: "",
     document_type: "",
@@ -29,6 +30,13 @@ export default function DocumentForm() {
       console.error("Network error:", error);
     }
   };*/
+  const options = () => {
+    if (data) {
+      return data.map((data) => <option value={data.id}>{data.notes}</option>);
+    } else {
+      return <option value="">No Applications</option>;
+    }
+  };
 
   return (
     <div className="no-scrollbar relative w-full max-w-[700px] overflow-y-auto rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-11">
@@ -40,14 +48,14 @@ export default function DocumentForm() {
             </div>
             <div>
               <Label>Application</Label>
-              <Input
-                type="text"
-                id="application"
-                name="application"
-                placeholder="Will be replaced or removed on integration"
-                value={formData.application_id}
+              <select
+                className="h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 pr-11 text-sm shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                id="application_id"
+                name="application_id"
                 onChange={changeForm}
-              />
+              >
+                {options()}
+              </select>
             </div>
             <div>
               <Label>Document Type</Label>

@@ -1,3 +1,4 @@
+import { tableData } from "../../components/ApplicationTracker/placeholderData";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageMeta from "../../components/common/PageMeta";
 import DocumentForm from "../../components/document/DocumentForm";
@@ -11,7 +12,7 @@ export default function DocumentUpload() {
       />
       <div className="text-4xl text-gray-900 dark:text-gray-100">
         <ComponentCard title="Upload Documents">
-          <DocumentForm />
+          <DocumentForm data={tableData} />
         </ComponentCard>
       </div>
     </>
