@@ -1,101 +1,57 @@
-export interface AcademicBackground {
-	institution_name: string;
-	degree: string;
-	field_of_study: string;
-	start_date: string;
-	end_date: string;
-	gpa: string;
-	description: string;
+export interface UserInfo {
+	id: number;
+	first_name: string;
+	last_name: string;
+	email: string;
+	phone?: string;
+	date_of_birth?: string; // ISO date string (YYYY-MM-DD)
+	gender?: "Male" | "Female" | "Other";
+	country: string;
+	// Include profile and settings fields as they're returned together from API
+	bio?: string;
+	profile_picture?: string;
+	facebook?: string;
+	twitter?: string;
+	linkedin?: string;
+	instagram?: string;
+	language?: string;
+	timezone?: string;
+	notification_email?: boolean;
+	notification_sms?: boolean;
+	notification_push?: boolean;
+	marketing_emails?: boolean;
+	created_at: string; // ISO datetime string
+	updated_at: string; // ISO datetime string
 }
 
-export interface UserAddress {
-	address: string;
-	city: string;
-	state: string;
-	country: string;
-	zip: string;
+export interface UserProfile {
+	id: number;
+	user_id: number;
+	bio?: string;
+	profile_picture?: string;
+	facebook?: string;
+	twitter?: string;
+	linkedin?: string;
+	instagram?: string;
 }
 
 export interface UserSettings {
-	language: string;
-	timezone: string;
-	notification_email: boolean;
-	notification_sms: boolean;
-	notification_push: boolean;
-	marketing_emails: boolean;
-}
-
-export interface UserMeta {
-	first_name: string;
-	last_name: string;
-	role: string;
-	profile_picture: string;
-	city: string;
-	state: string;
-	facebook: string;
-	twitter: string;
-	linkedin: string;
-	instagram: string;
-	email: string;
-	phone: string;
-	date_of_birth: string;
-	gender: string;
-	bio: string;
-	address: string;
-	country: string;
-	zip: string;
-	language: string;
-	timezone: string;
-	notification_email: boolean;
-	notification_sms: boolean;
-	notification_push: boolean;
-	marketing_emails: boolean;
-}
-
-export interface UserInfo extends UserMeta {
 	id: number;
-	username: string;
-	status: string;
-	is_active: boolean;
-	is_verified: boolean;
-	last_login: string;
-	created_at: string;
-	updated_at: string;
-	academic_background: AcademicBackground[];
+	user_id: number;
+	language: string; // e.g., "en"
+	timezone: string; // e.g., "UTC"
+	notification_email: boolean;
+	notification_sms?: boolean;
+	notification_push?: boolean;
+	marketing_emails?: boolean;
 }
 
-export interface UserAddressModalProps {
-	userAddress: UserAddress;
-	selectedCountry: string;
-	onSave: () => void;
-	onClose: () => void;
-	onCountryChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-}
-
-export interface UserBackgroundModalProps {
-	userInfo: UserInfo;
-	onSave: () => void;
-	onClose: () => void;
-}
-
-export interface UserInfoModalProps {
-	userInfo: UserInfo;
-	onSave: () => void;
-	onClose: () => void;
-}
-
-export interface UserMetaModalProps {
-	userInfo: UserInfo;
-	onSave: () => void;
-	onClose: () => void;
-}
-
-export interface UserSettingsModalProps {
-	settings: UserSettings;
-	onSave: () => void;
-	onClose: () => void;
-}
-
-export interface UserCardProps {
-	userInfo: UserInfo | null;
+// Component Props Interfaces
+export interface ComponentCardProps {
+	userInfo?: UserInfo | null;
+	userProfile?: UserProfile | null;
+	userSettings?: UserSettings | null;
+	onSave?: () => void;
+	onClose?: () => void;
+	refreshData?: () => void; // Add this line
 }

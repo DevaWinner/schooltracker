@@ -3,15 +3,15 @@ import AuthLayout from "../../layout/AuthLayout";
 import SignUpForm from "../../components/auth/SignUpForm";
 
 export default function SignUp() {
-  return (
-    <>
-      <PageMeta
-        title="React.js SignUp Dashboard | TailAdmin - Next.js Admin Dashboard Template"
-        description="This is React.js SignUp Tables Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
-      />
-      <AuthLayout>
-        <SignUpForm />
-      </AuthLayout>
-    </>
-  );
+	return (
+		<>
+			<PageMeta
+				title="Sign Up | School Tracker"
+				description="Create a new account on School Tracker. Join us and start tracking your school applications."
+			/>
+			<AuthLayout className="max-w-5xl mx-auto">
+				<SignUpForm />
+			</AuthLayout>
+		</>
+	);
 }
