@@ -1,14 +1,76 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import { clearAuthTokens } from "../../api/auth";
+import { clearAuthTokens, getAccessToken } from "../../api/auth";
+import { getProfileForDropdown } from "../../api/profile";
+import { UserInfo, UserProfile } from "../../types/user";
 
 export default function UserDropdown() {
 	const [isOpen, setIsOpen] = useState(false);
-	const { profile, signOut } = useContext(AuthContext);
+	const { signOut } = useContext(AuthContext);
 	const navigate = useNavigate();
+
+	// Add states for user data
+	const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState<string | null>(null);
+
+	// Fetch user profile data on component mount
+	useEffect(() => {
+		const fetchProfileData = async () => {
+			const token = getAccessToken();
+
+			// Debug log to check if token exists
+			console.log("Token available:", !!token);
+
+			if (!token) {
+				setLoading(false);
+				setError("Not authenticated");
+				return;
+			}
+
+			try {
+				setLoading(true);
+				console.log("Fetching profile data...");
+
+				const { userInfo, userProfile } = await getProfileForDropdown(token);
+
+				console.log("Profile data fetched successfully");
+				setUserInfo(userInfo);
+				setUserProfile(userProfile);
+				setError(null);
+			} catch (err: any) {
+				// Enhanced error logging
+				console.error("Failed to fetch profile data:", err);
+				let errorMessage = "Failed to load profile";
+
+				if (err.response) {
+					console.error("API response error:", {
+						status: err.response.status,
+						statusText: err.response.statusText,
+						data: err.response.data,
+					});
+
+					if (err.response.status === 401) {
+						errorMessage = "Session expired. Please sign in again";
+						// Clear invalid tokens and redirect to login if token is invalid
+						clearAuthTokens();
+						signOut();
+						navigate("/signin");
+					}
+				}
+
+				setError(errorMessage);
+			} finally {
+				setLoading(false);
+			}
+		};
+
+		fetchProfileData();
+	}, [navigate, signOut]);
 
 	function toggleDropdown() {
 		setIsOpen(!isOpen);
@@ -25,7 +87,8 @@ export default function UserDropdown() {
 		navigate("/signin");
 	};
 
-	if (!profile) {
+	// Show loading skeleton while data is being fetched
+	if (loading) {
 		return (
 			<div className="flex items-center gap-2">
 				<div className="h-11 w-11 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700"></div>
@@ -34,10 +97,36 @@ export default function UserDropdown() {
 		);
 	}
 
-	const fullName = `${profile.first_name} ${profile.last_name}`;
-	const profileInitials = `${profile.first_name.charAt(
+	// If there's no user info, show a loading state or error
+	if (!userInfo) {
+		return (
+			<div className="flex items-center gap-2">
+				<div className="h-11 w-11 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+					<svg
+						className="w-6 h-6 text-gray-400"
+						fill="currentColor"
+						viewBox="0 0 20 20"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							fillRule="evenodd"
+							d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+							clipRule="evenodd"
+						></path>
+					</svg>
+				</div>
+				<div className="text-sm text-gray-500">{error || "Sign in"}</div>
+			</div>
+		);
+	}
+
+	const fullName = `${userInfo.first_name} ${userInfo.last_name}`;
+	const profileInitials = `${userInfo.first_name.charAt(
 		0
-	)}${profile.last_name.charAt(0)}`.toUpperCase();
+	)}${userInfo.last_name.charAt(0)}`.toUpperCase();
+
+	// Use profile picture from userProfile if available
+	const profilePicture = userProfile?.profile_picture || null;
 
 	return (
 		<div className="relative">
@@ -46,9 +135,9 @@ export default function UserDropdown() {
 				className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
 			>
 				<span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-					{profile.profile_picture ? (
+					{profilePicture ? (
 						<img
-							src={profile.profile_picture}
+							src={profilePicture}
 							alt={fullName}
 							className="w-full h-full object-cover"
 						/>
@@ -90,7 +179,7 @@ export default function UserDropdown() {
 						{fullName}
 					</span>
 					<span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-						{profile.email}
+						{userInfo.email}
 					</span>
 				</div>
 

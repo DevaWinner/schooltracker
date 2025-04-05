@@ -209,3 +209,26 @@ export const updatePartialProfile = async (
 	// Return a merged result
 	return results.reduce((acc, result) => ({ ...acc, ...result }), {});
 };
+
+// New function to fetch combined profile data for dropdown
+export const getProfileForDropdown = async (
+	token: string
+): Promise<{
+	userInfo: UserInfo;
+	userProfile: UserProfile | null;
+}> => {
+	try {
+		// Fetch both user info and profile in parallel
+		const [userInfoResponse, userProfileResponse] = await Promise.all([
+			getProfile(token),
+			getUserProfile(token).catch(() => null), // Handle if profile doesn't exist yet
+		]);
+
+		return {
+			userInfo: userInfoResponse,
+			userProfile: userProfileResponse,
+		};
+	} catch (error) {
+		throw error;
+	}
+};

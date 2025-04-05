@@ -4,8 +4,6 @@ import UserSettingsModal from "./modals/UserSettingsModal";
 import { ComponentCardProps } from "../../types/user";
 import { timezones } from "../../utils/timezones";
 import { getLanguageByCode } from "../../utils/languages";
-import { useContext } from "react";
-import { AuthContext } from "../../context/AuthContext";
 
 // Update the props to include refreshData function
 interface ExtendedCardProps extends ComponentCardProps {
@@ -17,7 +15,6 @@ export default function UserSettingsCard({
 	refreshData,
 }: ExtendedCardProps) {
 	const { isOpen, openModal, closeModal } = useModal();
-	const { profile } = useContext(AuthContext);
 
 	const handleSave = () => {
 		// Call the refresh function when modal is saved

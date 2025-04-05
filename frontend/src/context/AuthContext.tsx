@@ -2,6 +2,7 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { UserInfo } from "../types/user";
 import { getProfile } from "../api/profile";
+import { getAccessToken } from "../api/auth";
 
 interface AuthContextProps {
 	user: any;
@@ -38,10 +39,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const [isFirstLogin, setIsFirstLogin] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 
-	// On mount, check if a token exists in localStorage
+	// On mount, check if a token exists in localStorage or sessionStorage using the getAccessToken helper
 	useEffect(() => {
 		const initAuth = async () => {
-			const token = localStorage.getItem("accessToken");
+			const token = getAccessToken(); // Use the helper function to get token with consistent key
 			const userData = localStorage.getItem("userData");
 			const rememberMe = localStorage.getItem("rememberMe");
 
