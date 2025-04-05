@@ -488,76 +488,134 @@ class UploadProfilePictureAPIView(APIView):
     parser_classes = [MultiPartParser, FormParser]
     
     def post(self, request):
-        # Check if a file was provided
-        if 'profile_picture' not in request.FILES:
-            return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        file = request.FILES['profile_picture']
-        
-        # Check file size
-        if file.size > settings.MAX_UPLOAD_SIZE:
-            return Response(
-                {"error": f"File size exceeds maximum allowed (50 MB)"},
-                status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
-            )
-        
-        # Validate file type
-        import magic
-        file_content = file.read()
-        file.seek(0)  # Reset file pointer after reading
-        
-        mime = magic.Magic(mime=True)
-        file_type = mime.from_buffer(file_content)
-        
-        allowed_types = ['image/jpeg', 'image/png', 'image/gif']
-        if file_type not in allowed_types:
-            return Response(
-                {"error": "Invalid file type. Only JPEG, PNG, and GIF are allowed."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # Generate unique filename
-        _, file_extension = os.path.splitext(file.name)
-        unique_filename = f"user_{request.user.id}_{uuid.uuid4()}{file_extension}"
-        
         try:
-            # Initialize Supabase client
-            supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+            print("Processing profile picture upload request...")
             
-            # Get the user's profile
-            profile = request.user.profile
+            # Check if a file was provided
+            if 'profile_picture' not in request.FILES:
+                print("No file found in request.FILES")
+                return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
             
-            # Delete previous profile picture if exists
-            if profile.profile_picture:
-                try:
-                    # Extract filename from the URL
-                    current_filename = profile.profile_picture.split('/')[-1]
-                    
-                    # Delete the file from Supabase
-                    supabase.storage.from_(settings.SUPABASE_BUCKET).remove([current_filename])
-                    print(f"Deleted previous profile picture: {current_filename}")
-                except Exception as e:
-                    # Log the error but continue with the upload
-                    print(f"Error deleting previous profile picture: {e}")
+            file = request.FILES['profile_picture']
+            print(f"File received: {file.name}, size: {file.size} bytes")
             
-            # Upload file to Supabase Storage
-            result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
-                path=unique_filename,
-                file=file_content,
-                file_options={"content-type": file_type}
-            )
+            # Check file size
+            if file.size > settings.MAX_UPLOAD_SIZE:
+                print(f"File too large: {file.size} bytes (max: {settings.MAX_UPLOAD_SIZE})")
+                return Response(
+                    {"error": f"File size exceeds maximum allowed (50 MB)"},
+                    status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
+                )
             
-            # Get public URL for the uploaded file
-            file_url = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(unique_filename)
+            # Validate file type using file extension first (fallback method)
+            _, file_extension = os.path.splitext(file.name)
+            file_extension = file_extension.lower()
             
-            # Update user profile with the new profile picture URL
-            profile.profile_picture = file_url
-            profile.save()
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif']
             
-            return Response({"profile_picture": file_url}, status=status.HTTP_200_OK)
+            if file_extension not in allowed_extensions:
+                print(f"Invalid file extension: {file_extension}")
+                return Response(
+                    {"error": "Invalid file type. Only JPEG, PNG, and GIF are allowed."},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
+            # Try to validate with python-magic, but don't fail if it doesn't work
+            try:
+                import magic
+                file_content = file.read()
+                file.seek(0)  # Reset file pointer after reading
+                
+                mime = magic.Magic(mime=True)
+                file_type = mime.from_buffer(file_content)
+                
+                allowed_types = ['image/jpeg', 'image/png', 'image/gif']
+                if file_type not in allowed_types:
+                    print(f"Invalid file type detected: {file_type}")
+                    return Response(
+                        {"error": f"Invalid file type detected: {file_type}. Only JPEG, PNG, and GIF are allowed."},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except Exception as e:
+                # If python-magic fails, log the error but continue with the upload
+                # since we've already validated the file extension
+                print(f"Warning: python-magic validation failed: {str(e)}")
+                # Read the file content if it hasn't been read yet
+                if 'file_content' not in locals():
+                    file_content = file.read()
+                    file.seek(0)
+            
+            # Generate unique filename
+            unique_filename = f"user_{request.user.id}_{uuid.uuid4()}{file_extension}"
+            print(f"Generated unique filename: {unique_filename}")
+            
+            try:
+                # Initialize Supabase client
+                print(f"Initializing Supabase client with URL: {settings.SUPABASE_URL}")
+                supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+                
+                # Get the user's profile
+                profile = request.user.profile
+                
+                # Delete previous profile picture if exists
+                if profile.profile_picture:
+                    try:
+                        # Extract filename from the URL
+                        current_filename = profile.profile_picture.split('/')[-1]
+                        
+                        # Delete the file from Supabase
+                        print(f"Attempting to delete previous profile picture: {current_filename}")
+                        supabase.storage.from_(settings.SUPABASE_BUCKET).remove([current_filename])
+                        print(f"Deleted previous profile picture: {current_filename}")
+                    except Exception as e:
+                        # Log the error but continue with the upload
+                        print(f"Error deleting previous profile picture: {str(e)}")
+                
+                # Ensure file_content exists
+                if 'file_content' not in locals():
+                    file_content = file.read()
+                
+                # Determine content type based on extension
+                content_type_map = {
+                    '.jpg': 'image/jpeg',
+                    '.jpeg': 'image/jpeg',
+                    '.png': 'image/png',
+                    '.gif': 'image/gif'
+                }
+                content_type = content_type_map.get(file_extension, 'application/octet-stream')
+                
+                # Upload file to Supabase Storage
+                print(f"Uploading file to bucket: {settings.SUPABASE_BUCKET}")
+                result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+                    path=unique_filename,
+                    file=file_content,
+                    file_options={"contentType": content_type}  # Note the correct casing of contentType
+                )
+                
+                # Get public URL for the uploaded file
+                file_url = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(unique_filename)
+                print(f"File uploaded successfully. Public URL: {file_url}")
+                
+                # Update user profile with the new profile picture URL
+                profile.profile_picture = file_url
+                profile.save()
+                
+                return Response({"profile_picture": file_url}, status=status.HTTP_200_OK)
+                
+            except Exception as e:
+                print(f"Error during Supabase upload: {str(e)}")
+                # Return detailed error message with traceback for debugging
+                import traceback
+                traceback_str = traceback.format_exc()
+                print(traceback_str)
+                return Response({"error": str(e), "details": traceback_str}, status=status.HTTP_400_BAD_REQUEST)
+                
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            print(f"Unexpected error in profile picture upload: {str(e)}")
+            import traceback
+            traceback_str = traceback.format_exc()
+            print(traceback_str)
+            return Response({"error": f"Unexpected error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class DeleteUserAPIView(APIView):
     """
