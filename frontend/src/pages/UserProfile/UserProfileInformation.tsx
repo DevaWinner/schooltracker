@@ -15,7 +15,7 @@ export default function UserProfiles() {
 		isFirstLogin,
 		refreshProfileData,
 	} = useContext(AuthContext);
-	const [loading, setLoading] = useState(false);
+	const [loading] = useState(false);
 
 	// Display a welcome message for first-time users
 	useEffect(() => {
