@@ -1,32 +1,30 @@
-import { useState, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../../context/AuthContext";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import UserMetaCard from "../../components/UserProfile/UserMetaCard";
 import UserInfoCard from "../../components/UserProfile/UserInfoCard";
-import UserAddressCard from "../../components/UserProfile/UserAddressCard";
 import UserSettingsCard from "../../components/UserProfile/UserSettingsCard";
+import UserProfileCard from "../../components/UserProfile/UserProfileCard";
 import PageMeta from "../../components/common/PageMeta";
-import { mockFetchUserInfo } from "../../mocks/userMock";
-import { UserInfo } from "../../types/user";
+import { toast } from "react-toastify";
 
 export default function UserProfiles() {
-	const [loading, setLoading] = useState(true);
-	const [userData, setUserData] = useState<UserInfo | null>(null);
+	const {
+		profile,
+		userProfile,
+		userSettings,
+		isFirstLogin,
+		refreshProfileData,
+	} = useContext(AuthContext);
+	const [loading] = useState(false);
 
+	// Display a welcome message for first-time users
 	useEffect(() => {
-		const fetchUserData = async () => {
-			try {
-				setLoading(true);
-				const data = await mockFetchUserInfo();
-				setUserData(data);
-			} catch (error) {
-				console.error("Error fetching user data:", error);
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchUserData();
-	}, []);
+		if (isFirstLogin && profile) {
+			toast.info(
+				`Welcome, ${profile.first_name}! Please complete your profile information.`
+			);
+		}
+	}, [isFirstLogin, profile]);
 
 	return (
 		<>
@@ -36,9 +34,6 @@ export default function UserProfiles() {
 			/>
 			<PageBreadcrumb pageTitle="Profile Information" />
 			<div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] lg:p-6">
-				<h3 className="mb-5 text-lg font-semibold text-gray-800 dark:text-white/90 lg:mb-7">
-					Profile Information
-				</h3>
 				<div className="space-y-6">
 					{loading ? (
 						<div className="flex items-center justify-center min-h-[400px]">
@@ -46,10 +41,19 @@ export default function UserProfiles() {
 						</div>
 					) : (
 						<>
-							<UserMetaCard userInfo={userData} />
-							<UserInfoCard userInfo={userData} />
-							<UserAddressCard userInfo={userData} />
-							<UserSettingsCard userInfo={userData} />
+							<UserProfileCard
+								userProfile={userProfile}
+								userInfo={profile}
+								refreshData={refreshProfileData}
+							/>
+							<UserInfoCard
+								userInfo={profile}
+								refreshData={refreshProfileData}
+							/>
+							<UserSettingsCard
+								userSettings={userSettings}
+								refreshData={refreshProfileData}
+							/>
 						</>
 					)}
 				</div>

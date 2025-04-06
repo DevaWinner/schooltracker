@@ -1,35 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useContext } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
-import { Link } from "react-router";
-import { mockFetchUserInfo } from "../../mocks/userMock";
-interface UserInfo {
-	id: number;
-	first_name: string;
-	last_name: string;
-	email: string;
-	profile_picture: string;
-	role: string;
-}
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
+import { clearAuthTokens } from "../../api/auth";
 
 export default function UserDropdown() {
 	const [isOpen, setIsOpen] = useState(false);
-	const [loading, setLoading] = useState(true);
-	const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-
-	useEffect(() => {
-		const fetchUserInfo = async () => {
-			try {
-				const data = await mockFetchUserInfo();
-				setUserInfo(data);
-			} catch (error) {
-				console.error("Error fetching user data:", error);
-			} finally {
-				setLoading(false);
-			}
-		};
-		fetchUserInfo();
-	}, []);
+	const { signOut, profile, userProfile } = useContext(AuthContext);
+	const navigate = useNavigate();
 
 	function toggleDropdown() {
 		setIsOpen(!isOpen);
@@ -39,18 +18,43 @@ export default function UserDropdown() {
 		setIsOpen(false);
 	}
 
-	if (loading) {
+	const handleSignOut = () => {
+		// Clear stored tokens
+		clearAuthTokens();
+		signOut();
+		navigate("/signin");
+	};
+
+	// Show loading skeleton if no profile data
+	if (!profile) {
 		return (
 			<div className="flex items-center gap-2">
-				<div className="h-11 w-11 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700"></div>
-				<div className="h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+				<div className="h-11 w-11 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+					<svg
+						className="w-6 h-6 text-gray-400"
+						fill="currentColor"
+						viewBox="0 0 20 20"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<path
+							fillRule="evenodd"
+							d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+							clipRule="evenodd"
+						></path>
+					</svg>
+				</div>
+				<div className="text-sm text-gray-500">Sign in</div>
 			</div>
 		);
 	}
 
-	if (!userInfo) return null;
+	const fullName = `${profile.first_name} ${profile.last_name}`;
+	const profileInitials = `${profile.first_name.charAt(
+		0
+	)}${profile.last_name.charAt(0)}`.toUpperCase();
 
-	const fullName = `${userInfo.first_name} ${userInfo.last_name}`;
+	// Use profile picture from userProfile if available
+	const profilePicture = userProfile?.profile_picture || null;
 
 	return (
 		<div className="relative">
@@ -59,7 +63,17 @@ export default function UserDropdown() {
 				className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
 			>
 				<span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-					<img src={userInfo.profile_picture} alt={fullName} />
+					{profilePicture ? (
+						<img
+							src={profilePicture}
+							alt={fullName}
+							className="w-full h-full object-cover"
+						/>
+					) : (
+						<div className="w-full h-full flex items-center justify-center bg-brand-100 text-brand-700 dark:bg-brand-900/30 dark:text-brand-400 font-semibold">
+							{profileInitials}
+						</div>
+					)}
 				</span>
 
 				<span className="block mr-1 font-medium text-theme-sm">{fullName}</span>
@@ -93,7 +107,7 @@ export default function UserDropdown() {
 						{fullName}
 					</span>
 					<span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-						{userInfo.email}
+						{profile.email}
 					</span>
 				</div>
 
@@ -174,8 +188,8 @@ export default function UserDropdown() {
 						</DropdownItem>
 					</li>
 				</ul>
-				<Link
-					to="/signout"
+				<button
+					onClick={handleSignOut}
 					className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
 				>
 					<svg
@@ -194,7 +208,7 @@ export default function UserDropdown() {
 						/>
 					</svg>
 					Sign out
-				</Link>
+				</button>
 			</Dropdown>
 		</div>
 	);
