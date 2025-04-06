@@ -12,7 +12,8 @@ class UserInfoManager(BaseUserManager):
     def create_user(self, email, first_name, last_name, country, password=None, **extra_fields):
         if not email:
             raise ValueError("Users must have an email address")
-        email = self.normalize_email(email)
+        # Ensure email is normalized and converted to lowercase
+        email = self.normalize_email(email.lower())
         user = self.model(
             email=email,
             first_name=first_name,
