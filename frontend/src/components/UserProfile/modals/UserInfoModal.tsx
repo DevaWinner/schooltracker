@@ -1,4 +1,10 @@
-import { useState, ChangeEvent, FormEvent, useContext } from "react";
+import {
+	useState,
+	ChangeEvent,
+	FormEvent,
+	useContext,
+	forwardRef,
+} from "react";
 import { toast } from "react-toastify";
 import { AuthContext } from "../../../context/AuthContext";
 import { updateBasicInfo, UserInfoUpdateRequest } from "../../../api/profile";
@@ -10,12 +16,37 @@ import { countries } from "../../../utils/countries";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
+// Define the props interface for the DatePickerInput component
+interface DatePickerInputProps {
+	value?: string;
+	onClick?: () => void;
+	placeholder?: string;
+	className?: string;
+}
+
+// Create a forwardRef component to wrap the input with proper typing
+const DatePickerInput = forwardRef<HTMLInputElement, DatePickerInputProps>(
+	({ value, onClick, placeholder, className }) => (
+		<Input
+			type="text"
+			value={value || ""}
+			onClick={onClick}
+			placeholder={placeholder}
+			className={className}
+			readOnly
+		/>
+	)
+);
+
+// Add display name to avoid dev warnings
+DatePickerInput.displayName = "DatePickerInput";
+
 export default function UserInfoModal({
 	userInfo,
 	onSave,
 	onClose,
 }: ComponentCardProps) {
-	const { accessToken, setProfile } = useContext(AuthContext);
+	const { accessToken, refreshProfileData } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		first_name: userInfo?.first_name || "",
@@ -61,10 +92,10 @@ export default function UserInfoModal({
 			};
 
 			// Send update request to API using updateBasicInfo for /user/info/ endpoint
-			const updatedProfile = await updateBasicInfo(accessToken, updateData);
+			await updateBasicInfo(accessToken, updateData);
 
-			// Update the global profile state
-			setProfile(updatedProfile);
+			// Refresh global profile state
+			await refreshProfileData();
 
 			toast.success("User information updated successfully");
 			if (onSave) onSave();
@@ -169,7 +200,10 @@ export default function UserInfoModal({
 								yearDropdownItemNumber={100}
 								scrollableYearDropdown
 								customInput={
-									<Input type="text" name="date_of_birth" className="w-full" />
+									<DatePickerInput
+										placeholder="Select date"
+										className="w-full"
+									/>
 								}
 							/>
 						</div>

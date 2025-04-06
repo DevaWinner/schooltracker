@@ -14,7 +14,7 @@ export default function UserSettingsModal({
 	onSave,
 	onClose,
 }: ComponentCardProps) {
-	const { accessToken, setProfile, profile } = useContext(AuthContext);
+	const { accessToken, refreshProfileData } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		language: userSettings?.language || "en",
@@ -31,7 +31,7 @@ export default function UserSettingsModal({
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		if (!accessToken || !profile) {
+		if (!accessToken) {
 			toast.error("Authentication required");
 			return;
 		}
@@ -46,16 +46,10 @@ export default function UserSettingsModal({
 			};
 
 			// Send update request directly to settings API
-			const updatedSettingsData = await updateUserSettings(
-				accessToken,
-				settingsData
-			);
+			await updateUserSettings(accessToken, settingsData);
 
-			// Update the global profile state
-			setProfile({
-				...profile,
-				...updatedSettingsData,
-			});
+			// Refresh global profile state
+			await refreshProfileData();
 
 			toast.success("Settings updated successfully");
 			if (onSave) onSave();
