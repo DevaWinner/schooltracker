@@ -33,8 +33,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = '__all__'
-        read_only_fields = ['created_at', 'updated_at', 'first_name', 'last_name', 'program_name']
-
+        read_only_fields = ['created_at', 'updated_at', 'first_name', 'last_name']
     def validate(self, data):
         # Get the instance if updating an existing application
         instance = self.instance
