@@ -1,8 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from .models import UserProfile, UserInfo, UserSettings
-from .utils.country_names import COUNTRY_CHOICES
-from .utils.country_codes import COUNTRY_CODE_CHOICES
 from .supabase_config import upload_file
 
 CustomUser = get_user_model()
@@ -23,13 +21,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     first_name = serializers.CharField(source="user.first_name", required=False)
     last_name = serializers.CharField(source="user.last_name", required=False)
     email = serializers.EmailField(source="user.email", read_only=True)
-    country_code = serializers.ChoiceField(choices=COUNTRY_CODE_CHOICES, required=False, allow_null=True)
-    phone_number = serializers.CharField(required=False, allow_null=True)
-    gender = serializers.ChoiceField(choices=[("Male", "Male"), ("Female", "Female")], required=False, allow_null=True)
-    country = serializers.ChoiceField(choices=COUNTRY_CHOICES, required=False, allow_null=True)
-    age = serializers.IntegerField(required=False, allow_null=True)
-    date_of_birth = serializers.DateField(required=False, allow_null=True)
-    profile_avatar = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = UserProfile
