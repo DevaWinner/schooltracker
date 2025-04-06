@@ -43,7 +43,7 @@ class SchoolDetailAPIView(APIView):
         school = self.get_object(pk)
         if not school:
             return Response({'detail': 'School not found'}, status=status.HTTP_404_NOT_FOUND)
-        serializer = SchoolSerializer(school, data=request.data)
+        serializer = SchoolSerializer(school, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
