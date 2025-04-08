@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from apps.schools.models import School
+from apps.schools.models import Institution
 
 User = get_user_model()
 
@@ -25,7 +25,7 @@ class Program(models.Model):
         ('Other', 'Other'),
     ]
 
-    school = models.ForeignKey(School, on_delete=models.CASCADE)
+    institution = models.ForeignKey(Institution, on_delete=models.CASCADE)
     program_name = models.CharField(max_length=150)
     degree_type = models.CharField(max_length=50, choices=DEGREE_TYPE_CHOICES)
     department = models.CharField(max_length=100, null=True, blank=True)
