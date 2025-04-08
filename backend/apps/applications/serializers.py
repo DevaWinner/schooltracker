@@ -1,15 +1,15 @@
 from datetime import date
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from apps.schools.serializers import SchoolSerializer
+from apps.schools.serializers import InstitutionListSerializer
 from .models import Program, Application
-from apps.schools.models import School
+from apps.schools.models import Institution
 
 class ProgramSerializer(serializers.ModelSerializer):
-    school = SchoolSerializer(read_only=True)
-    school_id = serializers.PrimaryKeyRelatedField(
-        queryset=School.objects.all(),
-        source='school',
+    institution = InstitutionListSerializer(read_only=True)
+    institution_id = serializers.PrimaryKeyRelatedField(
+        queryset=Institution.objects.all(),
+        source='institution',
         write_only=True,
     )
     
@@ -34,6 +34,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         model = Application
         fields = '__all__'
         read_only_fields = ['created_at', 'updated_at', 'first_name', 'last_name']
+
     def validate(self, data):
         # Get the instance if updating an existing application
         instance = self.instance
