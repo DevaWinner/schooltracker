@@ -1,7 +1,7 @@
+import os
 import pandas as pd
 from django.core.management.base import BaseCommand
 from apps.schools.models import School
-import os
 
 class Command(BaseCommand):
     help = 'Seed the database with universities from a CSV file'
