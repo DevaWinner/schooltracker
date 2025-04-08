@@ -24,7 +24,9 @@ INSTALLED_APPS = [
 
     # Third-party apps
     'rest_framework',
+    'drf_yasg',
     'corsheaders',
+    'django_filters',
 
     # Local apps
     'apps.users',
@@ -134,4 +136,20 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT token (Authorization: "Bearer <token>")'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'PERSIST_AUTH': True,
+    'SECURITY_REQUIREMENTS': [{
+        'Bearer': []
+    }]
 }
