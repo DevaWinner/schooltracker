@@ -66,4 +66,5 @@ uritemplate==4.1.1
 urllib3==2.3.0
 uvicorn==0.34.0
 websockets==14.2
+whitenoise==6.9.0
 yarl==1.18.3

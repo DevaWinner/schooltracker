@@ -5,6 +5,9 @@ set -o errexit
 # Modify this line as needed for your package manager (pip, poetry, etc.)
 pip install -r requirements.txt
 
+# Collect static files
+python manage.py collectstatic --noinput
+
 # Apply any outstanding database migrations
 python manage.py makemigrations
 python manage.py migrate
