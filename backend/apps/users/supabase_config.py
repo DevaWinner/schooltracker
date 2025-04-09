@@ -122,3 +122,47 @@ def upload_file(file, folder):
         return {"status": "success", "url": file_url}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+
+
+
+
+
+
+# Function for the users documents inserted into the documents table 
+def upload_file_documents(file,  document_type=None):
+    try:
+        file_ext = file.name.split('.')[-1].lower()
+        new_name = f"{uuid.uuid4().hex}.{file_ext}"
+        file_content = file.read()
+
+        # Upload to Supabase Storage (same as before)
+        supabase.storage.from_("documents").upload(
+            path=new_name,
+            file=file_content,
+            file_options={"content-type": file.content_type}
+        )
+
+        # Get public URL
+        file_url = supabase.storage.from_("documents").get_public_url(new_name)
+
+        # Insert into existing table with your columns
+        document_data = {
+            "document_type": document_type,  # Your existing column
+            "file_name": file.name,         # Original filename
+            "file_url": file_url             # Public URL
+        }
+
+        supabase.table("documents").insert(document_data).execute()
+
+        return {
+            "id": new_name.split('.')[0],
+            "type": document_type,
+            "original_name": file.name,
+            "url": file_url,
+            "uploaded_at": supabase.server_time(),
+            "status": "success"
+        }
+
+    except Exception as e:
+        print(f"Upload failed: {str(e)}")
+        raise

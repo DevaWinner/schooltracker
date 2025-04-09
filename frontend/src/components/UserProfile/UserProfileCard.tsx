@@ -1,17 +1,29 @@
 import { useModal } from "../../hooks/useModal";
 import { Modal } from "../ui/modal";
-import UserMetaModal from "./modals/UserMetaModal";
-import { UserCardProps } from "../../types/user";
+import UserProfileModal from "./modals/UserProfileModal";
+import { ComponentCardProps } from "../../types/user";
 
-export default function UserMetaCard({ userInfo }: UserCardProps) {
+// Update the props to include refreshData function
+interface ExtendedCardProps extends ComponentCardProps {
+	refreshData?: () => void;
+}
+
+export default function UserProfileCard({
+	userProfile,
+	userInfo,
+	refreshData,
+}: ExtendedCardProps) {
 	const { isOpen, openModal, closeModal } = useModal();
 
 	const handleSave = () => {
-		console.log("Saving changes...");
+		// Call the refresh function when modal is saved
+		if (refreshData) {
+			refreshData();
+		}
 		closeModal();
 	};
 
-	if (!userInfo) return null;
+	if (!userProfile) return null;
 
 	return (
 		<>
@@ -19,31 +31,45 @@ export default function UserMetaCard({ userInfo }: UserCardProps) {
 				<div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
 					<div className="flex flex-col items-center w-full gap-6 xl:flex-row">
 						<div className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
-							<img
-								src={userInfo?.profile_picture}
-								alt={`${userInfo?.first_name} ${userInfo?.last_name}`}
-							/>
+							{userProfile.profile_picture ? (
+								<img src={userProfile.profile_picture} alt="Profile" />
+							) : (
+								<div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-800">
+									<svg
+										className="w-10 h-10 text-gray-400"
+										fill="currentColor"
+										viewBox="0 0 20 20"
+										xmlns="http://www.w3.org/2000/svg"
+									>
+										<path
+											fillRule="evenodd"
+											d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+											clipRule="evenodd"
+										></path>
+									</svg>
+								</div>
+							)}
 						</div>
 						<div className="order-3 xl:order-2">
 							<h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-								{userInfo?.first_name} {userInfo?.last_name}
+								{userInfo
+									? `${userInfo.first_name} ${userInfo.last_name}`
+									: "User Name"}
 							</h4>
 							<div className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
 								<p className="text-sm text-gray-500 dark:text-gray-400">
-									{userInfo?.role}
-								</p>
-								<div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
-								<p className="text-sm text-gray-500 dark:text-gray-400">
-									{userInfo?.city}, {userInfo?.state}
+									{userProfile.bio || "No bio available"}
 								</p>
 							</div>
 						</div>
 						<div className="flex items-center order-2 gap-2 grow xl:order-3 xl:justify-end">
 							<a
-								href={userInfo?.facebook}
+								href={userProfile.facebook || "#"}
 								target="_blank"
 								rel="noopener"
-								className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+								className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 ${
+									userProfile.facebook ? "text-blue-600" : "text-gray-400"
+								}`}
 							>
 								<svg
 									className="fill-current"
@@ -61,10 +87,12 @@ export default function UserMetaCard({ userInfo }: UserCardProps) {
 							</a>
 
 							<a
-								href={userInfo?.twitter}
+								href={userProfile.twitter || "#"}
 								target="_blank"
 								rel="noopener"
-								className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+								className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 ${
+									userProfile.twitter ? "text-blue-400" : "text-gray-400"
+								}`}
 							>
 								<svg
 									className="fill-current"
@@ -82,10 +110,12 @@ export default function UserMetaCard({ userInfo }: UserCardProps) {
 							</a>
 
 							<a
-								href={userInfo?.linkedin}
+								href={userProfile.linkedin || "#"}
 								target="_blank"
 								rel="noopener"
-								className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+								className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 ${
+									userProfile.linkedin ? "text-blue-700" : "text-gray-400"
+								}`}
 							>
 								<svg
 									className="fill-current"
@@ -103,10 +133,12 @@ export default function UserMetaCard({ userInfo }: UserCardProps) {
 							</a>
 
 							<a
-								href={userInfo?.instagram}
+								href={userProfile.instagram || "#"}
 								target="_blank"
 								rel="noopener"
-								className="flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200"
+								className={`flex h-11 w-11 items-center justify-center gap-2 rounded-full border border-gray-300 bg-white text-sm font-medium shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200 ${
+									userProfile.instagram ? "text-pink-500" : "text-gray-400"
+								}`}
 							>
 								<svg
 									className="fill-current"
@@ -148,8 +180,8 @@ export default function UserMetaCard({ userInfo }: UserCardProps) {
 				</div>
 			</div>
 			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-				<UserMetaModal
-					userInfo={userInfo} // Now userInfo is guaranteed to be non-null
+				<UserProfileModal
+					userProfile={userProfile}
 					onSave={handleSave}
 					onClose={closeModal}
 				/>
