@@ -19,3 +19,11 @@ from .application_views import (
     ApplicationListView, ApplicationCreateView, ApplicationDetailView,
     ApplicationFullUpdateView, ApplicationStatusUpdateView, ApplicationDeleteView
 )
+
+# Document views
+from .document_views import (
+    DocumentListView,
+    DocumentUploadView,
+    DocumentDetailView,
+    DocumentDeleteView
+)

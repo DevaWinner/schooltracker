@@ -15,3 +15,10 @@ from .application_serializers import (
     ApplicationDetailSerializer,
     ApplicationCreateSerializer
 )
+
+# Document serializers
+from .document_serializers import (
+    DocumentListSerializer,
+    DocumentDetailSerializer,
+    DocumentUploadSerializer
+)

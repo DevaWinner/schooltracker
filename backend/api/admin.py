@@ -6,6 +6,7 @@ from api.models.institution_models import (
     InternationalResearchNetwork, EmploymentOutcomes, Sustainability
 )
 from api.models.application_models import Application
+from api.models.document_models import Document
 
 # Register user models
 admin.site.register(Userinfo)
@@ -27,3 +28,6 @@ admin.site.register(Sustainability)
 
 # Register application tracker models
 admin.site.register(Application)
+
+# Register document model
+admin.site.register(Document)

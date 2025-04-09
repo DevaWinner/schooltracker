@@ -9,3 +9,5 @@ from .institution_models import (
 )
 # Import the new Application model
 from .application_models import Application
+# Import the new Document model
+from .document_models import Document

@@ -11,6 +11,9 @@ from api.views.application_views import (
     ApplicationListView, ApplicationCreateView, ApplicationDetailView,
     ApplicationFullUpdateView, ApplicationStatusUpdateView, ApplicationDeleteView
 )
+from api.views.document_views import (
+    DocumentListView, DocumentUploadView, DocumentDetailView, DocumentDeleteView
+)
 
 # Define URL patterns for each module
 auth_urls = [
@@ -63,6 +66,14 @@ application_urls = [
     path('<int:pk>/delete/', ApplicationDeleteView.as_view(), name='application_delete'),
 ]
 
+# Document management endpoints - each with its own dedicated view
+document_urls = [
+    path('', DocumentListView.as_view(), name='document_list'),
+    path('upload/', DocumentUploadView.as_view(), name='document_upload'),
+    path('<int:pk>/', DocumentDetailView.as_view(), name='document_detail'),
+    path('<int:pk>/delete/', DocumentDeleteView.as_view(), name='document_delete'),
+]
+
 # Main URL patterns with modules grouped together
 urlpatterns = [
     # Auth endpoints
@@ -76,4 +87,7 @@ urlpatterns = [
     
     # Application tracking endpoints
     path('applications/', include((application_urls, 'applications'))),
+    
+    # Document management endpoints
+    path('documents/', include((document_urls, 'documents'))),
 ]
