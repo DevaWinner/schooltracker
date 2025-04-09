@@ -59,6 +59,9 @@ export default function ApplicationCard({ data }: data) {
           {data.decision_date}
         </TableCell>
         <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
+          {data.notes}
+        </TableCell>
+        <TableCell className="px-4 py-3 text-gray-500 text-theme-sm dark:text-gray-400">
           <Button size="sm" variant="outline" onClick={openModal}>
             Edit
           </Button>

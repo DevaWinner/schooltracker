@@ -8,7 +8,6 @@ export const ROUTES = {
 	},
 	Applications: {
 		tracker: "/applications/tracker",
-		status: "/applications/status",
 	},
 	Documents: {
 		upload: "/documents/upload",
