@@ -9,8 +9,8 @@ import uuid
 import os
 import imghdr
 
-from api.models import UserProfile, UserSettings
-from api.serializers import UserInfoSerializer, UserProfileSerializer, UserSettingsSerializer
+from api.models.user_models import UserProfile, UserSettings
+from api.serializers.user_serializers import UserInfoSerializer, UserProfileSerializer, UserSettingsSerializer
 
 class UserInfoAPIView(APIView):
     """

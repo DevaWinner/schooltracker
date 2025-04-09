@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Userinfo, UserProfile, UserSettings
+from api.models.user_models import Userinfo, UserProfile, UserSettings
 
 class UserInfoSerializer(serializers.ModelSerializer):
     class Meta:

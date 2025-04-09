@@ -2,8 +2,8 @@ from rest_framework import status, filters, generics
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 
-from api.models import Institution
-from api.serializers import InstitutionListSerializer, InstitutionDetailSerializer
+from api.models.institution_models import Institution
+from api.serializers.institution_serializers import InstitutionListSerializer, InstitutionDetailSerializer
 
 class InstitutionListView(generics.ListAPIView):
     """

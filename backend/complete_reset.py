@@ -81,6 +81,23 @@ def create_static_dir():
     else:
         print(f"Static directory already exists at {static_dir}")
 
+def create_module_dirs():
+    """Ensure all required module directories exist with __init__.py files."""
+    base_dir = Path(__file__).resolve().parent / 'api'
+    module_dirs = ['models', 'views', 'serializers']
+    
+    for module_dir in module_dirs:
+        dir_path = base_dir / module_dir
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+            print(f"Created module directory: {dir_path}")
+        
+        init_file = dir_path / '__init__.py'
+        if not os.path.exists(init_file):
+            with open(init_file, 'w') as f:
+                f.write(f"# This file makes the {module_dir} directory a Python package\n")
+            print(f"Created __init__.py in {dir_path}")
+
 if __name__ == "__main__":
     print("This script will completely reset your database and migrations.")
     confirm = input("Are you sure you want to proceed? (yes/no): ")
@@ -103,8 +120,13 @@ if __name__ == "__main__":
     # Step 3: Create static directory
     create_static_dir()
     
+    # Step 4: Create module directories with __init__.py files
+    create_module_dirs()
+    print("Module directories created/ensured.")
+    
     print("\nComplete reset finished successfully.")
     print("\nNext steps:")
     print("1. Run: python manage.py makemigrations api")
     print("2. Run: python manage.py migrate")
     print("3. Run: python manage.py createsuperuser")
+    print("4. Run: python check_imports.py (to verify no old import paths are being used)")

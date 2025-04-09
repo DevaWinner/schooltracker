@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import (
+from api.models.institution_models import (
     Institution, Classification, AcademicReputation, EmployerReputation,
     FacultyStudent, CitationsPerFaculty, InternationalFaculty, InternationalStudents,
     InternationalResearchNetwork, EmploymentOutcomes, Sustainability

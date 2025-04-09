@@ -4,8 +4,9 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from api.models import Userinfo
-from api.serializers import RegisterSerializer, LoginSerializer, UserInfoSerializer
+from api.models.user_models import Userinfo
+from api.serializers.auth_serializers import RegisterSerializer, LoginSerializer
+from api.serializers.user_serializers import UserInfoSerializer
 
 class RegisterAPIView(APIView):
     """
