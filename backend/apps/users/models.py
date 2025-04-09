@@ -29,3 +29,29 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.email} ({self.id})"
+    
+
+class UserInfo(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="user_info")
+    bio = models.TextField(blank=True, null=True)
+    facebook = models.URLField(max_length=100, blank=True, null=True)
+    twitter = models.URLField(max_length=100, blank=True, null=True)
+    linkedin = models.URLField(max_length=100, blank=True, null=True)
+    instagram = models.URLField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} ({self.id})"
+
+
+class UserSettings(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name="user_settings")
+    language = models.CharField(max_length=100, blank=True, null=False, default="en")
+    timezone = models.CharField(max_length=100, blank=True, null=False, default="UTC")
+    email_notification = models.BooleanField(null=False, blank=True, default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.email} ({self.id})"
