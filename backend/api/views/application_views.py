@@ -61,7 +61,12 @@ class ApplicationViewSet(viewsets.ModelViewSet):
     ordering = ['-updated_at']
     
     def get_queryset(self):
-        # Users can only see their own applications
+        # Check if this is a schema generation request
+        if getattr(self, 'swagger_fake_view', False):
+            # Return an empty queryset for schema generation
+            return Application.objects.none()
+        
+        # Regular request - users can only see their own applications
         return Application.objects.filter(user=self.request.user)
     
     def get_serializer_class(self):
