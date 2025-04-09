@@ -33,9 +33,13 @@ export const updateBasicInfo = async (
 	token: string,
 	data: UserInfoUpdateRequest
 ): Promise<UserInfo> => {
-	const response = await axiosInstance.put<UserInfo>("/user/info/", data, {
-		headers: { Authorization: `Bearer ${token}` },
-	});
+	const response = await axiosInstance.put<UserInfo>(
+		"/user/info/update/",
+		data,
+		{
+			headers: { Authorization: `Bearer ${token}` },
+		}
+	);
 	return response.data;
 };
 
@@ -67,7 +71,7 @@ export const updateUserProfile = async (
 	data: ProfileUpdateRequest
 ): Promise<UserProfile> => {
 	const response = await axiosInstance.put<UserProfile>(
-		"/user/profile/",
+		"/user/profile/update/",
 		data,
 		{
 			headers: { Authorization: `Bearer ${token}` },
@@ -141,7 +145,7 @@ export const updateUserSettings = async (
 	data: SettingsUpdateRequest
 ): Promise<UserSettings> => {
 	const response = await axiosInstance.put<UserSettings>(
-		"/user/settings/",
+		"/user/settings/update/",
 		data,
 		{
 			headers: { Authorization: `Bearer ${token}` },
