@@ -1,14 +1,21 @@
-# This file makes the views directory a Python package
-# The views should be imported directly from their respective files
+# This file imports and re-exports views from the modular structure
 
+# Auth views
 from .auth_views import RegisterAPIView, LoginAPIView
+
+# User views (updated with new class names)
 from .user_views import (
-    UserInfoAPIView, 
-    UserProfileAPIView, 
-    UserSettingsAPIView, 
-    UploadProfilePictureAPIView, 
-    DeleteUserAPIView
+    UserInfoRetrieveView, UserInfoUpdateView,
+    UserProfileRetrieveView, UserProfileUpdateView,
+    UserSettingsRetrieveView, UserSettingsUpdateView,
+    ProfilePictureUploadView, UserAccountDeleteView
 )
+
+# Institution views
 from .institution_views import InstitutionListView, InstitutionDetailView
-# Import the new Application views
-from .application_views import ApplicationViewSet
+
+# Application views
+from .application_views import (
+    ApplicationListView, ApplicationCreateView, ApplicationDetailView,
+    ApplicationFullUpdateView, ApplicationStatusUpdateView, ApplicationDeleteView
+)

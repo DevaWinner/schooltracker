@@ -1,6 +1,6 @@
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView, UpdateAPIView, DestroyAPIView, CreateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.conf import settings
@@ -12,25 +12,15 @@ import imghdr
 from api.models.user_models import UserProfile, UserSettings
 from api.serializers.user_serializers import UserInfoSerializer, UserProfileSerializer, UserSettingsSerializer
 
-class UserInfoAPIView(APIView):
+class UserInfoRetrieveView(RetrieveAPIView):
     """
-    Retrieve or update user basic information
+    View User Information
     
-    Get or update the authenticated user's basic registration information.
+    **GET /api/user/info/**
     
-    ---
-    ## Authorization
+    Retrieve user's basic account information including personal details and contact information.
     
-    Requires a valid JWT access token in the Authorization header:
-    `Authorization: Bearer {access_token}`
-    
-    ## GET
-    Retrieves the user's basic information
-    
-    ### Responses
-    
-    #### 200 OK
-    User information retrieved successfully
+    ## Response Format
     ```json
     {
         "id": 1,
@@ -45,25 +35,33 @@ class UserInfoAPIView(APIView):
         "updated_at": "2024-05-10T12:00:00Z"
     }
     ```
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserInfoSerializer
     
-    ## PUT
-    Updates the user's basic information
+    def get_object(self):
+        return self.request.user
+
+class UserInfoUpdateView(UpdateAPIView):
+    """
+    Update User Information
     
-    ### Request Body
+    **PUT /api/user/info/update/**
+    
+    Update user's basic account information including personal details and contact information.
+    
+    ## Request Body
     
     | Field | Type | Required | Description |
     | ----- | ---- | -------- | ----------- |
-    | first_name | string | No | User's first name |
-    | last_name | string | No | User's last name |
-    | phone | string | No | User's phone number |
-    | date_of_birth | string (YYYY-MM-DD) | No | User's date of birth |
-    | gender | string (enum) | No | User's gender: "Male", "Female", or "Other" |
-    | country | string | No | User's country |
+    | first_name | string | No | Your first name |
+    | last_name | string | No | Your last name |
+    | phone | string | No | Your phone number |
+    | date_of_birth | string (YYYY-MM-DD) | No | Your date of birth |
+    | gender | string | No | Your gender: "Male", "Female", or "Other" |
+    | country | string | No | Your country |
     
-    ### Responses
-    
-    #### 200 OK
-    User information updated successfully
+    ## Response Format
     ```json
     {
         "id": 1,
@@ -78,47 +76,23 @@ class UserInfoAPIView(APIView):
         "updated_at": "2024-05-10T13:00:00Z"
     }
     ```
-    
-    #### 400 Bad Request
-    Invalid input data
-    ```json
-    {
-        "gender": ["\"Invalid\" is not a valid choice."]
-    }
-    ```
     """
     permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        serializer = UserInfoSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    serializer_class = UserInfoSerializer
+    http_method_names = ['put']  # Only allow PUT method
     
-    def put(self, request):
-        serializer = UserInfoSerializer(request.user, data=request.data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_object(self):
+        return self.request.user
 
-class UserProfileAPIView(APIView):
+class UserProfileRetrieveView(RetrieveAPIView):
     """
-    Retrieve or update user profile
+    View User Profile
     
-    Get or update the authenticated user's extended profile information.
+    **GET /api/user/profile/**
     
-    ---
-    ## Authorization
+    Retrieve user's extended profile information including bio, profile picture, and social media links.
     
-    Requires a valid JWT access token in the Authorization header:
-    `Authorization: Bearer {access_token}`
-    
-    ## GET
-    Retrieves the user's profile information
-    
-    ### Responses
-    
-    #### 200 OK
-    User profile retrieved successfully
+    ## Response Format
     ```json
     {
         "id": 1,
@@ -133,31 +107,38 @@ class UserProfileAPIView(APIView):
         "updated_at": "2024-05-10T12:00:00Z"
     }
     ```
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserProfileSerializer
     
-    ## PUT
-    Updates the user's profile information
+    def get_object(self):
+        return UserProfile.objects.get(user=self.request.user)
+
+class UserProfileUpdateView(UpdateAPIView):
+    """
+    Update User Profile
     
-    ### Request Body
+    **PUT /api/user/profile/update/**
+    
+    Update user's extended profile information including bio, social media links, and other public details.
+    
+    ## Request Body
     
     | Field | Type | Required | Description |
     | ----- | ---- | -------- | ----------- |
-    | bio | string | No | User's biography or description |
-    | profile_picture | string (URL) | No | URL to user's profile picture |
-    | facebook | string (URL) | No | User's Facebook profile URL |
-    | twitter | string (URL) | No | User's Twitter profile URL |
-    | linkedin | string (URL) | No | User's LinkedIn profile URL |
-    | instagram | string (URL) | No | User's Instagram profile URL |
+    | bio | string | No | Your biography or description |
+    | facebook | string | No | Your Facebook profile URL |
+    | twitter | string | No | Your Twitter profile URL |
+    | linkedin | string | No | Your LinkedIn profile URL |
+    | instagram | string | No | Your Instagram profile URL |
     
-    ### Responses
-    
-    #### 200 OK
-    User profile updated successfully
+    ## Response Format
     ```json
     {
         "id": 1,
         "user_id": 1,
         "bio": "Updated bio information",
-        "profile_picture": "https://example.com/new-avatar.jpg",
+        "profile_picture": "https://example.com/avatar.jpg",
         "facebook": "https://facebook.com/johndoe",
         "twitter": "https://twitter.com/johndoe",
         "linkedin": "https://linkedin.com/in/johndoe",
@@ -166,50 +147,23 @@ class UserProfileAPIView(APIView):
         "updated_at": "2024-05-10T13:00:00Z"
     }
     ```
-    
-    #### 400 Bad Request
-    Invalid input data
-    ```json
-    {
-        "profile_picture": ["Enter a valid URL."]
-    }
-    ```
     """
     permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        profile = UserProfile.objects.get(user=request.user)
-        serializer = UserProfileSerializer(profile)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    serializer_class = UserProfileSerializer
+    http_method_names = ['put']  # Only allow PUT method
     
-    def put(self, request):
-        profile = UserProfile.objects.get(user=request.user)
-        serializer = UserProfileSerializer(profile, data=request.data, partial=True)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_object(self):
+        return UserProfile.objects.get(user=self.request.user)
 
-class UserSettingsAPIView(APIView):
+class UserSettingsRetrieveView(RetrieveAPIView):
     """
-    Retrieve or update user settings
+    View User Settings
     
-    Get or update the authenticated user's preference settings.
+    **GET /api/user/settings/**
     
-    ---
-    ## Authorization
+    Retrieve user's application preferences and settings.
     
-    Requires a valid JWT access token in the Authorization header:
-    `Authorization: Bearer {access_token}`
-    
-    ## GET
-    Retrieves the user's settings
-    
-    ### Responses
-    
-    #### 200 OK
-    User settings retrieved successfully
+    ## Response Format
     ```json
     {
         "id": 1,
@@ -221,22 +175,30 @@ class UserSettingsAPIView(APIView):
         "updated_at": "2024-05-10T12:00:00Z"
     }
     ```
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSettingsSerializer
     
-    ## PUT
-    Updates the user's settings
+    def get_object(self):
+        return UserSettings.objects.get(user=self.request.user)
+
+class UserSettingsUpdateView(UpdateAPIView):
+    """
+    Update User Settings
     
-    ### Request Body
+    **PUT /api/user/settings/update/**
+    
+    Update user's application preferences and settings.
+    
+    ## Request Body
     
     | Field | Type | Required | Description |
     | ----- | ---- | -------- | ----------- |
-    | language | string | No | User's preferred language (default: 'en') |
-    | timezone | string | No | User's timezone (default: 'UTC') |
+    | language | string | No | Your preferred language (default: 'en') |
+    | timezone | string | No | Your timezone (default: 'UTC') |
     | notification_email | boolean | No | Whether to receive email notifications (default: true) |
     
-    ### Responses
-    
-    #### 200 OK
-    User settings updated successfully
+    ## Response Format
     ```json
     {
         "id": 1,
@@ -248,69 +210,56 @@ class UserSettingsAPIView(APIView):
         "updated_at": "2024-05-10T13:00:00Z"
     }
     ```
-    
-    #### 400 Bad Request
-    Invalid input data
-    ```json
-    {
-        "language": ["Ensure this field has no more than 10 characters."]
-    }
-    ```
     """
     permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        settings = UserSettings.objects.get(user=request.user)
-        serializer = UserSettingsSerializer(settings)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    serializer_class = UserSettingsSerializer
+    http_method_names = ['put']  # Only allow PUT method
     
-    def put(self, request):
-        settings = UserSettings.objects.get(user=request.user)
-        serializer = UserSettingsSerializer(settings, data=request.data, partial=True)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def get_object(self):
+        return UserSettings.objects.get(user=self.request.user)
 
-class UploadProfilePictureAPIView(APIView):
+class ProfilePictureSerializer(serializers.Serializer):
+    profile_picture = serializers.ImageField(required=True)
+    
+    class Meta:
+        fields = ['profile_picture']
+
+class ProfilePictureUploadView(CreateAPIView):
     """
-    Upload profile picture
+    Upload Profile Picture
     
-    Uploads a profile picture for the current user and stores it in Supabase Storage.
-    Updates the user's profile with the new image URL.
-    If the user already has a profile picture, the previous one is deleted.
+    **POST /api/user/upload-profile-picture/**
     
-    ---
+    Upload a new profile picture. If user already has a profile picture, it will be replaced.
+    
     ## Request
     
-    Multipart form with the file in the 'profile_picture' field.
-    Maximum file size: 50 MB
-    Allowed file types: JPEG, PNG, GIF
+    Send a multipart/form-data request with:
+    - **profile_picture**: The image file (JPEG, PNG, or GIF) 
     
-    ## Authorization
+    ## Maximum File Size
     
-    Requires a valid JWT access token in the Authorization header:
-    `Authorization: Bearer {access_token}`
+    Maximum upload size: 50 MB
     
-    ## Responses
-    
-    ### 200 OK
-    Profile picture uploaded successfully
+    ## Response Format
     ```json
     {
         "profile_picture": "https://example.com/storage/v1/object/public/profile-pictures/user_1_abc123.jpg"
     }
     ```
     
+    ## Error Responses
+    
     ### 400 Bad Request
-    No file provided or invalid file
+    No file provided
     ```json
     {
         "error": "No file provided"
     }
     ```
-    or
+    
+    ### 400 Bad Request
+    Invalid file type
     ```json
     {
         "error": "Invalid file type. Only JPEG, PNG, and GIF are allowed."
@@ -318,7 +267,7 @@ class UploadProfilePictureAPIView(APIView):
     ```
     
     ### 413 Payload Too Large
-    File exceeds maximum size
+    File too large
     ```json
     {
         "error": "File size exceeds maximum allowed (50 MB)"
@@ -327,35 +276,40 @@ class UploadProfilePictureAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
+    serializer_class = ProfilePictureSerializer  # Add serializer class
+    
+    def get_serializer_class(self):
+        # Handle swagger schema generation
+        if getattr(self, 'swagger_fake_view', False):
+            return self.serializer_class
+        return self.serializer_class
     
     def post(self, request):
+        # Check if this is a schema generation request
+        if getattr(self, 'swagger_fake_view', False):
+            return Response({"profile_picture": "https://example.com/profile.jpg"})
+        
         try:
-            print("Processing profile picture upload request...")
-            
             # Check if a file was provided
             if 'profile_picture' not in request.FILES:
-                print("No file found in request.FILES")
                 return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
             
             file = request.FILES['profile_picture']
-            print(f"File received: {file.name}, size: {file.size} bytes")
             
             # Check file size
             if file.size > settings.MAX_UPLOAD_SIZE:
-                print(f"File too large: {file.size} bytes (max: {settings.MAX_UPLOAD_SIZE})")
                 return Response(
                     {"error": f"File size exceeds maximum allowed (50 MB)"},
                     status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
                 )
             
-            # Validate file type using file extension (primary method)
+            # Validate file type using file extension
             _, file_extension = os.path.splitext(file.name)
             file_extension = file_extension.lower()
             
             allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif']
             
             if file_extension not in allowed_extensions:
-                print(f"Invalid file extension: {file_extension}")
                 return Response(
                     {"error": "Invalid file type. Only JPEG, PNG, and GIF are allowed."},
                     status=status.HTTP_400_BAD_REQUEST
@@ -372,49 +326,38 @@ class UploadProfilePictureAPIView(APIView):
                 
                 valid_img_types = ['jpeg', 'jpg', 'png', 'gif']
                 if img_type not in valid_img_types:
-                    print(f"Invalid image type detected: {img_type}")
                     return Response(
                         {"error": "The file is not a valid image. Only JPEG, PNG, and GIF are allowed."},
                         status=status.HTTP_400_BAD_REQUEST
                     )
             except Exception as e:
-                # If imghdr validation fails, log the error but continue with the upload
-                # since we've already validated the file extension
-                print(f"Warning: image validation failed: {str(e)}")
+                # Continue with upload if imghdr validation fails
+                pass
             
-            # Generate unique filename with user folder structure for RLS
+            # Generate unique filename
             user_id = request.user.id
             unique_filename = f"{user_id}/profile{uuid.uuid4()}{file_extension}"
-            print(f"Generated unique filename: {unique_filename}")
             
             try:
                 # Initialize Supabase client
-                print(f"Initializing Supabase client with URL: {settings.SUPABASE_URL}")
-                
-                # Try with service key if available
                 service_key = getattr(settings, 'SUPABASE_SERVICE_KEY', None)
                 if service_key:
                     supabase = create_client(settings.SUPABASE_URL, service_key)
                 else:
                     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
                 
-                # Get the user's profile
+                # Get user's profile
                 profile = request.user.profile
                 
                 # Delete previous profile picture if exists
                 if profile.profile_picture:
                     try:
-                        # Extract filename from the URL
                         current_path = profile.profile_picture.split('/public/')[1] if '/public/' in profile.profile_picture else None
                         
                         if current_path:
-                            # Delete the file from Supabase
-                            print(f"Attempting to delete previous profile picture: {current_path}")
                             supabase.storage.from_(settings.SUPABASE_BUCKET).remove([current_path])
-                            print(f"Deleted previous profile picture: {current_path}")
                     except Exception as e:
-                        # Log the error but continue with the upload
-                        print(f"Error deleting previous profile picture: {str(e)}")
+                        pass
                 
                 # Ensure file_content exists
                 if 'file_content' not in locals():
@@ -430,7 +373,6 @@ class UploadProfilePictureAPIView(APIView):
                 content_type = content_type_map.get(file_extension, 'application/octet-stream')
                 
                 # Upload file to Supabase Storage
-                print(f"Uploading file to bucket: {settings.SUPABASE_BUCKET}")
                 try:
                     result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
                         path=unique_filename,
@@ -443,7 +385,6 @@ class UploadProfilePictureAPIView(APIView):
                     time.sleep(1)
                     
                 except Exception as first_err:
-                    print(f"First upload attempt failed: {str(first_err)}")
                     # Try with upsert flag (overwrite if exists)
                     result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
                         path=unique_filename,
@@ -454,7 +395,6 @@ class UploadProfilePictureAPIView(APIView):
                 
                 # Get public URL for the uploaded file
                 file_url = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(unique_filename)
-                print(f"File uploaded successfully. Public URL: {file_url}")
                 
                 # Update user profile with the new profile picture URL
                 profile.profile_picture = file_url
@@ -463,52 +403,38 @@ class UploadProfilePictureAPIView(APIView):
                 return Response({"profile_picture": file_url}, status=status.HTTP_200_OK)
                 
             except Exception as e:
-                print(f"Error during Supabase upload: {str(e)}")
-                # Return detailed error message with traceback for debugging
                 import traceback
                 traceback_str = traceback.format_exc()
-                print(traceback_str)
                 return Response({"error": str(e), "details": traceback_str}, status=status.HTTP_400_BAD_REQUEST)
                 
         except Exception as e:
-            print(f"Unexpected error in profile picture upload: {str(e)}")
             import traceback
             traceback_str = traceback.format_exc()
-            print(traceback_str)
             return Response({"error": f"Unexpected error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
-class DeleteUserAPIView(APIView):
+class UserAccountDeleteView(DestroyAPIView):
     """
-    Delete user account
+    Delete User Account
     
-    Deletes the authenticated user's account and all related data (profile, settings, etc.).
-    Also deletes any profile pictures stored in Supabase.
+    **DELETE /api/user/delete-account/**
+    
+    Permanently delete user account and all associated data.
     This action cannot be undone.
-    
-    ---
-    ## Authorization
-    
-    Requires a valid JWT access token in the Authorization header:
-    `Authorization: Bearer {access_token}`
     
     ## Request Body
     
     | Field | Type | Required | Description |
     | ----- | ---- | -------- | ----------- |
-    | confirm_deletion | boolean | Yes | Must be set to true to confirm account deletion |
+    | confirm_deletion | boolean | Yes | Set to true to confirm deletion |
     
-    ## Responses
-    
-    ### 200 OK
-    User account deleted successfully
+    ## Response Format (Success)
     ```json
     {
         "message": "User account deleted successfully"
     }
     ```
     
-    ### 400 Bad Request
-    Deletion not confirmed
+    ## Error Response
     ```json
     {
         "error": "You must confirm deletion by setting confirm_deletion to true"
@@ -517,7 +443,10 @@ class DeleteUserAPIView(APIView):
     """
     permission_classes = [IsAuthenticated]
     
-    def delete(self, request):
+    def get_object(self):
+        return self.request.user
+        
+    def delete(self, request, *args, **kwargs):
         # Require explicit confirmation to prevent accidental deletion
         confirm_deletion = request.data.get('confirm_deletion', False)
         
@@ -543,7 +472,7 @@ class DeleteUserAPIView(APIView):
                     supabase.storage.from_(settings.SUPABASE_BUCKET).remove([current_filename])
                 except Exception as e:
                     # Log the error but continue with account deletion
-                    print(f"Error deleting profile picture during account deletion: {e}")
+                    pass
             
             # Delete the user (which will cascade to profile and settings due to ForeignKey relationships)
             user.delete()
