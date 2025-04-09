@@ -8,16 +8,15 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.decorators import permission_classes
-
 from .supabase_config import (
     supabase_signup,
     supabase_signin,
-    signin_with_google
+    signin_with_google,
+    upload_file_documents
 )
 from supabase import AuthApiError
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-
 from .serializers import (
     UserProfileSerializer,
     UserInfoSerializer,
@@ -667,5 +666,25 @@ class UserSettingsView(APIView):
                 {"message": "User settings updated successfully", "user info": serializer.data},
                     status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
             )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)   
+
+
+# View for the users documents inserted into the documents table 
+@csrf_exempt
+def upload_view_documents(request):
+    if request.method != 'POST':
+        return JsonResponse({"error": "Only POST allowed"}, status=405)
     
+    if 'file' not in request.FILES:
+        return JsonResponse({"error": "No file provided"}, status=400)
+    
+    try:
+        # Extract document_type from POST data
+        document_type = request.POST.get("document_type", "unspecified")
+        
+        # Upload file
+        result = upload_file_documents(request.FILES['file'], document_type=document_type)
+        return JsonResponse(result, status=201)
+    
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
