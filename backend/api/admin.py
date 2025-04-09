@@ -5,6 +5,7 @@ from api.models.institution_models import (
     FacultyStudent, CitationsPerFaculty, InternationalFaculty, InternationalStudents,
     InternationalResearchNetwork, EmploymentOutcomes, Sustainability
 )
+from api.models.application_models import Application
 
 # Register user models
 admin.site.register(Userinfo)
@@ -23,3 +24,6 @@ admin.site.register(InternationalStudents)
 admin.site.register(InternationalResearchNetwork)
 admin.site.register(EmploymentOutcomes)
 admin.site.register(Sustainability)
+
+# Register application tracker models
+admin.site.register(Application)

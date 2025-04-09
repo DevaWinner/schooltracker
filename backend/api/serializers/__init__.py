@@ -9,3 +9,9 @@ from .institution_serializers import (
     InternationalStudentsSerializer, InternationalResearchNetworkSerializer,
     EmploymentOutcomesSerializer, SustainabilitySerializer
 )
+# Import the new Application serializers
+from .application_serializers import (
+    ApplicationListSerializer,
+    ApplicationDetailSerializer,
+    ApplicationCreateSerializer
+)

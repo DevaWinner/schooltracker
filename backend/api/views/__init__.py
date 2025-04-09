@@ -10,3 +10,5 @@ from .user_views import (
     DeleteUserAPIView
 )
 from .institution_views import InstitutionListView, InstitutionDetailView
+# Import the new Application views
+from .application_views import ApplicationViewSet

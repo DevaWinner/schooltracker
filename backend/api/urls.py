@@ -1,10 +1,16 @@
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from api.views.auth_views import RegisterAPIView, LoginAPIView
 from api.views.user_views import (
     UserInfoAPIView, UserProfileAPIView, UserSettingsAPIView,
     UploadProfilePictureAPIView, DeleteUserAPIView
 )
 from api.views.institution_views import InstitutionListView, InstitutionDetailView
+from api.views.application_views import ApplicationViewSet
+
+# Create a router for ViewSets
+router = DefaultRouter()
+router.register(r'applications', ApplicationViewSet, basename='application')
 
 # Define URL patterns for each module
 auth_urls = [
@@ -35,4 +41,7 @@ urlpatterns = [
     
     # Institution directory endpoints
     path('institutions/', include((institution_urls, 'institutions'))),
+    
+    # ViewSet routes (includes applications)
+    path('', include(router.urls)),
 ]

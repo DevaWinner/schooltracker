@@ -7,3 +7,5 @@ from .institution_models import (
     FacultyStudent, CitationsPerFaculty, InternationalFaculty, InternationalStudents,
     InternationalResearchNetwork, EmploymentOutcomes, Sustainability
 )
+# Import the new Application model
+from .application_models import Application
