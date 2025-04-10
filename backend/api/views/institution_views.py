@@ -3,6 +3,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import IntegerField, Value, F, Func, Expression
 from django.db.models.functions import Cast, Substr, StrIndex, Replace, Length
+from rest_framework.response import Response
+from rest_framework.views import APIView
 import re
 
 from api.models.institution_models import Institution
@@ -231,3 +233,38 @@ class InstitutionDetailView(generics.RetrieveAPIView):
     queryset = Institution.objects.all()
     serializer_class = InstitutionDetailSerializer
     lookup_field = 'id'
+
+class InstitutionCountriesView(APIView):
+    """
+    List All Available Countries
+    
+    **GET /api/institutions/countries/**
+    
+    Retrieve a list of all countries that have institutions in the database.
+    Countries are returned in alphabetical order.
+    
+    ## Response Format
+    ```json
+    {
+        "countries": [
+            "Argentina",
+            "Australia",
+            "Austria",
+            "Belgium",
+            "Brazil",
+            "Canada",
+            "China",
+            ...
+        ]
+    }
+    ```
+    """
+    
+    def get(self, request):
+        # Get distinct countries from the database
+        countries = Institution.objects.values_list('country', flat=True).distinct().order_by('country')
+        
+        # Filter out None/empty values
+        countries = [country for country in countries if country]
+        
+        return Response({"countries": countries})

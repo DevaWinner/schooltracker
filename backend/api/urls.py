@@ -6,7 +6,7 @@ from api.views.user_views import (
     UserSettingsRetrieveView, UserSettingsUpdateView,
     ProfilePictureUploadView, UserAccountDeleteView
 )
-from api.views.institution_views import InstitutionListView, InstitutionDetailView
+from api.views.institution_views import InstitutionListView, InstitutionDetailView, InstitutionCountriesView
 from api.views.application_views import (
     ApplicationListView, ApplicationCreateView, ApplicationDetailView,
     ApplicationFullUpdateView, ApplicationStatusUpdateView, ApplicationDeleteView
@@ -44,6 +44,7 @@ user_urls = [
 
 institution_urls = [
     path('', InstitutionListView.as_view(), name='institution_list'),
+    path('countries/', InstitutionCountriesView.as_view(), name='institution_countries'),
     path('<str:id>/', InstitutionDetailView.as_view(), name='institution_detail'),
 ]
 
