@@ -195,10 +195,11 @@ export default function EditApplicationModal({
 								>
 									<option value="Draft">Draft</option>
 									<option value="In Progress">In Progress</option>
-									<option value="Submitted">Submitted</option>
-									<option value="Interview">Interview</option>
+									<option value="Pending">Pending</option>
 									<option value="Accepted">Accepted</option>
 									<option value="Rejected">Rejected</option>
+									<option value="Deferred">Deferred</option>
+									<option value="Withdrawn">Withdrawn</option>
 								</select>
 							</div>
 							<div>

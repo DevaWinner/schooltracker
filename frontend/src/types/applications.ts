@@ -31,10 +31,11 @@ export interface Application {
 	status:
 		| "Draft"
 		| "In Progress"
-		| "Submitted"
-		| "Interview"
+		| "Pending"
 		| "Accepted"
-		| "Rejected";
+		| "Rejected"
+		| "Deferred"
+		| "Withdrawn";
 	start_date?: string;
 	submitted_date?: string;
 	decision_date?: string;
