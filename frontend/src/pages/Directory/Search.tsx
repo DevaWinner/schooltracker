@@ -80,17 +80,15 @@ export default function SchoolSearch() {
 
 	// Handler for applying filters from filter component
 	const handleApplyFilters = (newFilters: InstitutionFilters) => {
-		console.log("Applying new filters:", newFilters);
+		console.log("Applying filters:", newFilters);
 
 		// Reset to page 1 when filters change
 		setCurrentPage(1);
 
-		// Update filters state, preserving the page size
-		// Make sure country filter is properly handled
+		// Update filters state, preserving the page size if not explicitly set
 		setFilters({
 			...newFilters,
-			country: newFilters.country || undefined, // Ensure country is explicitly undefined if empty
-			page_size: filters.page_size,
+			page_size: newFilters.page_size || filters.page_size,
 		});
 	};
 
@@ -148,7 +146,7 @@ export default function SchoolSearch() {
 					</p>
 				</div>
 
-				{/* Filters section */}
+				{/* Filters section - pass the handler that applies immediately */}
 				<InstitutionFilter
 					onApplyFilters={handleApplyFilters}
 					countries={countries}

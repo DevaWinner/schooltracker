@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { InstitutionFilters } from "../../types/institutions";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
@@ -25,26 +25,64 @@ export default function InstitutionFilter({
 		research: "",
 		size: "",
 		focus: "",
+		ordering: "",
 		...initialFilters,
 	});
 
 	const [isExpanded, setIsExpanded] = useState(false);
+	const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
+		null
+	);
 
 	// Update filters if initialFilters change
 	useEffect(() => {
 		setFilters((prev) => ({ ...prev, ...initialFilters }));
 	}, [initialFilters]);
 
+	// Debounce search input to avoid excessive API calls
+	const debounceSearch = useCallback(
+		(value: string) => {
+			if (searchTimeout) {
+				clearTimeout(searchTimeout);
+			}
+
+			const timeout = setTimeout(() => {
+				onApplyFilters({
+					...filters,
+					search: value,
+					// Don't include page to reset to first page when searching
+				});
+			}, 500); // 500ms delay
+
+			setSearchTimeout(timeout);
+		},
+		[filters, onApplyFilters]
+	);
+
+	// Handle input changes
 	const handleInputChange = (
 		e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
 	) => {
 		const { name, value } = e.target;
+
+		// Update local state
 		setFilters((prev) => ({ ...prev, [name]: value }));
+
+		// Apply immediately for search and ordering
+		if (name === "search") {
+			debounceSearch(value);
+		} else if (name === "ordering") {
+			// Apply ordering changes immediately
+			onApplyFilters({
+				...filters,
+				ordering: value,
+			});
+		}
 	};
 
 	const handleResetFilters = () => {
-		// Reset to empty values but preserve page_size
-		setFilters({
+		// Reset all filters except page_size
+		const resetFilters = {
 			search: "",
 			country: "",
 			rank_gte: "",
@@ -52,78 +90,86 @@ export default function InstitutionFilter({
 			research: "",
 			size: "",
 			focus: "",
-			// Don't set default ordering on reset to show natural order
+			ordering: "",
 			page_size: initialFilters.page_size,
-		});
+		};
 
-		// Apply the reset immediately
-		onApplyFilters({
-			page_size: initialFilters.page_size,
-		});
+		setFilters(resetFilters);
+		onApplyFilters(resetFilters);
+		setIsExpanded(false);
 	};
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-
-		// Create a clean filter object - only include non-empty values
-		const cleanFilters: InstitutionFilters = {};
-
-		if (filters.search) cleanFilters.search = filters.search;
-		if (filters.country) cleanFilters.country = filters.country; // Make sure country is correctly passed
-		if (filters.rank_gte) cleanFilters.rank_gte = filters.rank_gte;
-		if (filters.rank_lte) cleanFilters.rank_lte = filters.rank_lte;
-		if (filters.research) cleanFilters.research = filters.research;
-		if (filters.size) cleanFilters.size = filters.size;
-		if (filters.focus) cleanFilters.focus = filters.focus;
-		if (filters.ordering) cleanFilters.ordering = filters.ordering;
-
-		// Preserve page size
-		cleanFilters.page_size = initialFilters.page_size;
-
-		console.log("Applying filters to API:", cleanFilters);
-		onApplyFilters(cleanFilters);
+		onApplyFilters(filters);
 	};
 
 	return (
 		<div className="rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-			<div className="p-4 border-b border-gray-200 dark:border-gray-700">
-				<div className="flex flex-wrap items-center justify-between gap-4">
-					<div className="flex-1">
-						<div className="relative">
-							<div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-								<svg
-									className="w-4 h-4 text-gray-500 dark:text-gray-400"
-									xmlns="http://www.w3.org/2000/svg"
-									fill="none"
-									viewBox="0 0 24 24"
-									stroke="currentColor"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth={2}
-										d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-									/>
-								</svg>
-							</div>
-							<input
-								type="search"
-								name="search"
-								className="block w-full p-2.5 pl-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-white focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-								placeholder="Search by institution name..."
-								value={filters.search || ""}
-								onChange={handleInputChange}
-							/>
+			{/* Search bar - always visible */}
+			<form
+				className="flex flex-col md:flex-row px-5 py-5"
+				onSubmit={handleSubmit}
+			>
+				<div className="flex-grow mb-3 md:mb-0 md:mr-3">
+					<div className="relative">
+						<div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+							<svg
+								className="w-5 h-5 text-gray-400"
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+								xmlns="http://www.w3.org/2000/svg"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+								></path>
+							</svg>
 						</div>
+						<Input
+							type="text"
+							name="search"
+							placeholder="Search institutions..."
+							className="pl-10"
+							value={filters.search}
+							onChange={handleInputChange}
+						/>
 					</div>
-					<button
+				</div>
+
+				{/* Ordering dropdown - always visible */}
+				<div className="mb-3 md:mb-0 md:mr-3 md:w-48">
+					<select
+						name="ordering"
+						value={filters.ordering || ""}
+						onChange={handleInputChange}
+						className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					>
+						<option value="">Sort by...</option>
+						<option value="rank">Rank (Low to High)</option>
+						<option value="-rank">Rank (High to Low)</option>
+						<option value="name">Name (A-Z)</option>
+						<option value="-name">Name (Z-A)</option>
+						<option value="country">Country (A-Z)</option>
+						<option value="-country">Country (Z-A)</option>
+						<option value="-overall_score">Score (High to Low)</option>
+						<option value="overall_score">Score (Low to High)</option>
+					</select>
+				</div>
+
+				<div className="flex items-center">
+					<Button
 						type="button"
 						onClick={() => setIsExpanded(!isExpanded)}
-						className="flex items-center text-sm font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+						variant="outline"
+						className="mr-2"
 					>
-						{isExpanded ? "Hide Filters" : "Show Filters"}
+						{isExpanded ? "Hide Filters" : "More Filters"}
 						<svg
-							className={`w-4 h-4 ml-1 transition-transform duration-200 ${
+							className={`ml-1 w-4 h-4 transition-transform ${
 								isExpanded ? "rotate-180" : ""
 							}`}
 							fill="none"
@@ -135,31 +181,18 @@ export default function InstitutionFilter({
 								strokeLinejoin="round"
 								strokeWidth="2"
 								d="M19 9l-7 7-7-7"
-							/>
+							></path>
 						</svg>
-					</button>
-
-					<select
-						name="ordering"
-						value={filters.ordering || "rank"}
-						onChange={handleInputChange}
-						className="text-sm border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-					>
-						<option value="rank">Rank (Ascending)</option>
-						<option value="-rank">Rank (Descending)</option>
-						<option value="name">Name (A-Z)</option>
-						<option value="-name">Name (Z-A)</option>
-						<option value="-overall_score">Score (Highest)</option>
-						<option value="overall_score">Score (Lowest)</option>
-					</select>
+					</Button>
+					<Button type="submit" disabled={loading}>
+						Search
+					</Button>
 				</div>
-			</div>
+			</form>
 
+			{/* Advanced filters - expandable */}
 			{isExpanded && (
-				<form
-					onSubmit={handleSubmit}
-					className="p-5 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800"
-				>
+				<div className="p-5 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
 					<div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 						<div>
 							<Label htmlFor="country">Country</Label>
@@ -180,20 +213,27 @@ export default function InstitutionFilter({
 						</div>
 
 						<div>
-							<Label htmlFor="size">Institution Size</Label>
-							<select
-								id="size"
-								name="size"
-								className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-								value={filters.size || ""}
+							<Label htmlFor="rank_gte">Minimum Rank</Label>
+							<Input
+								type="number"
+								id="rank_gte"
+								name="rank_gte"
+								placeholder="Min"
+								value={filters.rank_gte}
 								onChange={handleInputChange}
-							>
-								<option value="">All Sizes</option>
-								<option value="Extra Large">Extra Large</option>
-								<option value="Large">Large</option>
-								<option value="Medium">Medium</option>
-								<option value="Small">Small</option>
-							</select>
+							/>
+						</div>
+
+						<div>
+							<Label htmlFor="rank_lte">Maximum Rank</Label>
+							<Input
+								type="number"
+								id="rank_lte"
+								name="rank_lte"
+								placeholder="Max"
+								value={filters.rank_lte}
+								onChange={handleInputChange}
+							/>
 						</div>
 
 						<div>
@@ -205,8 +245,7 @@ export default function InstitutionFilter({
 								value={filters.research || ""}
 								onChange={handleInputChange}
 							>
-								<option value="">All Research Levels</option>
-								<option value="Very High">Very High</option>
+								<option value="">Any</option>
 								<option value="High">High</option>
 								<option value="Medium">Medium</option>
 								<option value="Low">Low</option>
@@ -214,7 +253,23 @@ export default function InstitutionFilter({
 						</div>
 
 						<div>
-							<Label htmlFor="focus">Institution Focus</Label>
+							<Label htmlFor="size">Size</Label>
+							<select
+								id="size"
+								name="size"
+								className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+								value={filters.size || ""}
+								onChange={handleInputChange}
+							>
+								<option value="">Any</option>
+								<option value="Large">Large</option>
+								<option value="Medium">Medium</option>
+								<option value="Small">Small</option>
+							</select>
+						</div>
+
+						<div>
+							<Label htmlFor="focus">Focus</Label>
 							<select
 								id="focus"
 								name="focus"
@@ -222,61 +277,31 @@ export default function InstitutionFilter({
 								value={filters.focus || ""}
 								onChange={handleInputChange}
 							>
-								<option value="">All Focus Types</option>
-								<option value="Full Comprehensive">Full Comprehensive</option>
+								<option value="">Any</option>
 								<option value="Comprehensive">Comprehensive</option>
+								<option value="Specialized">Specialized</option>
 								<option value="Focused">Focused</option>
-								<option value="Specialist">Specialist</option>
 							</select>
 						</div>
-
-						<div className="flex items-end gap-2">
-							<div className="flex-1">
-								<Label htmlFor="rank_gte">Min Rank</Label>
-								<input
-									id="rank_gte"
-									name="rank_gte"
-									type="number"
-									min="1"
-									className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-									placeholder="From"
-									value={filters.rank_gte || ""}
-									onChange={handleInputChange}
-								/>
-							</div>
-							<div className="flex-1">
-								<Label htmlFor="rank_lte">Max Rank</Label>
-								<input
-									id="rank_lte"
-									name="rank_lte"
-									type="number"
-									min="1"
-									className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-									placeholder="To"
-									value={filters.rank_lte || ""}
-									onChange={handleInputChange}
-								/>
-							</div>
-						</div>
 					</div>
 
-					<div className="flex items-center justify-end mt-6 gap-3">
-						<button
+					<div className="mt-6 flex justify-end gap-3">
+						<Button
 							type="button"
+							variant="outline"
 							onClick={handleResetFilters}
-							className="py-2 px-4 text-sm font-medium text-gray-700 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
 						>
-							Reset
-						</button>
-						<button
-							type="submit"
+							Reset Filters
+						</Button>
+						<Button
+							type="button"
+							onClick={() => onApplyFilters(filters)}
 							disabled={loading}
-							className="py-2 px-4 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800 disabled:opacity-50"
 						>
-							{loading ? "Applying..." : "Apply Filters"}
-						</button>
+							Apply Filters
+						</Button>
 					</div>
-				</form>
+				</div>
 			)}
 		</div>
 	);
