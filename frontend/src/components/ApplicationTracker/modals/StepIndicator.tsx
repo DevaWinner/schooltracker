@@ -45,7 +45,14 @@ export default function StepIndicator({
 									stepNumber
 								)}
 							</div>
-							<div className="mt-2 hidden text-xs font-medium sm:block">
+							<div
+								className={`mt-2 hidden text-xs font-medium sm:block
+                ${
+									isCompleted || isActive
+										? "text-gray-700 dark:text-brand-300"
+										: "text-gray-500 dark:text-gray-400"
+								}`}
+							>
 								{stepNumber === 1 && "Basic Info"}
 								{stepNumber === 2 && "Program Details"}
 								{stepNumber === 3 && "Resources"}

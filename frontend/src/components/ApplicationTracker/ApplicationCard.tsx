@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Application, ApplicationCardProps } from "../../types/applications";
 
 export default function ApplicationCard({
@@ -5,13 +6,22 @@ export default function ApplicationCard({
 	onEdit,
 	onDelete,
 	onRefresh,
+	onView,
 }: ApplicationCardProps) {
-	const handleEdit = () => {
+	const navigate = useNavigate();
+
+	const handleEdit = (e: React.MouseEvent) => {
+		e.stopPropagation();
 		if (onEdit) onEdit(data);
 	};
 
-	const handleDelete = () => {
+	const handleDelete = (e: React.MouseEvent) => {
+		e.stopPropagation();
 		if (onDelete) onDelete(data.id);
+	};
+
+	const handleCardClick = () => {
+		navigate(`/applications/detail/${data.id}`);
 	};
 
 	// Helper function to format date
@@ -42,7 +52,10 @@ export default function ApplicationCard({
 	};
 
 	return (
-		<div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-white/[0.05] dark:bg-white/[0.03]">
+		<div
+			className="rounded-xl border border-gray-200 bg-white p-4 dark:border-white/[0.05] dark:bg-white/[0.03] h-[320px] flex flex-col cursor-pointer hover:border-blue-300 dark:hover:border-blue-400/30 transition-colors duration-200"
+			onClick={handleCardClick}
+		>
 			<div className="mb-3 flex items-center justify-between">
 				<div>
 					<h3 className="text-base font-medium text-gray-900 dark:text-white">
@@ -64,7 +77,7 @@ export default function ApplicationCard({
 				</span>
 			</div>
 
-			<div className="space-y-2 border-t border-gray-100 pt-3 dark:border-gray-800">
+			<div className="flex-1 overflow-y-auto space-y-2 border-t border-gray-100 pt-3 dark:border-gray-800">
 				<div className="flex justify-between">
 					<span className="text-sm text-gray-500 dark:text-gray-400">
 						Degree:
@@ -91,6 +104,28 @@ export default function ApplicationCard({
 						{formatDate(data.submitted_date)}
 					</span>
 				</div>
+
+				{data.decision_date && (
+					<div className="flex justify-between">
+						<span className="text-sm text-gray-500 dark:text-gray-400">
+							Decision Date:
+						</span>
+						<span className="text-sm text-gray-900 dark:text-white">
+							{formatDate(data.decision_date)}
+						</span>
+					</div>
+				)}
+
+				{data.notes && (
+					<div className="mt-2">
+						<span className="text-sm text-gray-500 dark:text-gray-400">
+							Notes:
+						</span>
+						<p className="text-sm text-gray-900 dark:text-white mt-1 line-clamp-2">
+							{data.notes}
+						</p>
+					</div>
+				)}
 			</div>
 
 			<div className="mt-4 flex items-center justify-end space-x-2 border-t border-gray-100 pt-3 dark:border-gray-800">

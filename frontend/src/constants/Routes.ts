@@ -8,6 +8,7 @@ export const ROUTES = {
 	},
 	Applications: {
 		tracker: "/applications/tracker",
+		detail: "/applications/detail/:id", // New route for application details
 	},
 	Documents: {
 		upload: "/documents/upload",

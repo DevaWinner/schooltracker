@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ApplicationFilterParams } from "../../types/applications";
 
-interface FiltersProps {
+interface ApplicationFiltersProps {
 	onFilterChange: (filters: ApplicationFilterParams) => void;
 	currentFilters: ApplicationFilterParams;
 }
@@ -9,153 +9,139 @@ interface FiltersProps {
 export default function ApplicationFilters({
 	onFilterChange,
 	currentFilters,
-}: FiltersProps) {
-	const [filters, setFilters] =
+}: ApplicationFiltersProps) {
+	const [localFilters, setLocalFilters] =
 		useState<ApplicationFilterParams>(currentFilters);
 
-	// Local state for search input to prevent immediate filtering while typing
-	const [searchInput, setSearchInput] = useState(currentFilters.search || "");
-
-	// Update filters when parent filters change
-	useEffect(() => {
-		setFilters(currentFilters);
-		setSearchInput(currentFilters.search || "");
-	}, [currentFilters]);
-
-	// Handle filter changes
 	const handleFilterChange = (key: string, value: string) => {
-		const newFilters = {
-			...filters,
-			[key]: value === "All" ? undefined : value,
+		const updatedFilters = { ...localFilters, [key]: value };
+		setLocalFilters(updatedFilters);
+		onFilterChange(updatedFilters);
+	};
+
+	const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const updatedFilters = { ...localFilters, search: e.target.value };
+		setLocalFilters(updatedFilters);
+		onFilterChange(updatedFilters);
+	};
+
+	const clearFilters = () => {
+		const emptyFilters = {
+			status: "",
+			degree_type: "",
+			search: "",
 		};
-		setFilters(newFilters);
-		onFilterChange(newFilters);
-	};
-
-	// Handle search input change with debounce
-	const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		setSearchInput(value);
-
-		// Debounce search to avoid excessive filtering while typing
-		const timer = setTimeout(() => {
-			const newFilters = {
-				...filters,
-				search: value || undefined,
-			};
-			setFilters(newFilters);
-			onFilterChange(newFilters);
-		}, 300);
-
-		return () => clearTimeout(timer);
-	};
-
-	// Handle search form submit
-	const handleSearchSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		const newFilters = {
-			...filters,
-			search: searchInput || undefined,
-		};
-		setFilters(newFilters);
-		onFilterChange(newFilters);
-	};
-
-	// Reset all filters
-	const resetFilters = () => {
-		const emptyFilters = {};
-		setFilters(emptyFilters);
-		setSearchInput("");
+		setLocalFilters(emptyFilters);
 		onFilterChange(emptyFilters);
 	};
 
 	return (
-		<div className="space-y-4">
-			<form
-				onSubmit={handleSearchSubmit}
-				className="flex w-full items-center gap-2"
-			>
-				<div className="relative flex-grow">
-					<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-						<svg
-							className="h-5 w-5 text-gray-400 dark:text-gray-500"
-							xmlns="http://www.w3.org/2000/svg"
-							viewBox="0 0 20 20"
-							fill="currentColor"
+		<div className="bg-white dark:bg-gray-800 rounded-lg p-4 mb-4 shadow-sm border border-gray-100 dark:border-gray-700">
+			<div className="flex flex-wrap items-center gap-4">
+				<div className="w-full flex items-center justify-between mb-2">
+					<h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+						Filter Applications
+					</h3>
+					{(localFilters.status ||
+						localFilters.degree_type ||
+						localFilters.search) && (
+						<button
+							onClick={clearFilters}
+							className="text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
 						>
-							<path
-								fillRule="evenodd"
-								d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-								clipRule="evenodd"
-							/>
-						</svg>
+							Clear Filters
+						</button>
+					)}
+				</div>
+
+				<div className="flex-grow flex flex-wrap gap-6 md:gap-8">
+					{/* Status Filter */}
+					<div className="w-full sm:w-40">
+						<label
+							htmlFor="status-filter"
+							className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+						>
+							Status
+						</label>
+						<select
+							id="status-filter"
+							value={localFilters.status || ""}
+							onChange={(e) => handleFilterChange("status", e.target.value)}
+							className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+						>
+							<option value="">All Statuses</option>
+							<option value="Draft">Draft</option>
+							<option value="In Progress">In Progress</option>
+							<option value="Submitted">Submitted</option>
+							<option value="Interview">Interview</option>
+							<option value="Accepted">Accepted</option>
+							<option value="Rejected">Rejected</option>
+						</select>
 					</div>
-					<input
-						type="text"
-						placeholder="Search applications..."
-						className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white dark:placeholder:text-gray-400"
-						value={searchInput}
-						onChange={handleSearchInputChange}
-					/>
-				</div>
-				<button
-					type="button"
-					onClick={resetFilters}
-					className={`rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 ${
-						Object.keys(filters).length === 0 ? "opacity-50" : ""
-					}`}
-					disabled={Object.keys(filters).length === 0}
-				>
-					Clear
-				</button>
-			</form>
 
-			<div className="flex flex-wrap items-center gap-2">
-				<div className="flex items-center gap-2">
-					<label
-						htmlFor="status-filter"
-						className="text-sm font-medium text-gray-700 dark:text-gray-300"
-					>
-						Status:
-					</label>
-					<select
-						id="status-filter"
-						className="rounded-md border border-gray-300 bg-white py-1.5 pl-3 pr-8 text-sm focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-						value={filters.status || "All"}
-						onChange={(e) => handleFilterChange("status", e.target.value)}
-					>
-						<option>All</option>
-						<option value="Draft">Draft</option>
-						<option value="In Progress">In Progress</option>
-						<option value="Submitted">Submitted</option>
-						<option value="Interview">Interview</option>
-						<option value="Accepted">Accepted</option>
-						<option value="Rejected">Rejected</option>
-					</select>
+					{/* Degree Type Filter */}
+					<div className="w-full sm:w-40">
+						<label
+							htmlFor="degree-filter"
+							className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
+						>
+							Degree Type
+						</label>
+						<select
+							id="degree-filter"
+							value={localFilters.degree_type || ""}
+							onChange={(e) =>
+								handleFilterChange("degree_type", e.target.value)
+							}
+							className="w-full rounded-lg border border-gray-300 text-sm py-2 px-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+						>
+							<option value="">All Degrees</option>
+							<option value="Associate">Associate</option>
+							<option value="Bachelor">Bachelor</option>
+							<option value="Master">Master</option>
+							<option value="PhD">PhD</option>
+							<option value="Certificate">Certificate</option>
+							<option value="Diploma">Diploma</option>
+							<option value="Other">Other</option>
+						</select>
+					</div>
 				</div>
 
-				<div className="flex items-center gap-2">
+				{/* Search Field - Right-justified */}
+				<div className="w-full sm:w-64 sm:ml-auto mt-2 sm:mt-0">
 					<label
-						htmlFor="degree-filter"
-						className="text-sm font-medium text-gray-700 dark:text-gray-300"
+						htmlFor="application-search"
+						className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1"
 					>
-						Degree:
+						Search
 					</label>
-					<select
-						id="degree-filter"
-						className="rounded-md border border-gray-300 bg-white py-1.5 pl-3 pr-8 text-sm focus:border-brand-300 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white"
-						value={filters.degree_type || "All"}
-						onChange={(e) => handleFilterChange("degree_type", e.target.value)}
-					>
-						<option>All</option>
-						<option value="Associate">Associate</option>
-						<option value="Bachelor">Bachelor</option>
-						<option value="Master">Master</option>
-						<option value="PhD">PhD</option>
-						<option value="Certificate">Certificate</option>
-						<option value="Diploma">Diploma</option>
-						<option value="Other">Other</option>
-					</select>
+					<div className="relative">
+						<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+							<svg
+								className="h-4 w-4 text-gray-500 dark:text-gray-400"
+								aria-hidden="true"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 20 20"
+							>
+								<path
+									stroke="currentColor"
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth="2"
+									d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+								/>
+							</svg>
+						</div>
+						<input
+							id="application-search"
+							type="search"
+							value={localFilters.search || ""}
+							onChange={handleSearchChange}
+							className="block w-full rounded-lg border border-gray-300 bg-white p-2 pl-10 text-sm text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+							placeholder="Search applications..."
+						/>
+					</div>
 				</div>
 			</div>
 		</div>

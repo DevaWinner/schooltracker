@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import {
 	Table,
 	TableBody,
@@ -15,19 +16,33 @@ import {
 import ApplicationCard from "./ApplicationCard";
 import ApplicationFilters from "./ApplicationFilters";
 
+interface ExtendedApplicationProps extends ApplicationProps {
+	onEdit?: (application: Application) => void;
+	onDelete?: (id: number) => void;
+	onView?: (application: Application) => void;
+}
+
 export default function ApplicationTable({
 	data,
 	onRefresh,
-}: ApplicationProps) {
+	onEdit,
+	onDelete,
+	onView,
+}: ExtendedApplicationProps) {
+	const navigate = useNavigate();
 	const [filters, setFilters] = useState<ApplicationFilterParams>({});
 
 	const handleEdit = (application: Application) => {
-		console.log("Edit application:", application);
+		if (onEdit) onEdit(application);
 	};
 
 	const handleDelete = (id: number) => {
-		console.log("Delete application:", id);
+		if (onDelete) onDelete(id);
 		if (onRefresh) onRefresh();
+	};
+
+	const handleRowClick = (application: Application) => {
+		navigate(`/applications/detail/${application.id}`);
 	};
 
 	// Filter applications based on current filters
@@ -66,6 +81,7 @@ export default function ApplicationTable({
 				/>
 			</div>
 
+			{/* Table View (Desktop) */}
 			<div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
 				<div className="max-w-full overflow-x-auto">
 					<Table>
@@ -74,37 +90,37 @@ export default function ApplicationTable({
 							<TableRow>
 								<TableCell
 									isHeader
-									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-300"
+									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
 								>
 									Institution
 								</TableCell>
 								<TableCell
 									isHeader
-									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-300"
+									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
 								>
 									Program
 								</TableCell>
 								<TableCell
 									isHeader
-									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-300"
+									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
 								>
 									Degree
 								</TableCell>
 								<TableCell
 									isHeader
-									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-300"
+									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
 								>
 									Status
 								</TableCell>
 								<TableCell
 									isHeader
-									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-300"
+									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
 								>
 									Start Date
 								</TableCell>
 								<TableCell
 									isHeader
-									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-300"
+									className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
 								>
 									Actions
 								</TableCell>
@@ -115,17 +131,21 @@ export default function ApplicationTable({
 						<TableBody>
 							{filteredData.length > 0 ? (
 								filteredData.map((application) => (
-									<TableRow key={application.id}>
-										<TableCell className="px-5 py-4 text-theme-sm">
+									<TableRow
+										key={application.id}
+										className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/30"
+										onClick={() => handleRowClick(application)}
+									>
+										<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
 											{application.institution_details?.name ||
 												application.institution_name ||
 												application.institution ||
 												"N/A"}
 										</TableCell>
-										<TableCell className="px-5 py-4 text-theme-sm">
+										<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
 											{application.program_name}
 										</TableCell>
-										<TableCell className="px-5 py-4 text-theme-sm">
+										<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
 											{application.degree_type}
 										</TableCell>
 										<TableCell className="px-5 py-4 text-theme-sm">
@@ -147,7 +167,7 @@ export default function ApplicationTable({
 												{application.status}
 											</span>
 										</TableCell>
-										<TableCell className="px-5 py-4 text-theme-sm">
+										<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
 											{application.start_date
 												? new Date(application.start_date).toLocaleDateString()
 												: "Not set"}
@@ -155,7 +175,10 @@ export default function ApplicationTable({
 										<TableCell className="px-5 py-4 text-theme-sm">
 											<div className="flex items-center space-x-2">
 												<button
-													onClick={() => handleEdit(application)}
+													onClick={(e) => {
+														e.stopPropagation();
+														handleEdit(application);
+													}}
 													className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
 													title="Edit"
 												>
@@ -175,7 +198,10 @@ export default function ApplicationTable({
 													</svg>
 												</button>
 												<button
-													onClick={() => handleDelete(application.id)}
+													onClick={(e) => {
+														e.stopPropagation();
+														handleDelete(application.id);
+													}}
 													className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
 													title="Delete"
 												>
@@ -214,7 +240,7 @@ export default function ApplicationTable({
 			</div>
 
 			{/* Mobile View - Cards */}
-			<div className="mt-6 space-y-4 md:hidden">
+			<div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:hidden">
 				{filteredData.length > 0 ? (
 					filteredData.map((application) => (
 						<ApplicationCard
@@ -223,6 +249,7 @@ export default function ApplicationTable({
 							onEdit={handleEdit}
 							onDelete={handleDelete}
 							onRefresh={onRefresh}
+							onView={onView}
 						/>
 					))
 				) : (

@@ -71,8 +71,8 @@ export default function MultiStepApplicationModal({
 	};
 
 	return (
-		<div className="no-scrollbar relative w-full overflow-hidden rounded-3xl bg-white p-4 dark:bg-gray-900 lg:p-6">
-			<div className="mb-6 border-b border-gray-200 pb-4 dark:border-gray-700">
+		<div className="no-scrollbar relative w-full max-w-[800px] mx-auto overflow-hidden rounded-xl bg-white h-[90vh] flex flex-col dark:bg-gray-900">
+			<div className="mb-6 border-b border-gray-200 px-6 pt-6 pb-4 dark:border-gray-700">
 				<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
 					{formData.id ? "Edit Application" : "Add New Application"}
 				</h4>
@@ -84,15 +84,17 @@ export default function MultiStepApplicationModal({
 			</div>
 
 			{/* Step indicators */}
-			<StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+			<div className="px-6">
+				<StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+			</div>
 
 			{/* Step content */}
-			<div className="custom-scrollbar max-h-[60vh] overflow-y-auto px-2 py-4">
+			<div className="scrollbar-hide flex-1 overflow-y-auto px-6 py-4">
 				{renderStep()}
 			</div>
 
 			{/* Navigation buttons */}
-			<div className="flex items-center justify-between border-t border-gray-200 pt-4 mt-4 dark:border-gray-700">
+			<div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 mt-auto bg-white dark:bg-gray-900 dark:border-gray-700">
 				<div>
 					{currentStep > 1 && (
 						<Button size="sm" variant="outline" onClick={handlePrevious}>

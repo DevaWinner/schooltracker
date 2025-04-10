@@ -1,5 +1,7 @@
 export interface Application {
 	id: number;
+	user_id?: number;
+	program_id?: number;
 	institution_name?: string;
 	institution_country?: string;
 	institution?: string;
@@ -20,8 +22,8 @@ export interface Application {
 		| "Diploma"
 		| "Other";
 	department?: string;
-	duration_years?: string;
-	tuition_fee?: string;
+	duration_years?: number;
+	tuition_fee?: number;
 	application_link?: string;
 	scholarship_link?: string;
 	program_info_link?: string;
@@ -34,15 +36,17 @@ export interface Application {
 		| "Rejected";
 	start_date?: string;
 	submitted_date?: string;
-	decision_date?: string;
+	decision_date?: string | null;
 	notes?: string;
-	created_at?: string;
-	updated_at?: string;
+	created_at: string;
+	updated_at: string;
 }
 
 export interface ApplicationProps {
 	data: Application[];
 	onRefresh?: () => void;
+	onEdit?: (application: Application) => void;
+	onDelete?: (id: number) => void;
 }
 
 export interface ApplicationCardProps {
@@ -50,6 +54,7 @@ export interface ApplicationCardProps {
 	onEdit?: (application: Application) => void;
 	onDelete?: (id: number) => void;
 	onRefresh?: () => void;
+	onView?: (application: Application) => void;
 }
 
 export interface ApplicationFilterParams {
