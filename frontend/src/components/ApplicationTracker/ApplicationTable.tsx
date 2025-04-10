@@ -39,6 +39,7 @@ export default function ApplicationTable({
 	};
 
 	const handleEdit = (application: Application) => {
+		console.log("Edit button clicked for application:", application.id);
 		if (onEdit) onEdit(application);
 	};
 
@@ -247,6 +248,7 @@ export default function ApplicationTable({
 													<button
 														onClick={(e) => {
 															e.stopPropagation();
+															// Pass complete application data to edit handler
 															handleEdit(application);
 														}}
 														className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"

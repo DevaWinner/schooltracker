@@ -4,17 +4,15 @@ import { getApplicationById } from "../api/applications";
 /**
  * Loads a complete application by ID from the API
  */
-export const loadApplicationById = async (
-	id: string | number
-): Promise<Application | null> => {
-	try {
-		const appId = typeof id === "string" ? id : id.toString();
-		const data = await getApplicationById(appId);
-		return data;
-	} catch (error) {
-		console.error(`Error loading application with ID ${id}:`, error);
-		return null;
-	}
+export const loadApplicationById = async (id: string | number): Promise<Application | null> => {
+  try {
+    const appId = typeof id === 'string' ? id : id.toString();
+    const data = await getApplicationById(appId);
+    return data;
+  } catch (error) {
+    console.error(`Error loading application with ID ${id}:`, error);
+    return null;
+  }
 };
 
 /**
@@ -46,4 +44,24 @@ export const normalizeApplicationData = (
 		updated_at: app.updated_at || new Date().toISOString(),
 		user: app.user || null,
 	} as Application;
+};
+
+/**
+ * Returns a minimal version of application for immediate display while loading
+ */
+export const getInitialApplicationData = (app: Application): Application => {
+  // Clone only the essential properties for immediate display
+  return {
+    id: app.id,
+    institution: app.institution || "",
+    program_name: app.program_name || "",
+    degree_type: app.degree_type || "",
+    status: app.status || "Draft",
+    created_at: app.created_at,
+    updated_at: app.updated_at,
+    // Add minimal required fields to avoid errors
+    department: app.department || "",
+    // We need to include this to satisfy TypeScript without modifying the Application type
+    ...app
+  } as Application;
 };

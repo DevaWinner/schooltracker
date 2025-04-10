@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { toast } from "react-toastify";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
@@ -23,8 +24,8 @@ export default function ApplicationTracker() {
 
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	const [currentApplication, setCurrentApplication] =
-		useState<Application | null>(null);
+	const [currentApplication, setCurrentApplication] = useState<Application | null>(null);
+	const [isLoadingApplication, setIsLoadingApplication] = useState(false);
 
 	const refreshData = useCallback(() => {
 		// Force refresh from API
@@ -43,26 +44,27 @@ export default function ApplicationTracker() {
 	}, []);
 
 	const handleEdit = useCallback(async (application: Application) => {
+		// Show modal immediately with initial application data
+		setCurrentApplication(application);
+		setIsEditModalOpen(true);
+		
+		// Then fetch complete data in the background
+		setIsLoadingApplication(true);
+		
 		try {
-			// Fetch complete application data before opening the modal
+			// Fetch complete application data
 			const completeData = await loadApplicationById(application.id);
 
 			if (completeData) {
-				console.log(
-					"Loaded complete application data for editing:",
-					completeData
-				);
+				console.log("Loaded complete application data for editing:", completeData);
 				setCurrentApplication(completeData);
-			} else {
-				// Fallback to the passed application if fetch fails
-				console.log("Using passed application data:", application);
-				setCurrentApplication(application);
 			}
-
-			setIsEditModalOpen(true);
 		} catch (error) {
 			console.error("Error preparing application for edit:", error);
-			toast.error("Failed to load application details");
+			toast.error("Failed to load complete application details");
+			// Modal stays open with partial data
+		} finally {
+			setIsLoadingApplication(false);
 		}
 	}, []);
 
@@ -153,6 +155,7 @@ export default function ApplicationTracker() {
 						data={currentApplication}
 						onSave={handleSaveEdit}
 						onClose={() => setIsEditModalOpen(false)}
+						isLoading={isLoadingApplication}
 					/>
 				)}
 			</Modal>
