@@ -112,7 +112,7 @@ class ApplicationCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-class ApplicationDetailView(generics.RetrieveAPIView):
+class ApplicationDetailView(generics.RetrieveUpdateAPIView):  # Changed from RetrieveAPIView
     """
     View Application Details
     
@@ -120,6 +120,10 @@ class ApplicationDetailView(generics.RetrieveAPIView):
     
     Retrieve comprehensive information about a specific application, including institution details,
     important dates, and user personal notes.
+    
+    **PATCH /api/applications/{id}/**
+    
+    Update fields of an existing application. Provide only the fields you want to update.
     
     ## Response Format
     ```json
@@ -152,6 +156,7 @@ class ApplicationDetailView(generics.RetrieveAPIView):
     """
     permission_classes = [IsAuthenticated]
     serializer_class = ApplicationDetailSerializer
+    http_method_names = ['get', 'patch']  # Explicitly allow GET and PATCH methods
     
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
