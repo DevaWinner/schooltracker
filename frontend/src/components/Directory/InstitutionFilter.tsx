@@ -43,6 +43,7 @@ export default function InstitutionFilter({
 	};
 
 	const handleResetFilters = () => {
+		// Reset to empty values but preserve page_size
 		setFilters({
 			search: "",
 			country: "",
@@ -51,17 +52,36 @@ export default function InstitutionFilter({
 			research: "",
 			size: "",
 			focus: "",
-			ordering: initialFilters.ordering || "rank",
+			// Don't set default ordering on reset to show natural order
+			page_size: initialFilters.page_size,
+		});
+
+		// Apply the reset immediately
+		onApplyFilters({
+			page_size: initialFilters.page_size,
 		});
 	};
 
 	const handleSubmit = (e: React.FormEvent) => {
 		e.preventDefault();
-		// Make sure we're preserving page_size when applying filters
-		onApplyFilters({
-			...filters,
-			page_size: initialFilters.page_size, // Preserve the page_size from parent component
-		});
+
+		// Create a clean filter object - only include non-empty values
+		const cleanFilters: InstitutionFilters = {};
+
+		if (filters.search) cleanFilters.search = filters.search;
+		if (filters.country) cleanFilters.country = filters.country; // Make sure country is correctly passed
+		if (filters.rank_gte) cleanFilters.rank_gte = filters.rank_gte;
+		if (filters.rank_lte) cleanFilters.rank_lte = filters.rank_lte;
+		if (filters.research) cleanFilters.research = filters.research;
+		if (filters.size) cleanFilters.size = filters.size;
+		if (filters.focus) cleanFilters.focus = filters.focus;
+		if (filters.ordering) cleanFilters.ordering = filters.ordering;
+
+		// Preserve page size
+		cleanFilters.page_size = initialFilters.page_size;
+
+		console.log("Applying filters to API:", cleanFilters);
+		onApplyFilters(cleanFilters);
 	};
 
 	return (

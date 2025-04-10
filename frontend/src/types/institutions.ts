@@ -1,6 +1,6 @@
 export interface Institution {
 	id: string;
-	rank: string;
+	rank: string; // API returns rank as string
 	name: string;
 	country: string;
 	overall_score: string;
@@ -37,18 +37,22 @@ export interface PaginatedInstitutions {
 	count: number;
 	next: string | null;
 	previous: string | null;
+	page?: string;
+	page_size?: number;
+	resultsLength?: number;
 	results: Institution[];
 }
 
 export interface InstitutionFilters {
 	search?: string;
-	country?: string;
+	country?: string; // This is the one we're ensuring works correctly
 	rank_lte?: number | string;
 	rank_gte?: number | string;
 	research?: string;
 	size?: string;
 	focus?: string;
-	page?: number;
-	page_size?: number;
+	page?: number | string;
+	page_size?: number | string;
 	ordering?: string;
+	[key: string]: any; // Allow for dynamic properties
 }

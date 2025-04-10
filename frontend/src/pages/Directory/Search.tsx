@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import InstitutionFilter from "../../components/Directory/InstitutionFilter";
@@ -8,7 +8,7 @@ import { Institution, InstitutionFilters } from "../../types/institutions";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { toast } from "react-toastify";
 
-const DEFAULT_PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 20; // Updated to match API default of 20
 
 export default function SchoolSearch() {
 	// State management
@@ -18,41 +18,36 @@ export default function SchoolSearch() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const [countries, setCountries] = useState<string[]>([]);
 	const [filters, setFilters] = useState<InstitutionFilters>({
-		page: 1,
 		page_size: DEFAULT_PAGE_SIZE,
-		ordering: "rank",
 	});
 
-	// Initial data loading
-	useEffect(() => {
-		const loadCountries = async () => {
-			try {
-				const countryList = await getCountries();
-				setCountries(countryList);
-			} catch (error) {
-				console.error("Failed to load countries:", error);
-			}
-		};
-
-		loadCountries();
-		fetchInstitutions();
-	}, []);
-
-	// Fetch institutions when filters change
-	useEffect(() => {
-		fetchInstitutions();
-	}, [currentPage, filters.page_size, filters.ordering]);
-
-	const fetchInstitutions = async () => {
+	// Memoize the fetchInstitutions function to prevent dependency cycles
+	const fetchInstitutions = useCallback(async () => {
 		setLoading(true);
 		try {
-			const currentFilters = {
+			// Create proper filters for the API request
+			const currentFilters: InstitutionFilters = {
 				...filters,
 				page: currentPage,
-				page_size: filters.page_size, // Explicitly ensure page_size is included
+				page_size: filters.page_size || DEFAULT_PAGE_SIZE,
 			};
 
+			// Remove undefined/null values
+			Object.keys(currentFilters).forEach((key) => {
+				if (
+					currentFilters[key] === undefined ||
+					currentFilters[key] === null ||
+					currentFilters[key] === ""
+				) {
+					delete currentFilters[key];
+				}
+			});
+
+			console.log("Fetching institutions with filters:", currentFilters);
+
 			const data = await getInstitutions(currentFilters);
+
+			// Update state with received data
 			setInstitutions(data.results);
 			setTotalCount(data.count);
 		} catch (error: any) {
@@ -61,40 +56,76 @@ export default function SchoolSearch() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [currentPage, filters]);
 
+	// Initial data loading
+	useEffect(() => {
+		const loadCountries = async () => {
+			try {
+				const countryList = await getCountries();
+				setCountries(countryList); // This now expects an array from the API response
+			} catch (error) {
+				console.error("Failed to load countries:", error);
+				setCountries([]); // Set empty array on error
+			}
+		};
+
+		loadCountries();
+	}, []);
+
+	// Fetch institutions when relevant filters change
+	useEffect(() => {
+		fetchInstitutions();
+	}, [fetchInstitutions]);
+
+	// Handler for applying filters from filter component
 	const handleApplyFilters = (newFilters: InstitutionFilters) => {
+		console.log("Applying new filters:", newFilters);
+
+		// Reset to page 1 when filters change
 		setCurrentPage(1);
+
+		// Update filters state, preserving the page size
+		// Make sure country filter is properly handled
 		setFilters({
 			...newFilters,
+			country: newFilters.country || undefined, // Ensure country is explicitly undefined if empty
 			page_size: filters.page_size,
-			ordering: newFilters.ordering || filters.ordering,
 		});
-
-		setTimeout(fetchInstitutions, 0);
 	};
 
+	// Handle page change from pagination component
 	const handlePageChange = (page: number) => {
+		console.log(`Changing to page ${page}`);
 		setCurrentPage(page);
 	};
 
+	// Handle page size change - use parseInt to ensure it's a number
 	const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const newPageSize = Number(e.target.value);
-		// Set page back to 1 when changing page size
+		const newPageSize = parseInt(e.target.value, 10);
+		if (isNaN(newPageSize) || newPageSize <= 0) {
+			console.error("Invalid page size:", e.target.value);
+			return;
+		}
+
+		console.log(
+			`Changing page size from ${filters.page_size} to ${newPageSize}`
+		);
+
+		// Reset to page 1 when changing page size
 		setCurrentPage(1);
-		// Update filters with new page size
+
+		// Update page size in filters
 		setFilters((prev) => ({
 			...prev,
 			page_size: newPageSize,
 		}));
-
-		// Force fetch with new page size
-		setTimeout(() => {
-			fetchInstitutions();
-		}, 0);
 	};
 
-	const totalPages = Math.ceil(totalCount / filters.page_size);
+	// Calculate total pages for pagination
+	const totalPages = Math.ceil(
+		totalCount / (Number(filters.page_size) || DEFAULT_PAGE_SIZE)
+	);
 
 	return (
 		<>
@@ -134,6 +165,9 @@ export default function SchoolSearch() {
 							<>
 								Showing {institutions.length} of {totalCount} institutions
 								{filters.search && ` matching "${filters.search}"`}
+								<span className="ml-2 text-gray-500">
+									(Page {currentPage} of {totalPages})
+								</span>
 							</>
 						)}
 					</div>
@@ -147,7 +181,7 @@ export default function SchoolSearch() {
 						</label>
 						<select
 							id="pageSize"
-							value={filters.page_size}
+							value={filters.page_size || DEFAULT_PAGE_SIZE}
 							onChange={handlePageSizeChange}
 							className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-800"
 						>
@@ -180,7 +214,7 @@ export default function SchoolSearch() {
 								strokeLinecap="round"
 								strokeLinejoin="round"
 								strokeWidth="2"
-								d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+								d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 9 0 11-18 0 9 9 9 0 0118 0z"
 							/>
 						</svg>
 						<h3 className="mb-2 text-lg font-medium text-gray-900 dark:text-white">
@@ -194,91 +228,93 @@ export default function SchoolSearch() {
 
 				{/* Results Table */}
 				{!loading && institutions.length > 0 && (
-					<div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-						<table className="w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-							<thead className="bg-gray-50 dark:bg-gray-700">
-								<tr>
-									<th
-										scope="col"
-										className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-									>
-										Rank
-									</th>
-									<th
-										scope="col"
-										className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-									>
-										Institution
-									</th>
-									<th
-										scope="col"
-										className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-									>
-										Country
-									</th>
-									<th
-										scope="col"
-										className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-									>
-										Score
-									</th>
-									<th
-										scope="col"
-										className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-									>
-										Actions
-									</th>
-								</tr>
-							</thead>
-							<tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-								{institutions.map((institution, index) => (
-									<tr
-										key={institution.id}
-										className={`hover:bg-gray-50 transition duration-150 dark:hover:bg-gray-700 ${
-											index % 2 === 0
-												? "bg-white dark:bg-gray-800"
-												: "bg-gray-50 dark:bg-gray-800/50"
-										}`}
-									>
-										<td className="whitespace-nowrap px-6 py-4">
-											<div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20">
-												<span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-													{institution.rank}
-												</span>
-											</div>
-										</td>
-										<td className="px-6 py-4">
-											<div className="text-sm font-medium text-gray-900 dark:text-white">
-												{institution.name}
-											</div>
-										</td>
-										<td className="px-6 py-4">
-											<div className="text-sm text-gray-500 dark:text-gray-400">
-												{institution.country}
-											</div>
-										</td>
-										<td className="px-6 py-4">
-											<div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-												{institution.overall_score}
-											</div>
-										</td>
-										<td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-											<Link
-												to={`/directory/institution/${institution.id}`}
-												className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-											>
-												View Details
-											</Link>
-										</td>
+					<>
+						<div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+							<table className="w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+								<thead className="bg-gray-50 dark:bg-gray-700">
+									<tr>
+										<th
+											scope="col"
+											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Rank
+										</th>
+										<th
+											scope="col"
+											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Institution
+										</th>
+										<th
+											scope="col"
+											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Country
+										</th>
+										<th
+											scope="col"
+											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Score
+										</th>
+										<th
+											scope="col"
+											className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Actions
+										</th>
 									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+								</thead>
+								<tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+									{institutions.map((institution, index) => (
+										<tr
+											key={institution.id}
+											className={`hover:bg-gray-50 transition duration-150 dark:hover:bg-gray-700 ${
+												index % 2 === 0
+													? "bg-white dark:bg-gray-800"
+													: "bg-gray-50 dark:bg-gray-800/50"
+											}`}
+										>
+											<td className="whitespace-nowrap px-6 py-4">
+												<div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20">
+													<span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+														{institution.rank}
+													</span>
+												</div>
+											</td>
+											<td className="px-6 py-4">
+												<div className="text-sm font-medium text-gray-900 dark:text-white">
+													{institution.name}
+												</div>
+											</td>
+											<td className="px-6 py-4">
+												<div className="text-sm text-gray-500 dark:text-gray-400">
+													{institution.country}
+												</div>
+											</td>
+											<td className="px-6 py-4">
+												<div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+													{institution.overall_score}
+												</div>
+											</td>
+											<td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+												<Link
+													to={`/directory/institution/${institution.id}`}
+													className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+												>
+													View Details
+												</Link>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</>
 				)}
 
-				{/* Pagination */}
-				{totalPages > 1 && (
+				{/* Pagination - show it even if there's only one page */}
+				{totalCount > 0 && (
 					<div className="mt-6">
 						<Pagination
 							currentPage={currentPage}

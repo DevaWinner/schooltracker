@@ -29,10 +29,25 @@ export default function Pagination({
 		return pages;
 	};
 
-	if (totalPages <= 1) return null;
+	// Show text with pagination info when there are too many pages
+	const renderPaginationInfo = () => {
+		if (totalPages > 10) {
+			return (
+				<span className="text-sm text-gray-500 dark:text-gray-400 mx-2">
+					Page {currentPage} of {totalPages}
+				</span>
+			);
+		}
+		return null;
+	};
+
+	// If there are no pages, don't render anything
+	if (totalPages <= 0) return null;
 
 	return (
-		<div className="flex justify-center">
+		<div className="flex flex-wrap justify-center items-center">
+			{renderPaginationInfo()}
+
 			<nav className="flex items-center -space-x-px">
 				{/* First Page */}
 				<button
