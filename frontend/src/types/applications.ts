@@ -9,6 +9,7 @@ export interface InstitutionDetails {
 export interface Application {
 	id: number;
 	institution: string;
+	institution_id?: string; // Add this field to store institution ID
 	institution_name?: string;
 	institution_country?: string;
 	institution_details?: InstitutionDetails | null;

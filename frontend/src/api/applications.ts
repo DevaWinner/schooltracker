@@ -80,13 +80,63 @@ export const createApplication = async (
 	applicationData: Partial<Application>
 ): Promise<Application> => {
 	try {
+		console.log("Creating application with data:", applicationData);
+
+		// Clone the data to avoid mutating the original object
+		const formattedData = { ...applicationData };
+
+		// Ensure we're sending the institution ID in the institution field
+		// This is what the API expects according to the ERD
+		if (formattedData.institution_id && !formattedData.institution) {
+			formattedData.institution = formattedData.institution_id;
+			console.log(
+				"Setting institution field to institution_id:",
+				formattedData.institution_id
+			);
+		}
+
+		// Remove any fields the API doesn't expect
+		const apiExpectedFields = [
+			"id",
+			"institution",
+			"program_name",
+			"degree_type",
+			"department",
+			"duration_years",
+			"tuition_fee",
+			"application_link",
+			"scholarship_link",
+			"program_info_link",
+			"status",
+			"start_date",
+			"submitted_date",
+			"decision_date",
+			"notes",
+		];
+
+		// Filter to only include fields the API expects
+		const cleanedData = Object.keys(formattedData)
+			.filter((key) => apiExpectedFields.includes(key))
+			.reduce((obj, key) => {
+				obj[key] = formattedData[key];
+				return obj;
+			}, {} as Record<string, any>);
+
+		console.log("Sending cleaned data to API:", cleanedData);
+
 		const response = await applicationsApi.post<Application>(
 			`/applications/create/`,
-			applicationData
+			cleanedData
 		);
 		return response.data;
 	} catch (error: any) {
 		console.error("Error creating application:", error);
+
+		// Add more detailed error logging
+		if (error.response?.data) {
+			console.error("API error response:", error.response.data);
+		}
+
 		const message =
 			error.response?.data?.detail ||
 			error.message ||

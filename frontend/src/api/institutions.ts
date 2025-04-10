@@ -113,3 +113,36 @@ export const getCountries = async (): Promise<string[]> => {
 		throw new Error(message);
 	}
 };
+
+/**
+ * Get a simplified list of institutions for dropdown selection
+ */
+export const getInstitutionsForSelect = async (): Promise<
+	{ id: string; name: string; country: string }[]
+> => {
+	try {
+		const response = await institutionsApi.get<PaginatedInstitutions>(
+			"/institutions/",
+			{
+				params: {
+					page_size: 500, // Get a larger number for dropdown
+					fields: "id,name,country", // Request only the fields we need
+				},
+			}
+		);
+
+		// Transform the response to the format we need for the dropdown
+		return response.data.results.map((inst) => ({
+			id: inst.id,
+			name: inst.name,
+			country: inst.country,
+		}));
+	} catch (error: any) {
+		console.error("Failed to fetch institutions for select:", error);
+		const message =
+			error.response?.data?.detail ||
+			error.message ||
+			"Failed to fetch institutions list";
+		throw new Error(message);
+	}
+};
