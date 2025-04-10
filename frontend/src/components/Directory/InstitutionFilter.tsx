@@ -4,6 +4,7 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Button from "../ui/button/Button";
 
+
 interface FiltersProps {
 	onApplyFilters: (filters: InstitutionFilters) => void;
 	countries: string[];

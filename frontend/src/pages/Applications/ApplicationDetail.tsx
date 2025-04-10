@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Application } from "../../types/applications";
-import { tableData } from "../../components/ApplicationTracker/placeholderData";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
@@ -9,6 +8,12 @@ import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { ROUTES } from "../../constants/Routes";
+import {
+	getApplicationById,
+	updateApplication,
+	deleteApplication,
+} from "../../api/applications";
+import { toast } from "react-toastify";
 
 export default function ApplicationDetail() {
 	const { id } = useParams();
@@ -19,15 +24,16 @@ export default function ApplicationDetail() {
 	const [loading, setLoading] = useState(true);
 
 	useEffect(() => {
-		// In a real application, this would be an API call
-		const fetchApplication = () => {
+		const fetchApplication = async () => {
+			if (!id) return;
+
 			setLoading(true);
 			try {
-				const appId = parseInt(id || "0");
-				const foundApp = tableData.find((app) => app.id === appId);
-				setApplication(foundApp || null);
+				const data = await getApplicationById(id);
+				setApplication(data);
 			} catch (error) {
 				console.error("Error fetching application:", error);
+				toast.error("Failed to fetch application details");
 			} finally {
 				setLoading(false);
 			}
@@ -44,15 +50,32 @@ export default function ApplicationDetail() {
 		setIsDeleteModalOpen(true);
 	};
 
-	const handleSaveEdit = (updatedApplication: Application) => {
-		// In a real app, you would make an API call here
-		setApplication(updatedApplication);
-		setIsEditModalOpen(false);
+	const handleSaveEdit = async (updatedApplication: Application) => {
+		try {
+			const data = await updateApplication(
+				updatedApplication.id,
+				updatedApplication
+			);
+			setApplication(data);
+			toast.success("Application updated successfully");
+			setIsEditModalOpen(false);
+		} catch (error) {
+			console.error("Error updating application:", error);
+			toast.error("Failed to update application");
+		}
 	};
 
-	const handleConfirmDelete = () => {
-		// In a real app, you would make an API call here
-		navigate(ROUTES.Applications.tracker);
+	const handleConfirmDelete = async () => {
+		if (!application?.id) return;
+
+		try {
+			await deleteApplication(application.id);
+			toast.success("Application deleted successfully");
+			navigate(ROUTES.Applications.tracker);
+		} catch (error) {
+			console.error("Error deleting application:", error);
+			toast.error("Failed to delete application");
+		}
 	};
 
 	// Format date for display

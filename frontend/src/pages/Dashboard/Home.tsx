@@ -3,7 +3,7 @@ import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import BarChart from "../../components/charts/bar/BarChart";
 import RecentDocs from "../../components/Dashboard/RecentDocs";
 import UpcomingDeadline from "../../components/Dashboard/UpcomingDeadline";
-import { tableData } from "../../components/ApplicationTracker/placeholderData";
+// import { tableData } from "../../components/ApplicationTracker/placeholderData";
 
 export default function Home() {
   return (
@@ -21,7 +21,7 @@ export default function Home() {
           <UpcomingDeadline />
         </div>
         <div className="col-span-full">
-          <BarChart data={tableData} />
+          {/* <BarChart data={tableData} /> */}
         </div>
       </div>
     </>

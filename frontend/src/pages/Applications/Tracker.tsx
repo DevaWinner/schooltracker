@@ -1,27 +1,58 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import AddApplication from "../../components/ApplicationTracker/AddApplication";
 import ApplicationTable from "../../components/ApplicationTracker/ApplicationTable";
 import ApplicationStats from "../../components/ApplicationTracker/ApplicationStats";
-import { tableData } from "../../components/ApplicationTracker/placeholderData";
-import { Application } from "../../types/applications";
+import { Application, ApplicationResponse } from "../../types/applications";
 import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
+import {
+	getApplications,
+	updateApplication,
+	deleteApplication,
+} from "../../api/applications";
+import { toast } from "react-toastify";
 
 export default function ApplicationTracker() {
-	const [applications, setApplications] = useState(tableData);
+	const [applications, setApplications] = useState<Application[]>([]);
+	const [isLoading, setIsLoading] = useState(true);
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [currentApplication, setCurrentApplication] =
 		useState<Application | null>(null);
+	const [pagination, setPagination] = useState({
+		count: 0,
+		next: null as string | null,
+		previous: null as string | null,
+	});
+
+	const fetchApplications = async () => {
+		setIsLoading(true);
+		try {
+			const response = await getApplications();
+			setApplications(response.results);
+			setPagination({
+				count: response.count,
+				next: response.next,
+				previous: response.previous,
+			});
+		} catch (error) {
+			console.error("Error fetching applications:", error);
+			toast.error("Failed to load applications");
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		fetchApplications();
+	}, []);
 
 	const refreshData = useCallback(() => {
-		// In a real application, this would fetch updated data from an API
-		// For now, we'll just use the tableData
-		setApplications([...tableData]);
+		fetchApplications();
 	}, []);
 
 	const handleView = useCallback((application: Application) => {
@@ -45,28 +76,47 @@ export default function ApplicationTracker() {
 		[applications]
 	);
 
-	const handleSaveEdit = useCallback((updatedApplication: Application) => {
-		// In a real app, you would make an API call here
-		// For now, update the local state
-		setApplications((prevApplications) =>
-			prevApplications.map((app) =>
-				app.id === updatedApplication.id ? updatedApplication : app
-			)
-		);
-		setIsEditModalOpen(false);
-		setCurrentApplication(null);
-	}, []);
+	const handleSaveEdit = useCallback(
+		async (updatedApplication: Application) => {
+			try {
+				await updateApplication(updatedApplication.id, updatedApplication);
 
-	const handleConfirmDelete = useCallback(() => {
+				// Update local state
+				setApplications((prevApplications) =>
+					prevApplications.map((app) =>
+						app.id === updatedApplication.id ? updatedApplication : app
+					)
+				);
+
+				toast.success("Application updated successfully");
+				setIsEditModalOpen(false);
+				setCurrentApplication(null);
+			} catch (error) {
+				console.error("Error updating application:", error);
+				toast.error("Failed to update application");
+			}
+		},
+		[]
+	);
+
+	const handleConfirmDelete = useCallback(async () => {
 		if (!currentApplication) return;
 
-		// In a real app, you would make an API call here
-		// For now, update the local state
-		setApplications((prevApplications) =>
-			prevApplications.filter((app) => app.id !== currentApplication.id)
-		);
-		setIsDeleteModalOpen(false);
-		setCurrentApplication(null);
+		try {
+			await deleteApplication(currentApplication.id);
+
+			// Update local state
+			setApplications((prevApplications) =>
+				prevApplications.filter((app) => app.id !== currentApplication.id)
+			);
+
+			toast.success("Application deleted successfully");
+			setIsDeleteModalOpen(false);
+			setCurrentApplication(null);
+		} catch (error) {
+			console.error("Error deleting application:", error);
+			toast.error("Failed to delete application");
+		}
 	}, [currentApplication]);
 
 	return (
@@ -100,13 +150,19 @@ export default function ApplicationTracker() {
 								</button>
 							}
 						>
-							<ApplicationTable
-								data={applications}
-								onRefresh={refreshData}
-								onEdit={handleEdit}
-								onDelete={handleDelete}
-								onView={handleView}
-							/>
+							{isLoading ? (
+								<div className="flex h-48 items-center justify-center">
+									<div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
+								</div>
+							) : (
+								<ApplicationTable
+									data={applications}
+									onRefresh={refreshData}
+									onEdit={handleEdit}
+									onDelete={handleDelete}
+									onView={handleView}
+								/>
+							)}
 						</ComponentCard>
 					</div>
 				</div>

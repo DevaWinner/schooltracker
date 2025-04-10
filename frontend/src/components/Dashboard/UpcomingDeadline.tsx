@@ -5,7 +5,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "../ui/table";
-import { tableData as data } from "../ApplicationTracker/placeholderData";
+// import { tableData as data } from "../ApplicationTracker/placeholderData";
 import { Link } from "react-router";
 import { ROUTES } from "../../constants/Routes";
 import { Application } from "../../types/applications";
@@ -109,9 +109,9 @@ export default function UpcomingDeadline() {
 
 					{/* Table Body */}
 
-					<TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
+					{/* <TableBody className="divide-y divide-gray-100 dark:divide-gray-800">
 						{hasData()}
-					</TableBody>
+					</TableBody> */}
 				</Table>
 			</div>
 		</div>
