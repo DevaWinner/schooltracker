@@ -1,4 +1,3 @@
-// src/context/AuthContext.tsx
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import { UserInfo, UserProfile, UserSettings } from "../types/user";
 import { getProfile, getUserProfile, getUserSettings } from "../api/profile";
@@ -8,14 +7,14 @@ interface AuthContextProps {
 	user: any;
 	accessToken: string | null;
 	profile: UserInfo | null;
-	userProfile: UserProfile | null; // Added
-	userSettings: UserSettings | null; // Added
+	userProfile: UserProfile | null;
+	userSettings: UserSettings | null;
 	signIn: (user: any, token: string) => void;
 	signOut: () => void;
 	setProfile: (profile: UserInfo) => void;
-	setUserProfile: (profile: UserProfile | null) => void; // Added
-	setUserSettings: (settings: UserSettings | null) => void; // Added
-	refreshProfileData: () => Promise<void>; // Added
+	setUserProfile: (profile: UserProfile | null) => void;
+	setUserSettings: (settings: UserSettings | null) => void;
+	refreshProfileData: () => Promise<void>;
 	isFirstLogin: boolean;
 	setIsFirstLogin: (value: boolean) => void;
 	isLoading: boolean;
@@ -25,14 +24,14 @@ export const AuthContext = createContext<AuthContextProps>({
 	user: null,
 	accessToken: null,
 	profile: null,
-	userProfile: null, // Added
-	userSettings: null, // Added
+	userProfile: null,
+	userSettings: null,
 	signIn: () => {},
 	signOut: () => {},
 	setProfile: () => {},
-	setUserProfile: () => {}, // Added
-	setUserSettings: () => {}, // Added
-	refreshProfileData: async () => {}, // Added
+	setUserProfile: () => {},
+	setUserSettings: () => {},
+	refreshProfileData: async () => {},
 	isFirstLogin: false,
 	setIsFirstLogin: () => {},
 	isLoading: true,
@@ -46,8 +45,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const [user, setUser] = useState<any>(null);
 	const [accessToken, setAccessToken] = useState<string | null>(null);
 	const [profile, setProfile] = useState<UserInfo | null>(null);
-	const [userProfile, setUserProfile] = useState<UserProfile | null>(null); // Added
-	const [userSettings, setUserSettings] = useState<UserSettings | null>(null); // Added
+	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+	const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
 	const [isFirstLogin, setIsFirstLogin] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 
@@ -146,8 +145,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		setUser(null);
 		setAccessToken(null);
 		setProfile(null);
-		setUserProfile(null); // Added
-		setUserSettings(null); // Added
+		setUserProfile(null);
+		setUserSettings(null);
 		setIsFirstLogin(false);
 
 		// Clear all auth-related data from localStorage
@@ -162,14 +161,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				user,
 				accessToken,
 				profile,
-				userProfile, // Added
-				userSettings, // Added
+				userProfile,
+				userSettings,
 				signIn: signInHandler,
 				signOut: signOutHandler,
 				setProfile,
-				setUserProfile, // Added
-				setUserSettings, // Added
-				refreshProfileData, // Added
+				setUserProfile,
+				setUserSettings,
+				refreshProfileData,
 				isFirstLogin,
 				setIsFirstLogin,
 				isLoading,
