@@ -226,89 +226,97 @@ export default function SchoolSearch() {
 					</div>
 				)}
 
-				{/* Results Table */}
+				{/* Results Table with sticky header */}
 				{!loading && institutions.length > 0 && (
 					<>
 						<div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-							<table className="w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-								<thead className="bg-gray-50 dark:bg-gray-700">
-									<tr>
-										<th
-											scope="col"
-											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-										>
-											Rank
-										</th>
-										<th
-											scope="col"
-											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-										>
-											Institution
-										</th>
-										<th
-											scope="col"
-											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-										>
-											Country
-										</th>
-										<th
-											scope="col"
-											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-										>
-											Score
-										</th>
-										<th
-											scope="col"
-											className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
-										>
-											Actions
-										</th>
-									</tr>
-								</thead>
-								<tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-									{institutions.map((institution, index) => (
-										<tr
-											key={institution.id}
-											className={`hover:bg-gray-50 transition duration-150 dark:hover:bg-gray-700 ${
-												index % 2 === 0
-													? "bg-white dark:bg-gray-800"
-													: "bg-gray-50 dark:bg-gray-800/50"
-											}`}
-										>
-											<td className="whitespace-nowrap px-6 py-4">
-												<div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20">
-													<span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-														{institution.rank}
-													</span>
-												</div>
-											</td>
-											<td className="px-6 py-4">
-												<div className="text-sm font-medium text-gray-900 dark:text-white">
-													{institution.name}
-												</div>
-											</td>
-											<td className="px-6 py-4">
-												<div className="text-sm text-gray-500 dark:text-gray-400">
-													{institution.country}
-												</div>
-											</td>
-											<td className="px-6 py-4">
-												<div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-													{institution.overall_score}
-												</div>
-											</td>
-											<td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-												<Link
-													to={`/directory/institution/${institution.id}`}
-													className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-												>
-													View Details
-												</Link>
-											</td>
+							<div className="max-h-[70vh] overflow-y-auto">
+								<table className="w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+									<thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+										<tr>
+											<th
+												scope="col"
+												className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+											>
+												Rank
+											</th>
+											<th
+												scope="col"
+												className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+											>
+												Institution
+											</th>
+											<th
+												scope="col"
+												className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+											>
+												Country
+											</th>
+											<th
+												scope="col"
+												className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+											>
+												Score
+											</th>
+											<th
+												scope="col"
+												className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+											>
+												Actions
+											</th>
 										</tr>
-									))}
-								</tbody>
-							</table>
+									</thead>
+									<tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+										{institutions.map((institution, index) => (
+											<tr
+												key={institution.id}
+												className={`hover:bg-gray-50 transition duration-150 dark:hover:bg-gray-700 ${
+													index % 2 === 0
+														? "bg-white dark:bg-gray-800"
+														: "bg-gray-50 dark:bg-gray-800/50"
+												}`}
+											>
+												<td className="whitespace-nowrap px-6 py-4">
+													<div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20">
+														<span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+															{institution.rank}
+														</span>
+													</div>
+												</td>
+												<td className="px-6 py-4">
+													<div className="text-sm font-medium text-gray-900 dark:text-white">
+														{institution.name}
+													</div>
+												</td>
+												<td className="px-6 py-4">
+													<div className="text-sm text-gray-500 dark:text-gray-400">
+														{institution.country}
+													</div>
+												</td>
+												<td className="px-6 py-4">
+													<div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+														{institution.overall_score}
+													</div>
+												</td>
+												<td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+													<Link
+														to={`/directory/institution/${institution.id}`}
+														className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+													>
+														View Details
+													</Link>
+												</td>
+											</tr>
+										))}
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						{/* Attribution/Copyright notice */}
+						<div className="mt-2 text-xs text-gray-500 dark:text-gray-400 text-center italic">
+							Source: QS Quacquarelli Symonds (www.topuniversities.com).
+							Copyright © 2004-2022 QS Quacquarelli Symonds Ltd.
 						</div>
 					</>
 				)}

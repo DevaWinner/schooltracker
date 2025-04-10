@@ -385,6 +385,12 @@ export default function InstitutionDetailPage() {
 								)}
 							</div>
 						</div>
+
+						{/* Attribution/Copyright notice */}
+						<div className="text-xs text-gray-500 dark:text-gray-400 text-center italic border-t border-gray-200 dark:border-gray-700 pt-4">
+							Source: QS Quacquarelli Symonds (www.topuniversities.com).
+							Copyright © 2004-2022 QS Quacquarelli Symonds Ltd.
+						</div>
 					</div>
 				)}
 			</div>
