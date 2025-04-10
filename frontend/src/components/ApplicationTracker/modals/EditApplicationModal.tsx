@@ -2,7 +2,7 @@
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Application } from "../../../types/applications";
 
 interface EditApplicationModalProps {
@@ -16,23 +16,61 @@ export default function EditApplicationModal({
 	onSave,
 	onClose,
 }: EditApplicationModalProps) {
+	console.log("EditApplicationModal received data:", data);
+
 	const [formData, setData] = useState({
-		id: data.id,
-		institution: data.institution || "",
-		program_name: data.program_name || "",
-		degree_type: data.degree_type || "Master",
-		department: data.department || "",
-		duration_years: data.duration_years || "",
-		tuition_fee: data.tuition_fee || "",
-		application_link: data.application_link || "",
-		scholarship_link: data.scholarship_link || "",
-		program_info_link: data.program_info_link || "",
-		status: data.status || "Draft",
-		start_date: data.start_date || "",
-		submitted_date: data.submitted_date || "",
-		decision_date: data.decision_date || "",
-		notes: data.notes || "",
+		id: data?.id || 0,
+		institution: data?.institution || "",
+		institution_name: data?.institution_name || "",
+		institution_country: data?.institution_country || "",
+		institution_details: data?.institution_details || null,
+		program_name: data?.program_name || "",
+		degree_type: data?.degree_type || "Master",
+		department: data?.department || "",
+		duration_years: data?.duration_years || "",
+		tuition_fee: data?.tuition_fee || "",
+		application_link: data?.application_link || "",
+		scholarship_link: data?.scholarship_link || "",
+		program_info_link: data?.program_info_link || "",
+		status: data?.status || "Draft",
+		start_date: data?.start_date || "",
+		submitted_date: data?.submitted_date || "",
+		decision_date: data?.decision_date || "",
+		notes: data?.notes || "",
+		created_at: data?.created_at || "",
+		updated_at: data?.updated_at || "",
+		user: data?.user || undefined,
 	});
+
+	// Update form data when the data prop changes
+	useEffect(() => {
+		if (data) {
+			console.log("EditApplicationModal updating form data with:", data);
+			setData({
+				id: data.id || 0,
+				institution: data.institution || "",
+				institution_name: data.institution_name || "",
+				institution_country: data.institution_country || "",
+				institution_details: data.institution_details || null,
+				program_name: data.program_name || "",
+				degree_type: data.degree_type || "Master",
+				department: data.department || "",
+				duration_years: data.duration_years || "",
+				tuition_fee: data.tuition_fee || "",
+				application_link: data.application_link || "",
+				scholarship_link: data.scholarship_link || "",
+				program_info_link: data.program_info_link || "",
+				status: data.status || "Draft",
+				start_date: data.start_date || "",
+				submitted_date: data.submitted_date || "",
+				decision_date: data.decision_date || "",
+				notes: data.notes || "",
+				created_at: data.created_at || "",
+				updated_at: data.updated_at || "",
+				user: data.user || undefined,
+			});
+		}
+	}, [data]);
 
 	// Updates values when the form is updated
 	const changeForm = (
@@ -49,7 +87,17 @@ export default function EditApplicationModal({
 
 	const submitForm = (e: React.FormEvent) => {
 		e.preventDefault();
-		onSave(formData as any);
+
+		// Create a properly typed Application object
+		const updatedApplication: Application = {
+			...(data as Application),
+			...formData,
+			updated_at: new Date().toISOString(),
+			user: formData.user === null ? undefined : formData.user,
+		};
+
+		console.log("Submitting updated application:", updatedApplication);
+		onSave(updatedApplication);
 	};
 
 	return (

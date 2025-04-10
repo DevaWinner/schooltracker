@@ -9,6 +9,7 @@ import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { useApplications } from "../../context/ApplicationContext";
+import { loadApplicationById } from "../../utils/applicationUtils";
 
 export default function ApplicationTracker() {
 	const {
@@ -41,9 +42,28 @@ export default function ApplicationTracker() {
 		setCurrentApplication(application);
 	}, []);
 
-	const handleEdit = useCallback((application: Application) => {
-		setCurrentApplication(application);
-		setIsEditModalOpen(true);
+	const handleEdit = useCallback(async (application: Application) => {
+		try {
+			// Fetch complete application data before opening the modal
+			const completeData = await loadApplicationById(application.id);
+
+			if (completeData) {
+				console.log(
+					"Loaded complete application data for editing:",
+					completeData
+				);
+				setCurrentApplication(completeData);
+			} else {
+				// Fallback to the passed application if fetch fails
+				console.log("Using passed application data:", application);
+				setCurrentApplication(application);
+			}
+
+			setIsEditModalOpen(true);
+		} catch (error) {
+			console.error("Error preparing application for edit:", error);
+			toast.error("Failed to load application details");
+		}
 	}, []);
 
 	const handleDelete = useCallback(

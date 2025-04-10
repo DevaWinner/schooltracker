@@ -8,40 +8,26 @@ export interface InstitutionDetails {
 
 export interface Application {
 	id: number;
-	user?: number;
 	institution: string;
-	institution_details?: InstitutionDetails;
 	institution_name?: string;
 	institution_country?: string;
+	institution_details?: InstitutionDetails | null;
 	program_name: string;
-	degree_type:
-		| "Associate"
-		| "Bachelor"
-		| "Master"
-		| "PhD"
-		| "Certificate"
-		| "Diploma"
-		| "Other";
+	degree_type: string;
 	department?: string;
-	duration_years?: string;
-	tuition_fee?: string;
+	duration_years?: string | number;
+	tuition_fee?: string | number;
 	application_link?: string;
 	scholarship_link?: string;
 	program_info_link?: string;
-	status:
-		| "Draft"
-		| "In Progress"
-		| "Pending"
-		| "Accepted"
-		| "Rejected"
-		| "Deferred"
-		| "Withdrawn";
-	start_date?: string;
-	submitted_date?: string;
-	decision_date?: string;
+	status: string;
+	start_date?: string | null;
+	submitted_date?: string | null;
+	decision_date?: string | null;
 	notes?: string;
 	created_at: string;
 	updated_at: string;
+	user?: number;
 }
 
 export interface ApplicationResponse {

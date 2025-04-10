@@ -20,28 +20,18 @@ export default function ApplicationDetail() {
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [loading, setLoading] = useState(true);
 
-	const { applications, updateApplicationItem, removeApplication } =
-		useApplications();
+	const { updateApplicationItem, removeApplication } = useApplications();
 
+	// Always fetch the application from API to ensure we have the latest data
 	useEffect(() => {
 		const fetchApplication = async () => {
 			if (!id) return;
 
-			// First, try to get the application from the context
-			const cachedApplication = applications.find(
-				(app) => app.id === Number(id)
-			);
-
-			if (cachedApplication) {
-				setApplication(cachedApplication);
-				setLoading(false);
-				return;
-			}
-
-			// If not in context, fetch from API
 			setLoading(true);
 			try {
+				// Get fresh data directly from the API
 				const data = await getApplicationById(id);
+				console.log("Loaded application data:", data);
 				setApplication(data);
 			} catch (error) {
 				console.error("Error fetching application:", error);
@@ -52,10 +42,13 @@ export default function ApplicationDetail() {
 		};
 
 		fetchApplication();
-	}, [id, applications]);
+	}, [id]);
 
 	const handleEdit = () => {
-		setIsEditModalOpen(true);
+		if (application) {
+			console.log("Opening edit modal with application:", application);
+			setIsEditModalOpen(true);
+		}
 	};
 
 	const handleDelete = () => {
