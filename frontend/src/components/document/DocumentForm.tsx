@@ -13,7 +13,6 @@ export default function DocumentForm({ data }: ApplicationProps) {
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
-  //const { user } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     application_id: "",
     document_type: "",
@@ -58,7 +57,7 @@ export default function DocumentForm({ data }: ApplicationProps) {
     };
     try {
       // Send update request to API using uploadDocumentFile for /document/upload/ endpoint
-      await uploadDocumentFile(accessToken, payload);
+      await uploadDocumentFile(payload);
 
       // Refresh global profile state
       await refreshProfileData();

@@ -12,11 +12,11 @@ const axiosInstance = axios.create({
 
 // Upload the document to Supabase Storage
 export const uploadDocumentFile = async (
-	token: string,
     data: UploadDocumentRequest
 ): Promise<any> => {
 	try {
-        console.log(token);
+        // Get the users authorization token
+        const token = localStorage.getItem("accessToken");
 		// Special headers for multipart/form-data
 		const response = await axiosInstance.post<any>(
 			"/documents/upload/",
