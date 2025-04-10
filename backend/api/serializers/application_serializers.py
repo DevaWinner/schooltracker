@@ -10,7 +10,7 @@ class ApplicationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Application
         fields = ('id', 'institution_name', 'institution_country', 'program_name', 
-                  'degree_type', 'status', 'submitted_date', 'decision_date')
+                  'degree_type', 'status', 'start_date', 'submitted_date', 'decision_date')
         read_only_fields = ('id', 'created_at', 'updated_at')
 
 class ApplicationDetailSerializer(serializers.ModelSerializer):

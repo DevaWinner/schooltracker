@@ -8,10 +8,11 @@ class Application(models.Model):
     STATUS_CHOICES = [
         ('Draft', 'Draft'),
         ('In Progress', 'In Progress'),
-        ('Submitted', 'Submitted'),
-        ('Interview', 'Interview'),
+        ('Pending', 'Pending'),
         ('Accepted', 'Accepted'),
         ('Rejected', 'Rejected'),
+        ('Deferred', 'Deferred'),
+        ('Withdrawn', 'Withdrawn'),
     ]
     
     DEGREE_TYPE_CHOICES = [
