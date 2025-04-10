@@ -36,7 +36,7 @@ export interface Application {
 		| "Rejected";
 	start_date?: string;
 	submitted_date?: string;
-	decision_date?: string | null;
+	decision_date?: string;
 	notes?: string;
 	created_at: string;
 	updated_at: string;

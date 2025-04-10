@@ -13,7 +13,6 @@ import {
 	ApplicationFilterParams,
 	ApplicationProps,
 } from "../../types/applications";
-import ApplicationCard from "./ApplicationCard";
 import ApplicationFilters from "./ApplicationFilters";
 
 interface ExtendedApplicationProps extends ApplicationProps {
@@ -41,7 +40,11 @@ export default function ApplicationTable({
 		if (onRefresh) onRefresh();
 	};
 
-	const handleRowClick = (application: Application) => {
+	const handleInstitutionClick = (
+		e: React.MouseEvent,
+		application: Application
+	) => {
+		e.stopPropagation(); // Stop row click event from firing
 		navigate(`/applications/detail/${application.id}`);
 	};
 
@@ -131,16 +134,20 @@ export default function ApplicationTable({
 						<TableBody>
 							{filteredData.length > 0 ? (
 								filteredData.map((application) => (
-									<TableRow
+									<tr
 										key={application.id}
-										className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/30"
-										onClick={() => handleRowClick(application)}
+										className="cursor-pointer border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/30"
 									>
 										<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
-											{application.institution_details?.name ||
-												application.institution_name ||
-												application.institution ||
-												"N/A"}
+											<button
+												onClick={(e) => handleInstitutionClick(e, application)}
+												className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300 font-medium text-left"
+											>
+												{application.institution_details?.name ||
+													application.institution_name ||
+													application.institution ||
+													"N/A"}
+											</button>
 										</TableCell>
 										<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
 											{application.program_name}
@@ -173,7 +180,7 @@ export default function ApplicationTable({
 												: "Not set"}
 										</TableCell>
 										<TableCell className="px-5 py-4 text-theme-sm">
-											<div className="flex items-center space-x-2">
+											<div className="flex items-center space-x-8">
 												<button
 													onClick={(e) => {
 														e.stopPropagation();
@@ -222,14 +229,11 @@ export default function ApplicationTable({
 												</button>
 											</div>
 										</TableCell>
-									</TableRow>
+									</tr>
 								))
 							) : (
 								<TableRow>
-									<TableCell
-										colSpan={6}
-										className="px-5 py-8 text-center text-gray-500 dark:text-gray-400"
-									>
+									<TableCell className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
 										No applications found matching the current filters
 									</TableCell>
 								</TableRow>
@@ -237,28 +241,6 @@ export default function ApplicationTable({
 						</TableBody>
 					</Table>
 				</div>
-			</div>
-
-			{/* Mobile View - Cards */}
-			<div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:hidden">
-				{filteredData.length > 0 ? (
-					filteredData.map((application) => (
-						<ApplicationCard
-							key={application.id}
-							data={application}
-							onEdit={handleEdit}
-							onDelete={handleDelete}
-							onRefresh={onRefresh}
-							onView={onView}
-						/>
-					))
-				) : (
-					<div className="rounded-xl border border-gray-200 bg-white p-6 text-center dark:border-white/[0.05] dark:bg-white/[0.03]">
-						<p className="text-gray-500 dark:text-gray-400">
-							No applications found matching the current filters
-						</p>
-					</div>
-				)}
 			</div>
 		</>
 	);

@@ -16,6 +16,7 @@ import Home from "./pages/Dashboard/Home";
 import Calendar from "./pages/Calendar";
 import Recommendations from "./pages/Recommendations";
 import ApplicationTracker from "./pages/Applications/Tracker";
+import ApplicationDetail from "./pages/Applications/ApplicationDetail";
 
 // Documents
 import DocumentUpload from "./pages/Documents/Upload";
@@ -65,6 +66,10 @@ export default function App() {
 								<Route
 									path={ROUTES.Applications.tracker}
 									element={<ApplicationTracker />}
+								/>
+								<Route
+									path={ROUTES.Applications.detail}
+									element={<ApplicationDetail />}
 								/>
 								<Route
 									path={ROUTES.Documents.upload}
