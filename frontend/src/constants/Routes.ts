@@ -8,7 +8,7 @@ export const ROUTES = {
 	},
 	Applications: {
 		tracker: "/applications/tracker",
-		detail: "/applications/detail/:id", // New route for application details
+		detail: "/applications/detail/:id",
 	},
 	Documents: {
 		upload: "/documents/upload",
@@ -16,6 +16,7 @@ export const ROUTES = {
 	},
 	Directory: {
 		search: "/directory/search",
+		institution: "/directory/institution/:id", // Add this institution detail route
 	},
 	Profile: {
 		information: "/profile/information",

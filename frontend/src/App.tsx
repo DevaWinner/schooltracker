@@ -22,6 +22,7 @@ import ApplicationDetail from "./pages/Applications/ApplicationDetail";
 import DocumentUpload from "./pages/Documents/Upload";
 import DocumentLibrary from "./pages/Documents/Library";
 import SchoolSearch from "./pages/Directory/Search";
+import InstitutionDetail from "./pages/Directory/InstitutionDetail"; // Import the InstitutionDetail component
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import UserProfiles from "./pages/UserProfile/UserProfileInformation";
@@ -82,6 +83,11 @@ export default function App() {
 								<Route
 									path={ROUTES.Directory.search}
 									element={<SchoolSearch />}
+								/>
+								{/* Add route for institution detail */}
+								<Route
+									path={ROUTES.Directory.institution}
+									element={<InstitutionDetail />}
 								/>
 								<Route path={ROUTES.Other.calendar} element={<Calendar />} />
 								<Route
