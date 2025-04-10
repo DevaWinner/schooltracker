@@ -222,12 +222,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 	const updateApplicationItem = useCallback(
 		async (id: number, applicationData: Partial<Application>) => {
 			try {
-				console.log("Updating application:", id, applicationData);
 				const updatedApplication = await updateApplication(id, applicationData);
-				console.log(
-					"Updated application received from API:",
-					updatedApplication
-				);
 
 				// Update the applications list
 				setApplications((prevApps) =>
@@ -242,7 +237,6 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				setLastUpdated(new Date());
 				return updatedApplication;
 			} catch (err: any) {
-				console.error("Failed to update application:", err);
 				return null;
 			}
 		},
@@ -278,8 +272,6 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 					message: "Application deleted successfully",
 				};
 			} catch (err: any) {
-				console.error("Error deleting application:", err);
-
 				// Get the most specific error message available
 				let errorMessage = err.message || "Failed to delete application";
 
