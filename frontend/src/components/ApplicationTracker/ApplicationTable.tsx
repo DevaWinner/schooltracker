@@ -74,6 +74,81 @@ export default function ApplicationTable({
 		navigate(`/applications/detail/${application.id}`);
 	};
 
+	// Skeleton table rows for loading state
+	const TableSkeleton = () => (
+		<Table>
+			<TableHeader className="bg-gray-50 dark:bg-gray-800/50">
+				<TableRow>
+					<TableCell
+						isHeader
+						className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
+					>
+						Institution
+					</TableCell>
+					<TableCell
+						isHeader
+						className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
+					>
+						Program
+					</TableCell>
+					<TableCell
+						isHeader
+						className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
+					>
+						Degree
+					</TableCell>
+					<TableCell
+						isHeader
+						className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
+					>
+						Status
+					</TableCell>
+					<TableCell
+						isHeader
+						className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
+					>
+						Start Date
+					</TableCell>
+					<TableCell
+						isHeader
+						className="whitespace-nowrap px-5 py-4 font-medium text-gray-700 text-start text-theme-sm dark:text-gray-200"
+					>
+						Actions
+					</TableCell>
+				</TableRow>
+			</TableHeader>
+			<TableBody>
+				{Array(5)
+					.fill(0)
+					.map((_, index) => (
+						<TableRow key={index}>
+							<TableCell className="px-5 py-4">
+								<div className="h-4 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+							</TableCell>
+							<TableCell className="px-5 py-4">
+								<div className="h-4 w-40 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+							</TableCell>
+							<TableCell className="px-5 py-4">
+								<div className="h-4 w-20 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+							</TableCell>
+							<TableCell className="px-5 py-4">
+								<div className="h-5 w-16 animate-pulse rounded-full bg-gray-200 dark:bg-gray-700"></div>
+							</TableCell>
+							<TableCell className="px-5 py-4">
+								<div className="h-4 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+							</TableCell>
+							<TableCell className="px-5 py-4">
+								<div className="flex space-x-3">
+									<div className="h-6 w-6 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+									<div className="h-6 w-6 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+								</div>
+							</TableCell>
+						</TableRow>
+					))}
+			</TableBody>
+		</Table>
+	);
+
 	return (
 		<>
 			<div className="mb-6">
@@ -87,9 +162,7 @@ export default function ApplicationTable({
 			<div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-white/[0.05] dark:bg-white/[0.03]">
 				<div className="max-w-full overflow-x-auto">
 					{isLoading ? (
-						<div className="flex h-48 items-center justify-center">
-							<div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
-						</div>
+						<TableSkeleton />
 					) : (
 						<Table>
 							{/* Table Header */}

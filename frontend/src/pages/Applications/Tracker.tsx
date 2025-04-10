@@ -143,19 +143,13 @@ export default function ApplicationTracker() {
 							</button>
 						}
 					>
-						{isLoading ? (
-							<div className="flex h-48 items-center justify-center">
-								<div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
-							</div>
-						) : (
-							<ApplicationTable
-								data={applications}
-								onRefresh={refreshData}
-								onEdit={handleEdit}
-								onDelete={handleDelete}
-								onView={handleView}
-							/>
-						)}
+						<ApplicationTable
+							data={applications}
+							onRefresh={refreshData}
+							onEdit={handleEdit}
+							onDelete={handleDelete}
+							onView={handleView}
+						/>
 					</ComponentCard>
 				</div>
 			</div>

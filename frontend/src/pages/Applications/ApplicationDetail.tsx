@@ -111,15 +111,109 @@ export default function ApplicationDetail() {
 		}
 	};
 
+	// Application detail skeleton loader
+	const ApplicationDetailSkeleton = () => (
+		<div className="grid grid-cols-1 gap-6 lg:grid-cols-3 animate-pulse">
+			{/* Main Information Card Skeleton */}
+			<div className="lg:col-span-2">
+				<div className="rounded-xl border border-gray-200 bg-white overflow-hidden dark:border-gray-700 dark:bg-gray-800">
+					{/* Header with Institution Info Skeleton */}
+					<div className="relative overflow-hidden bg-gray-50 px-6 py-8 dark:bg-gray-800/80">
+						<div className="space-y-3">
+							<div className="h-7 w-3/4 rounded bg-gray-200 dark:bg-gray-700"></div>
+							<div className="h-5 w-1/2 rounded bg-gray-200 dark:bg-gray-700"></div>
+							<div className="h-4 w-1/3 rounded bg-gray-200 dark:bg-gray-700"></div>
+							<div className="flex items-center gap-3 mt-2">
+								<div className="h-6 w-20 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+								<div className="h-5 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+							</div>
+						</div>
+					</div>
+
+					{/* Program Details Skeleton */}
+					<div className="divide-y divide-gray-200 px-6 py-4 dark:divide-gray-700">
+						<div className="pb-4">
+							<div className="h-6 w-40 rounded bg-gray-200 dark:bg-gray-700 mb-4"></div>
+							<div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+								{Array(4)
+									.fill(0)
+									.map((_, i) => (
+										<div key={i}>
+											<div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 mb-2"></div>
+											<div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+										</div>
+									))}
+							</div>
+						</div>
+
+						<div className="py-4">
+							<div className="h-6 w-40 rounded bg-gray-200 dark:bg-gray-700 mb-4"></div>
+							<div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+								{Array(2)
+									.fill(0)
+									.map((_, i) => (
+										<div key={i}>
+											<div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 mb-2"></div>
+											<div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+										</div>
+									))}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Sidebar Cards Skeleton */}
+			<div className="space-y-6">
+				{/* Links Card Skeleton */}
+				<div className="rounded-xl border border-gray-200 bg-white overflow-hidden dark:border-gray-700 dark:bg-gray-800">
+					<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+						<div className="h-6 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+					</div>
+					<div className="px-6 py-4 space-y-4">
+						{Array(2)
+							.fill(0)
+							.map((_, i) => (
+								<div key={i}>
+									<div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 mb-1"></div>
+									<div className="h-4 w-40 rounded bg-gray-200 dark:bg-gray-700"></div>
+								</div>
+							))}
+					</div>
+				</div>
+
+				{/* Meta Info Card Skeleton */}
+				<div className="rounded-xl border border-gray-200 bg-white overflow-hidden dark:border-gray-700 dark:bg-gray-800">
+					<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+						<div className="h-6 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+					</div>
+					<div className="px-6 py-4 space-y-3">
+						{Array(2)
+							.fill(0)
+							.map((_, i) => (
+								<div key={i}>
+									<div className="h-4 w-16 rounded bg-gray-200 dark:bg-gray-700 mb-1"></div>
+									<div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700"></div>
+								</div>
+							))}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+
 	if (loading) {
 		return (
-			<div className="flex h-full items-center justify-center p-6">
-				<div className="text-center">
-					<div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
-					<p className="mt-4 text-gray-600 dark:text-gray-400">
-						Loading application details...
-					</p>
+			<div className="container mx-auto px-4 py-6">
+				<div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+					<div className="h-6 w-48 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+					<div className="flex gap-3">
+						<div className="h-9 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+						<div className="h-9 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+						<div className="h-9 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+					</div>
 				</div>
+				<ApplicationDetailSkeleton />
 			</div>
 		);
 	}
