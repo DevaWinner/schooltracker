@@ -7,17 +7,15 @@ import {
 	TableRow,
 } from "../ui/table";
 
-import { useEffect, useState } from "react";
-import {
-	Application,
-	ApplicationFilterParams,
-	ApplicationProps,
-} from "../../types/applications";
+import { useState } from "react";
+import { Application, ApplicationFilterParams } from "../../types/applications";
 import ApplicationFilters from "./ApplicationFilters";
-import { getApplications } from "../../api/applications";
-import { toast } from "react-toastify";
 
-interface ExtendedApplicationProps extends ApplicationProps {
+interface ApplicationTableProps {
+	data: Application[];
+	isLoading: boolean;
+	onFilterChange: (filters: ApplicationFilterParams) => void;
+	onRefresh?: () => void;
 	onEdit?: (application: Application) => void;
 	onDelete?: (id: number) => void;
 	onView?: (application: Application) => void;
@@ -25,38 +23,20 @@ interface ExtendedApplicationProps extends ApplicationProps {
 
 export default function ApplicationTable({
 	data,
+	isLoading,
+	onFilterChange,
 	onRefresh,
 	onEdit,
 	onDelete,
 	onView,
-}: ExtendedApplicationProps) {
+}: ApplicationTableProps) {
 	const navigate = useNavigate();
 	const [filters, setFilters] = useState<ApplicationFilterParams>({});
-	const [filteredData, setFilteredData] = useState<Application[]>(data);
-	const [isLoading, setIsLoading] = useState(false);
 
-	// Apply filters through API
-	const applyFilters = async (newFilters: ApplicationFilterParams) => {
+	const applyFilters = (newFilters: ApplicationFilterParams) => {
 		setFilters(newFilters);
-		setIsLoading(true);
-
-		try {
-			const response = await getApplications(newFilters);
-			setFilteredData(response.results);
-		} catch (error) {
-			console.error("Error filtering applications:", error);
-			toast.error("Failed to filter applications");
-			// Fall back to local filtering if API fails
-			setFilteredData(data);
-		} finally {
-			setIsLoading(false);
-		}
+		onFilterChange(newFilters);
 	};
-
-	// Update filtered data when data changes
-	useEffect(() => {
-		setFilteredData(data);
-	}, [data]);
 
 	const handleEdit = (application: Application) => {
 		if (onEdit) onEdit(application);
@@ -209,8 +189,8 @@ export default function ApplicationTable({
 
 							{/* Table Body */}
 							<TableBody>
-								{filteredData.length > 0 ? (
-									filteredData.map((application) => (
+								{data.length > 0 ? (
+									data.map((application) => (
 										<tr
 											key={application.id}
 											className="cursor-pointer border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/30"

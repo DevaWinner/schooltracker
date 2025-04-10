@@ -1,58 +1,41 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import ComponentCard from "../../components/common/ComponentCard";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import AddApplication from "../../components/ApplicationTracker/AddApplication";
 import ApplicationTable from "../../components/ApplicationTracker/ApplicationTable";
-import { Application } from "../../types/applications";
+import { Application, ApplicationFilterParams } from "../../types/applications";
 import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
-import {
-	getApplications,
-	updateApplication,
-	deleteApplication,
-} from "../../api/applications";
-import { toast } from "react-toastify";
+import { useApplications } from "../../context/ApplicationContext";
 
 export default function ApplicationTracker() {
-	const [applications, setApplications] = useState<Application[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
+	const {
+		filteredApplications,
+		isLoading,
+		filterApplications,
+		updateApplicationItem,
+		removeApplication,
+		fetchApplications,
+	} = useApplications();
+
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [currentApplication, setCurrentApplication] =
 		useState<Application | null>(null);
-	const [pagination, setPagination] = useState({
-		count: 0,
-		next: null as string | null,
-		previous: null as string | null,
-	});
-
-	const fetchApplications = async () => {
-		setIsLoading(true);
-		try {
-			const response = await getApplications();
-			setApplications(response.results);
-			setPagination({
-				count: response.count,
-				next: response.next,
-				previous: response.previous,
-			});
-		} catch (error) {
-			console.error("Error fetching applications:", error);
-			toast.error("Failed to load applications");
-		} finally {
-			setIsLoading(false);
-		}
-	};
-
-	useEffect(() => {
-		fetchApplications();
-	}, []);
 
 	const refreshData = useCallback(() => {
-		fetchApplications();
-	}, []);
+		// Force refresh from API
+		fetchApplications(true);
+	}, [fetchApplications]);
+
+	const handleFiltersChange = useCallback(
+		(filters: ApplicationFilterParams) => {
+			filterApplications(filters);
+		},
+		[filterApplications]
+	);
 
 	const handleView = useCallback((application: Application) => {
 		setCurrentApplication(application);
@@ -66,57 +49,40 @@ export default function ApplicationTracker() {
 	const handleDelete = useCallback(
 		(id: number) => {
 			// Find the application to delete
-			const appToDelete = applications.find((app) => app.id === id);
+			const appToDelete = filteredApplications.find((app) => app.id === id);
 			if (appToDelete) {
 				setCurrentApplication(appToDelete);
 				setIsDeleteModalOpen(true);
 			}
 		},
-		[applications]
+		[filteredApplications]
 	);
 
 	const handleSaveEdit = useCallback(
 		async (updatedApplication: Application) => {
-			try {
-				await updateApplication(updatedApplication.id, updatedApplication);
+			const result = await updateApplicationItem(
+				updatedApplication.id,
+				updatedApplication
+			);
 
-				// Update local state
-				setApplications((prevApplications) =>
-					prevApplications.map((app) =>
-						app.id === updatedApplication.id ? updatedApplication : app
-					)
-				);
-
-				toast.success("Application updated successfully");
+			if (result) {
 				setIsEditModalOpen(false);
 				setCurrentApplication(null);
-			} catch (error) {
-				console.error("Error updating application:", error);
-				toast.error("Failed to update application");
 			}
 		},
-		[]
+		[updateApplicationItem]
 	);
 
 	const handleConfirmDelete = useCallback(async () => {
 		if (!currentApplication) return;
 
-		try {
-			await deleteApplication(currentApplication.id);
+		const success = await removeApplication(currentApplication.id);
 
-			// Update local state
-			setApplications((prevApplications) =>
-				prevApplications.filter((app) => app.id !== currentApplication.id)
-			);
-
-			toast.success("Application deleted successfully");
+		if (success) {
 			setIsDeleteModalOpen(false);
 			setCurrentApplication(null);
-		} catch (error) {
-			console.error("Error deleting application:", error);
-			toast.error("Failed to delete application");
 		}
-	}, [currentApplication]);
+	}, [currentApplication, removeApplication]);
 
 	return (
 		<>
@@ -144,7 +110,9 @@ export default function ApplicationTracker() {
 						}
 					>
 						<ApplicationTable
-							data={applications}
+							data={filteredApplications}
+							isLoading={isLoading}
+							onFilterChange={handleFiltersChange}
 							onRefresh={refreshData}
 							onEdit={handleEdit}
 							onDelete={handleDelete}

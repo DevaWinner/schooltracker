@@ -8,12 +8,9 @@ import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { ROUTES } from "../../constants/Routes";
-import {
-	getApplicationById,
-	updateApplication,
-	deleteApplication,
-} from "../../api/applications";
+import { getApplicationById } from "../../api/applications";
 import { toast } from "react-toastify";
+import { useApplications } from "../../context/ApplicationContext";
 
 export default function ApplicationDetail() {
 	const { id } = useParams();
@@ -23,10 +20,25 @@ export default function ApplicationDetail() {
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [loading, setLoading] = useState(true);
 
+	const { applications, updateApplicationItem, removeApplication } =
+		useApplications();
+
 	useEffect(() => {
 		const fetchApplication = async () => {
 			if (!id) return;
 
+			// First, try to get the application from the context
+			const cachedApplication = applications.find(
+				(app) => app.id === Number(id)
+			);
+
+			if (cachedApplication) {
+				setApplication(cachedApplication);
+				setLoading(false);
+				return;
+			}
+
+			// If not in context, fetch from API
 			setLoading(true);
 			try {
 				const data = await getApplicationById(id);
@@ -40,7 +52,7 @@ export default function ApplicationDetail() {
 		};
 
 		fetchApplication();
-	}, [id]);
+	}, [id, applications]);
 
 	const handleEdit = () => {
 		setIsEditModalOpen(true);
@@ -51,16 +63,16 @@ export default function ApplicationDetail() {
 	};
 
 	const handleSaveEdit = async (updatedApplication: Application) => {
-		try {
-			const data = await updateApplication(
-				updatedApplication.id,
-				updatedApplication
-			);
-			setApplication(data);
+		const result = await updateApplicationItem(
+			updatedApplication.id,
+			updatedApplication
+		);
+
+		if (result) {
+			setApplication(result);
 			toast.success("Application updated successfully");
 			setIsEditModalOpen(false);
-		} catch (error) {
-			console.error("Error updating application:", error);
+		} else {
 			toast.error("Failed to update application");
 		}
 	};
@@ -68,12 +80,12 @@ export default function ApplicationDetail() {
 	const handleConfirmDelete = async () => {
 		if (!application?.id) return;
 
-		try {
-			await deleteApplication(application.id);
+		const success = await removeApplication(application.id);
+
+		if (success) {
 			toast.success("Application deleted successfully");
 			navigate(ROUTES.Applications.tracker);
-		} catch (error) {
-			console.error("Error deleting application:", error);
+		} else {
 			toast.error("Failed to delete application");
 		}
 	};

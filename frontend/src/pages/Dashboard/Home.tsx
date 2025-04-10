@@ -1,35 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
-import { Application } from "../../types/applications";
-import { getApplications } from "../../api/applications";
-import { toast } from "react-toastify";
-import ApplicationStats from "../../components/ApplicationTracker/ApplicationStats";
 import { Link } from "react-router-dom";
 import { ROUTES } from "../../constants/Routes";
+import ApplicationStats from "../../components/ApplicationTracker/ApplicationStats";
 import ApplicationCharts from "../../components/Dashboard/ApplicationCharts";
 import ComponentCard from "../../components/common/ComponentCard";
+import { useApplications } from "../../context/ApplicationContext";
 
 export default function Home() {
-	const [applications, setApplications] = useState<Application[]>([]);
-	const [isLoading, setIsLoading] = useState(true);
+	const { applications, isLoading, fetchApplications } = useApplications();
 
 	useEffect(() => {
-		const fetchApplications = async () => {
-			setIsLoading(true);
-			try {
-				const response = await getApplications();
-				setApplications(response.results);
-			} catch (error) {
-				console.error("Error fetching applications:", error);
-				toast.error("Failed to load applications data");
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
+		// This will only fetch if data is stale or non-existent
 		fetchApplications();
-	}, []);
+	}, [fetchApplications]);
 
 	// Skeleton loader for ApplicationStats
 	const ApplicationStatsSkeleton = () => (

@@ -2,25 +2,16 @@ import { useModal } from "../../hooks/useModal";
 import { Application } from "../../types/applications";
 import { Modal } from "../ui/modal";
 import MultiStepApplicationModal from "./modals/MultiStepApplicationModal";
-import { createApplication } from "../../api/applications";
-import { toast } from "react-toastify";
+import { useApplications } from "../../context/ApplicationContext";
 
-export default function AddApplication({
-	onRefresh,
-}: {
-	onRefresh?: () => void;
-}) {
+export default function AddApplication() {
 	const { isOpen, openModal, closeModal } = useModal();
+	const { addApplication } = useApplications();
 
 	const handleSave = async (data: Application) => {
-		try {
-			await createApplication(data);
-			toast.success("Application created successfully!");
+		const result = await addApplication(data);
+		if (result) {
 			closeModal();
-			if (onRefresh) onRefresh();
-		} catch (error) {
-			console.error("Error creating application:", error);
-			toast.error("Failed to create application");
 		}
 	};
 
