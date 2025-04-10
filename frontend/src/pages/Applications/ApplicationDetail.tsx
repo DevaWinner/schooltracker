@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Application } from "../../types/applications";
-import { tableData } from "../../components/ApplicationTracker/placeholderData";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
@@ -9,6 +8,9 @@ import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { ROUTES } from "../../constants/Routes";
+import { getApplicationById } from "../../api/applications";
+import { toast } from "react-toastify";
+import { useApplications } from "../../context/ApplicationContext";
 
 export default function ApplicationDetail() {
 	const { id } = useParams();
@@ -18,16 +20,20 @@ export default function ApplicationDetail() {
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [loading, setLoading] = useState(true);
 
+	const { updateApplicationItem, removeApplication } = useApplications();
+
+	// Always fetch the application from API to ensure we have the latest data
 	useEffect(() => {
-		// In a real application, this would be an API call
-		const fetchApplication = () => {
+		const fetchApplication = async () => {
+			if (!id) return;
+
 			setLoading(true);
 			try {
-				const appId = parseInt(id || "0");
-				const foundApp = tableData.find((app) => app.id === appId);
-				setApplication(foundApp || null);
+				// Get fresh data directly from the API
+				const data = await getApplicationById(id);
+				setApplication(data);
 			} catch (error) {
-				console.error("Error fetching application:", error);
+				toast.error("Failed to fetch application details");
 			} finally {
 				setLoading(false);
 			}
@@ -37,22 +43,41 @@ export default function ApplicationDetail() {
 	}, [id]);
 
 	const handleEdit = () => {
-		setIsEditModalOpen(true);
+		if (application) {
+			setIsEditModalOpen(true);
+		}
 	};
 
 	const handleDelete = () => {
 		setIsDeleteModalOpen(true);
 	};
 
-	const handleSaveEdit = (updatedApplication: Application) => {
-		// In a real app, you would make an API call here
-		setApplication(updatedApplication);
-		setIsEditModalOpen(false);
+	const handleSaveEdit = async (updatedApplication: Application) => {
+		const result = await updateApplicationItem(
+			updatedApplication.id,
+			updatedApplication
+		);
+
+		if (result) {
+			setApplication(result);
+			toast.success("Application updated successfully");
+			setIsEditModalOpen(false);
+		} else {
+			toast.error("Failed to update application");
+		}
 	};
 
-	const handleConfirmDelete = () => {
-		// In a real app, you would make an API call here
-		navigate(ROUTES.Applications.tracker);
+	const handleConfirmDelete = async () => {
+		if (!application?.id)
+			return { success: false, message: "No application selected" };
+
+		const result = await removeApplication(application.id);
+
+		if (result.success) {
+			navigate(ROUTES.Applications.tracker);
+		}
+
+		return result;
 	};
 
 	// Format date for display
@@ -73,28 +98,124 @@ export default function ApplicationDetail() {
 				return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
 			case "In Progress":
 				return "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200";
-			case "Submitted":
-				return "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-200";
-			case "Interview":
+			case "Pending":
 				return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200";
 			case "Accepted":
 				return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200";
 			case "Rejected":
 				return "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200";
+			case "Deferred":
+				return "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200";
+			case "Withdrawn":
+				return "bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200";
 			default:
 				return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
 		}
 	};
 
+	// Application detail skeleton loader
+	const ApplicationDetailSkeleton = () => (
+		<div className="grid grid-cols-1 gap-6 lg:grid-cols-3 animate-pulse">
+			{/* Main Information Card Skeleton */}
+			<div className="lg:col-span-2">
+				<div className="rounded-xl border border-gray-200 bg-white overflow-hidden dark:border-gray-700 dark:bg-gray-800">
+					{/* Header with Institution Info Skeleton */}
+					<div className="relative overflow-hidden bg-gray-50 px-6 py-8 dark:bg-gray-800/80">
+						<div className="space-y-3">
+							<div className="h-7 w-3/4 rounded bg-gray-200 dark:bg-gray-700"></div>
+							<div className="h-5 w-1/2 rounded bg-gray-200 dark:bg-gray-700"></div>
+							<div className="h-4 w-1/3 rounded bg-gray-200 dark:bg-gray-700"></div>
+							<div className="flex items-center gap-3 mt-2">
+								<div className="h-6 w-20 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+								<div className="h-5 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+							</div>
+						</div>
+					</div>
+
+					{/* Program Details Skeleton */}
+					<div className="divide-y divide-gray-200 px-6 py-4 dark:divide-gray-700">
+						<div className="pb-4">
+							<div className="h-6 w-40 rounded bg-gray-200 dark:bg-gray-700 mb-4"></div>
+							<div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+								{Array(4)
+									.fill(0)
+									.map((_, i) => (
+										<div key={i}>
+											<div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 mb-2"></div>
+											<div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+										</div>
+									))}
+							</div>
+						</div>
+
+						<div className="py-4">
+							<div className="h-6 w-40 rounded bg-gray-200 dark:bg-gray-700 mb-4"></div>
+							<div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+								{Array(2)
+									.fill(0)
+									.map((_, i) => (
+										<div key={i}>
+											<div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 mb-2"></div>
+											<div className="h-4 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+										</div>
+									))}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Sidebar Cards Skeleton */}
+			<div className="space-y-6">
+				{/* Links Card Skeleton */}
+				<div className="rounded-xl border border-gray-200 bg-white overflow-hidden dark:border-gray-700 dark:bg-gray-800">
+					<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+						<div className="h-6 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+					</div>
+					<div className="px-6 py-4 space-y-4">
+						{Array(2)
+							.fill(0)
+							.map((_, i) => (
+								<div key={i}>
+									<div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700 mb-1"></div>
+									<div className="h-4 w-40 rounded bg-gray-200 dark:bg-gray-700"></div>
+								</div>
+							))}
+					</div>
+				</div>
+
+				{/* Meta Info Card Skeleton */}
+				<div className="rounded-xl border border-gray-200 bg-white overflow-hidden dark:border-gray-700 dark:bg-gray-800">
+					<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+						<div className="h-6 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+					</div>
+					<div className="px-6 py-4 space-y-3">
+						{Array(2)
+							.fill(0)
+							.map((_, i) => (
+								<div key={i}>
+									<div className="h-4 w-16 rounded bg-gray-200 dark:bg-gray-700 mb-1"></div>
+									<div className="h-4 w-24 rounded bg-gray-200 dark:bg-gray-700"></div>
+								</div>
+							))}
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+
 	if (loading) {
 		return (
-			<div className="flex h-full items-center justify-center p-6">
-				<div className="text-center">
-					<div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-brand-500"></div>
-					<p className="mt-4 text-gray-600 dark:text-gray-400">
-						Loading application details...
-					</p>
+			<div className="container mx-auto px-4 py-6">
+				<div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+					<div className="h-6 w-48 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+					<div className="flex gap-3">
+						<div className="h-9 w-32 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+						<div className="h-9 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+						<div className="h-9 w-24 animate-pulse rounded bg-gray-200 dark:bg-gray-700"></div>
+					</div>
 				</div>
+				<ApplicationDetailSkeleton />
 			</div>
 		);
 	}

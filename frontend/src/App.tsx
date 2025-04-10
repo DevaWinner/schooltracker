@@ -9,6 +9,7 @@ import PrivateRoute from "./components/PrivateRoute";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from "./context/AuthContext";
+import { ApplicationProvider } from "./context/ApplicationContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 
 // Import page components
@@ -51,65 +52,67 @@ export default function App() {
 	return (
 		<>
 			<AuthProvider>
-				<ThemeProvider>
-					<Router>
-						<ScrollToTop />
-						<Routes>
-							{/* Protected Routes */}
-							<Route
-								element={
-									<PrivateRoute>
-										<AppLayout />
-									</PrivateRoute>
-								}
-							>
-								<Route index path={ROUTES.App.main} element={<Home />} />
+				<ApplicationProvider>
+					<ThemeProvider>
+						<Router>
+							<ScrollToTop />
+							<Routes>
+								{/* Protected Routes */}
 								<Route
-									path={ROUTES.Applications.tracker}
-									element={<ApplicationTracker />}
-								/>
-								<Route
-									path={ROUTES.Applications.detail}
-									element={<ApplicationDetail />}
-								/>
-								<Route
-									path={ROUTES.Documents.upload}
-									element={<DocumentUpload />}
-								/>
-								<Route
-									path={ROUTES.Documents.library}
-									element={<DocumentLibrary />}
-								/>
-								<Route
-									path={ROUTES.Directory.search}
-									element={<SchoolSearch />}
-								/>
-								{/* Add route for institution detail */}
-								<Route
-									path={ROUTES.Directory.institution}
-									element={<InstitutionDetail />}
-								/>
-								<Route path={ROUTES.Other.calendar} element={<Calendar />} />
-								<Route
-									path={ROUTES.Other.recommendations}
-									element={<Recommendations />}
-								/>
-								<Route
-									path={ROUTES.Profile.information}
-									element={<UserProfiles />}
-								/>
-							</Route>
+									element={
+										<PrivateRoute>
+											<AppLayout />
+										</PrivateRoute>
+									}
+								>
+									<Route index path={ROUTES.App.main} element={<Home />} />
+									<Route
+										path={ROUTES.Applications.tracker}
+										element={<ApplicationTracker />}
+									/>
+									<Route
+										path={ROUTES.Applications.detail}
+										element={<ApplicationDetail />}
+									/>
+									<Route
+										path={ROUTES.Documents.upload}
+										element={<DocumentUpload />}
+									/>
+									<Route
+										path={ROUTES.Documents.library}
+										element={<DocumentLibrary />}
+									/>
+									<Route
+										path={ROUTES.Directory.search}
+										element={<SchoolSearch />}
+									/>
+									{/* Add route for institution detail */}
+									<Route
+										path={ROUTES.Directory.institution}
+										element={<InstitutionDetail />}
+									/>
+									<Route path={ROUTES.Other.calendar} element={<Calendar />} />
+									<Route
+										path={ROUTES.Other.recommendations}
+										element={<Recommendations />}
+									/>
+									<Route
+										path={ROUTES.Profile.information}
+										element={<UserProfiles />}
+									/>
+								</Route>
 
-							{/* Public Routes */}
-							<Route path={ROUTES.Auth.signin} element={<SignIn />} />
-							<Route path={ROUTES.Auth.signup} element={<SignUp />} />
+								{/* Public Routes */}
+								<Route path={ROUTES.Auth.signin} element={<SignIn />} />
+								<Route path={ROUTES.Auth.signup} element={<SignUp />} />
 
-							{/* Fallback Route */}
-							<Route path="*" element={<NotFound />} />
-						</Routes>
-					</Router>
-					<ThemedToast />
-				</ThemeProvider>
+								{/* Fallback Route */}
+								<Route path="*" element={<NotFound />} />
+							</Routes>
+						</Router>
+						<ThemedToast />
+					</ThemeProvider>
+				</ApplicationProvider>
 			</AuthProvider>
 		</>
 	);

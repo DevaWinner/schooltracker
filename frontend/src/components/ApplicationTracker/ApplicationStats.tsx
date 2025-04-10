@@ -16,6 +16,9 @@ export default function ApplicationStats({
 			byStatus: {} as Record<string, number>,
 			byDegree: {} as Record<string, number>,
 			acceptanceRate: 0,
+			pendingCount: 0,
+			acceptedCount: 0,
+			rejectedCount: 0,
 			upcomingDeadlines: [] as { date: string; program: string }[],
 		};
 
@@ -27,6 +30,22 @@ export default function ApplicationStats({
 			// Count by status
 			if (app.status) {
 				result.byStatus[app.status] = (result.byStatus[app.status] || 0) + 1;
+
+				// Count applications that are still pending a decision
+				if (
+					["Draft", "In Progress", "Pending", "Deferred"].includes(app.status)
+				) {
+					result.pendingCount++;
+				}
+
+				// Count accepted and rejected applications separately for better tracking
+				if (app.status === "Accepted") {
+					result.acceptedCount++;
+				}
+
+				if (app.status === "Rejected") {
+					result.rejectedCount++;
+				}
 			}
 
 			// Count by degree type
@@ -35,11 +54,11 @@ export default function ApplicationStats({
 					(result.byDegree[app.degree_type] || 0) + 1;
 			}
 
-			// Find upcoming deadlines (applications not yet submitted with a start date)
+			// Find upcoming deadlines (applications with a pending status and start date)
 			if (
-				app.status !== "Submitted" &&
-				app.status !== "Accepted" &&
-				app.status !== "Rejected" &&
+				(app.status === "Draft" ||
+					app.status === "In Progress" ||
+					app.status === "Pending") &&
 				app.start_date
 			) {
 				const deadline = new Date(app.start_date);
@@ -64,11 +83,10 @@ export default function ApplicationStats({
 		);
 
 		// Calculate acceptance rate (only if there are decisions)
-		const decided =
-			(result.byStatus["Accepted"] || 0) + (result.byStatus["Rejected"] || 0);
-		if (decided > 0) {
+		const decidedCount = result.acceptedCount + result.rejectedCount;
+		if (decidedCount > 0) {
 			result.acceptanceRate = Math.round(
-				((result.byStatus["Accepted"] || 0) / decided) * 100
+				(result.acceptedCount / decidedCount) * 100
 			);
 		}
 
@@ -92,14 +110,16 @@ export default function ApplicationStats({
 				return "bg-gray-200 text-gray-800";
 			case "In Progress":
 				return "bg-blue-100 text-blue-800";
-			case "Submitted":
-				return "bg-purple-100 text-purple-800";
-			case "Interview":
+			case "Pending":
 				return "bg-yellow-100 text-yellow-800";
 			case "Accepted":
 				return "bg-green-100 text-green-800";
 			case "Rejected":
 				return "bg-red-100 text-red-800";
+			case "Deferred":
+				return "bg-orange-100 text-orange-800";
+			case "Withdrawn":
+				return "bg-gray-300 text-gray-700";
 			default:
 				return "bg-gray-100 text-gray-800";
 		}
@@ -210,52 +230,66 @@ export default function ApplicationStats({
 				</h3>
 
 				<div className="space-y-6">
-					{/* Acceptance rate */}
-					<div>
-						<div className="mb-2 flex items-center justify-between">
-							<span className="text-sm text-gray-600 dark:text-gray-400">
-								Acceptance Rate
-							</span>
-							<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-								{stats.acceptanceRate}%
-							</span>
-						</div>
-						<div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-							<div
-								className="h-2 rounded-full bg-green-500"
-								style={{ width: `${stats.acceptanceRate}%` }}
-							></div>
-						</div>
-					</div>
-
-					{/* Upcoming deadlines */}
-					<div>
-						<h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-							Upcoming Deadlines
-						</h4>
-
-						{stats.upcomingDeadlines.length === 0 ? (
-							<p className="text-sm text-gray-500 dark:text-gray-400">
-								No upcoming deadlines
-							</p>
-						) : (
-							<div className="space-y-2">
-								{stats.upcomingDeadlines.slice(0, 3).map((deadline, index) => (
-									<div
-										key={index}
-										className="flex items-center justify-between"
-									>
-										<span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[180px]">
-											{deadline.program}
-										</span>
-										<span className="text-xs font-medium text-brand-500 dark:text-brand-400">
-											{formatDate(deadline.date)}
-										</span>
-									</div>
-								))}
+					{/* Application counts */}
+					<div className="grid grid-cols-2 gap-3">
+						<div className="rounded bg-gray-50 p-3 dark:bg-gray-800/50">
+							<div className="text-xl font-semibold text-gray-800 dark:text-white">
+								{stats.total}
 							</div>
-						)}
+							<div className="text-xs text-gray-500 dark:text-gray-400">
+								Total Applications
+							</div>
+						</div>
+						<div className="rounded bg-gray-50 p-3 dark:bg-gray-800/50">
+							<div className="text-xl font-semibold text-gray-800 dark:text-white">
+								{stats.pendingCount}
+							</div>
+							<div className="text-xs text-gray-500 dark:text-gray-400">
+								Pending Decision
+							</div>
+						</div>
+						<div className="rounded bg-green-50 p-3 dark:bg-green-900/20">
+							<div className="text-xl font-semibold text-green-700 dark:text-green-400">
+								{stats.acceptedCount}
+							</div>
+							<div className="text-xs text-green-600 dark:text-green-400">
+								Accepted
+							</div>
+						</div>
+						<div className="rounded bg-red-50 p-3 dark:bg-red-900/20">
+							<div className="text-xl font-semibold text-red-700 dark:text-red-400">
+								{stats.rejectedCount}
+							</div>
+							<div className="text-xs text-red-600 dark:text-red-400">
+								Rejected
+							</div>
+						</div>
 					</div>
+
+					{/* Acceptance rate */}
+					{(stats.acceptedCount > 0 || stats.rejectedCount > 0) && (
+						<div>
+							<div className="mb-2 flex items-center justify-between">
+								<span className="text-sm text-gray-600 dark:text-gray-400">
+									Acceptance Rate
+								</span>
+								<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+									{stats.acceptanceRate}%
+								</span>
+							</div>
+							<div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+								<div
+									className="h-2 rounded-full bg-green-500"
+									style={{ width: `${stats.acceptanceRate}%` }}
+								></div>
+							</div>
+							<div className="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+								{stats.acceptedCount} of{" "}
+								{stats.acceptedCount + stats.rejectedCount} applications
+								submitted
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

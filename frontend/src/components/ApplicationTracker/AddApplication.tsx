@@ -1,19 +1,39 @@
+import React from "react";
 import { useModal } from "../../hooks/useModal";
 import { Application } from "../../types/applications";
 import { Modal } from "../ui/modal";
 import MultiStepApplicationModal from "./modals/MultiStepApplicationModal";
+import { useApplications } from "../../context/ApplicationContext";
 
-export default function AddApplication({
-	onRefresh,
-}: {
+interface AddApplicationProps {
 	onRefresh?: () => void;
-}) {
-	const { isOpen, openModal, closeModal } = useModal();
+}
 
-	const handleSave = (data: Application) => {
-		console.log("Saving application:", data);
-		closeModal();
-		if (onRefresh) onRefresh();
+const AddApplication: React.FC<AddApplicationProps> = ({ onRefresh }) => {
+	const { isOpen, openModal, closeModal } = useModal();
+	const { addApplication } = useApplications();
+
+	const handleSave = async (data: Application) => {
+		// Ensure we're not passing an ID field for new applications
+		// This is a defensive measure to make sure the ID is never sent
+		if ("id" in data) {
+			const { id, ...dataWithoutId } = data;
+			const result = await addApplication(dataWithoutId as Application);
+			if (result) {
+				closeModal();
+				if (onRefresh) {
+					onRefresh();
+				}
+			}
+		} else {
+			const result = await addApplication(data);
+			if (result) {
+				closeModal();
+				if (onRefresh) {
+					onRefresh();
+				}
+			}
+		}
 	};
 
 	return (
@@ -44,4 +64,6 @@ export default function AddApplication({
 			</Modal>
 		</>
 	);
-}
+};
+
+export default AddApplication;
