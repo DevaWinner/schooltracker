@@ -167,7 +167,7 @@ export default function EditApplicationModal({
 		if (e.target.value === "") {
 			setData((prevState) => ({
 				...prevState,
-				institution_id: undefined,
+				institution_id: "" as any, // Use empty string with type assertion instead of undefined
 				institution: "", // Use empty string instead of undefined
 				institution_name: "",
 				institution_country: "",
@@ -195,7 +195,7 @@ export default function EditApplicationModal({
 		setSearchTerm("");
 		setData((prevState) => ({
 			...prevState,
-			institution_id: undefined,
+			institution_id: "" as any, // Use empty string with type assertion instead of undefined
 			institution: "", // Use empty string instead of undefined
 			institution_name: "",
 			institution_country: "",

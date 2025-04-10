@@ -27,7 +27,6 @@ const TOTAL_STEPS = 4;
 export default function MultiStepApplicationModal({
 	onSave,
 	onClose,
-	isLoading = false,
 	data,
 }: MultiStepApplicationModalProps) {
 	const [formData, setFormData] = useState<Partial<Application>>(
@@ -74,38 +73,6 @@ export default function MultiStepApplicationModal({
 
 	const updateFormData = (newData: Partial<Application>) => {
 		setFormData((prev) => ({ ...prev, ...newData }));
-	};
-
-	const handleChange = (
-		e: React.ChangeEvent<
-			HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-		>
-	) => {
-		const { name, value } = e.target;
-
-		if (name === "institution_id") {
-			const selectedInstitution = institutions.find(
-				(inst) => inst.id === value
-			);
-
-			if (selectedInstitution) {
-				setFormData((prev) => ({
-					...prev,
-					institution_id: selectedInstitution.id,
-					institution: selectedInstitution.name,
-					institution_country: selectedInstitution.country,
-				}));
-			} else {
-				setFormData((prev) => ({
-					...prev,
-					institution_id: undefined,
-					institution: value,
-					institution_country: prev.institution_country,
-				}));
-			}
-		} else {
-			setFormData((prev) => ({ ...prev, [name]: value }));
-		}
 	};
 
 	const handleNext = () => {

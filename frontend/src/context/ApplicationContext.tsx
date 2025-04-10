@@ -9,7 +9,6 @@ import React, {
 import {
 	Application,
 	ApplicationFilterParams,
-	ApplicationResponse,
 } from "../types/applications";
 import {
 	getApplications,
