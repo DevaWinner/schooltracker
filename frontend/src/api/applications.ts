@@ -87,6 +87,12 @@ export const createApplication = async (
 			formattedData.institution = formattedData.institution_id;
 		}
 
+		// Always remove the ID field to avoid conflicts with database
+		// This ensures we never accidentally try to set the primary key
+		if ("id" in formattedData) {
+			delete formattedData.id;
+		}
+
 		// Remove any fields the API doesn't expect
 		const apiExpectedFields = [
 			"institution",

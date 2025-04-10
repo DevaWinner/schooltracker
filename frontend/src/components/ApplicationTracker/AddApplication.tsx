@@ -15,6 +15,7 @@ const AddApplication: React.FC<AddApplicationProps> = ({ onRefresh }) => {
 
 	const handleSave = async (data: Application) => {
 		// Ensure we're not passing an ID field for new applications
+		// This is a defensive measure to make sure the ID is never sent
 		if ("id" in data) {
 			const { id, ...dataWithoutId } = data;
 			const result = await addApplication(dataWithoutId as Application);

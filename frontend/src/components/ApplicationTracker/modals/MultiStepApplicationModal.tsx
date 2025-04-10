@@ -134,15 +134,14 @@ export default function MultiStepApplicationModal({
 		const finalData = {
 			...formData,
 			institution: formData.institution_id, // Ensure institution is set to the ID
-			// Remove any ID-related fields completely - let the backend handle this
 			created_at: formData.created_at || new Date().toISOString(),
 			updated_at: new Date().toISOString(),
 			program_name: formData.program_name || "Unnamed Program",
 		} as Application;
 
 		// Remove id field if it exists to prevent conflicts with database
+		// This is a defensive measure that ensures ID is never sent
 		if ("id" in finalData) {
-			// Use type assertion to treat finalData as a record with optional id
 			delete (finalData as Record<string, any>).id;
 		}
 
