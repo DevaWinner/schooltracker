@@ -194,9 +194,6 @@ export default function Step1BasicInfo({
 								<p className="text-xs text-gray-500 dark:text-gray-400">
 									{data.institution_country}
 								</p>
-								<p className="text-xs text-gray-500 dark:text-gray-400">
-									ID: {data.institution_id}
-								</p>
 							</div>
 							<button
 								type="button"

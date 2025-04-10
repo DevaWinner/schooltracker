@@ -97,7 +97,7 @@ export const createApplication = async (
 
 		// Remove any fields the API doesn't expect
 		const apiExpectedFields = [
-			"id",
+			// Removed "id" - let the API handle ID generation
 			"institution",
 			"program_name",
 			"degree_type",
@@ -118,7 +118,7 @@ export const createApplication = async (
 		const cleanedData = Object.keys(formattedData)
 			.filter((key) => apiExpectedFields.includes(key))
 			.reduce((obj, key) => {
-				obj[key] = formattedData[key];
+				obj[key] = formattedData[key as keyof typeof formattedData];
 				return obj;
 			}, {} as Record<string, any>);
 

@@ -14,11 +14,23 @@ const AddApplication: React.FC<AddApplicationProps> = ({ onRefresh }) => {
 	const { addApplication } = useApplications();
 
 	const handleSave = async (data: Application) => {
-		const result = await addApplication(data);
-		if (result) {
-			closeModal();
-			if (onRefresh) {
-				onRefresh();
+		// Ensure we're not passing an ID field for new applications
+		if ("id" in data) {
+			const { id, ...dataWithoutId } = data;
+			const result = await addApplication(dataWithoutId as Application);
+			if (result) {
+				closeModal();
+				if (onRefresh) {
+					onRefresh();
+				}
+			}
+		} else {
+			const result = await addApplication(data);
+			if (result) {
+				closeModal();
+				if (onRefresh) {
+					onRefresh();
+				}
 			}
 		}
 	};

@@ -5,6 +5,13 @@ import Label from "../../form/Label";
 import { useState, useEffect } from "react";
 import { Application } from "../../../types/applications";
 import { formatDateForInput } from "../../../utils/dateUtils";
+import { getInstitutionsForSelect } from "../../../api/institutions";
+
+interface Institution {
+	id: string;
+	name: string;
+	country: string;
+}
 
 interface EditApplicationModalProps {
 	data: Application;
@@ -24,6 +31,7 @@ export default function EditApplicationModal({
 	const [formData, setData] = useState({
 		id: data?.id || 0,
 		institution: data?.institution || "",
+		institution_id: data?.institution_id || data?.institution || "",
 		institution_name: data?.institution_name || "",
 		institution_country: data?.institution_country || "",
 		institution_details: data?.institution_details || null,
@@ -45,19 +53,62 @@ export default function EditApplicationModal({
 		user: data?.user || undefined,
 	});
 
+	// Institution search functionality
+	const [searchTerm, setSearchTerm] = useState(data?.institution_name || "");
+	const [institutions, setInstitutions] = useState<Institution[]>([]);
+	const [filteredInstitutions, setFilteredInstitutions] = useState<
+		Institution[]
+	>([]);
+	const [showDropdown, setShowDropdown] = useState(false);
+	const [isLoadingInstitutions, setIsLoadingInstitutions] = useState(false);
+
+	// Fetch institutions
+	useEffect(() => {
+		const fetchInstitutions = async () => {
+			setIsLoadingInstitutions(true);
+			try {
+				const institutionsList = await getInstitutionsForSelect();
+				setInstitutions(institutionsList);
+
+				// Find the selected institution in the list if it exists
+				if (data?.institution_id) {
+					const selectedInstitution = institutionsList.find(
+						(inst) => inst.id === data.institution_id
+					);
+
+					if (selectedInstitution) {
+						// Update the search term with the institution name
+						setSearchTerm(selectedInstitution.name);
+
+						// Update form data with complete institution info
+						setData((prev) => ({
+							...prev,
+							institution_id: selectedInstitution.id,
+							institution: selectedInstitution.id, // for API
+							institution_name: selectedInstitution.name,
+							institution_country: selectedInstitution.country,
+						}));
+					}
+				}
+			} catch (error) {
+				console.error("Error fetching institutions:", error);
+			} finally {
+				setIsLoadingInstitutions(false);
+			}
+		};
+
+		fetchInstitutions();
+	}, [data?.institution_id]);
+
 	// Update form data when the data prop changes
 	useEffect(() => {
 		if (data) {
 			console.log("EditApplicationModal updating form data with:", data);
-			console.log("Start date before formatting:", data.start_date);
-			console.log(
-				"Start date after formatting:",
-				formatDateForInput(data.start_date)
-			);
 
 			setData({
 				id: data.id || 0,
 				institution: data.institution || "",
+				institution_id: data.institution_id || data.institution || "",
 				institution_name: data.institution_name || "",
 				institution_country: data.institution_country || "",
 				institution_details: data.institution_details || null,
@@ -78,8 +129,25 @@ export default function EditApplicationModal({
 				updated_at: data.updated_at || "",
 				user: data.user || undefined,
 			});
+
+			// Update search term when data changes
+			if (data.institution_name) {
+				setSearchTerm(data.institution_name);
+			}
 		}
 	}, [data]);
+
+	// Filter institutions based on search term
+	useEffect(() => {
+		if (!searchTerm) {
+			setFilteredInstitutions(institutions.slice(0, 100)); // Show first 100 by default
+		} else {
+			const filtered = institutions.filter((inst) =>
+				inst.name.toLowerCase().includes(searchTerm.toLowerCase())
+			);
+			setFilteredInstitutions(filtered.slice(0, 100)); // Limit results
+		}
+	}, [searchTerm, institutions]);
 
 	// Updates values when the form is updated
 	const changeForm = (
@@ -91,6 +159,52 @@ export default function EditApplicationModal({
 		setData((prevState) => ({
 			...prevState,
 			[name]: value,
+		}));
+	};
+
+	// Institution search handler
+	const handleInstitutionSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSearchTerm(e.target.value);
+		setShowDropdown(true);
+
+		// Only clear institution ID when search term is completely cleared
+		if (e.target.value === "") {
+			setData((prevState) => ({
+				...prevState,
+				institution_id: undefined,
+				institution: undefined,
+				institution_name: "",
+				institution_country: "",
+			}));
+		}
+	};
+
+	// Select institution from dropdown
+	const selectInstitution = (institution: Institution) => {
+		console.log("Selected institution:", institution);
+
+		// Important: Set both institution_id (for local use) and institution (for API)
+		setData((prevState) => ({
+			...prevState,
+			institution_id: institution.id,
+			institution: institution.id, // Set the institution field to the ID for API
+			institution_name: institution.name, // Store the name separately for display
+			institution_country: institution.country,
+		}));
+
+		setSearchTerm(institution.name);
+		setShowDropdown(false);
+	};
+
+	// Clear all institution data
+	const clearInstitutionSelection = () => {
+		setSearchTerm("");
+		setData((prevState) => ({
+			...prevState,
+			institution_id: undefined,
+			institution: undefined,
+			institution_name: "",
+			institution_country: "",
 		}));
 	};
 
@@ -157,16 +271,128 @@ export default function EditApplicationModal({
 							Program Information
 						</h5>
 						<div className="grid grid-cols-1 gap-x-6 gap-y-5 lg:grid-cols-2">
-							<div>
-								<Label htmlFor="institution">Institution</Label>
-								<Input
-									id="institution"
-									name="institution"
-									placeholder="Institution name or ID"
-									value={formData.institution}
-									onChange={changeForm}
-								/>
+							{/* Institution Search Field */}
+							<div className="lg:col-span-2 relative">
+								<label
+									htmlFor="institution_search"
+									className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+								>
+									Institution*
+								</label>
+								{isLoadingInstitutions ? (
+									<div className="flex items-center space-x-2 h-10 mt-1">
+										<div className="w-5 h-5 border-2 border-t-2 border-gray-300 border-t-brand-600 rounded-full animate-spin"></div>
+										<span className="text-sm text-gray-500">
+											Loading institutions...
+										</span>
+									</div>
+								) : (
+									<>
+										<div className="relative">
+											<input
+												type="text"
+												id="institution_search"
+												name="institution_search"
+												value={searchTerm}
+												onChange={handleInstitutionSearch}
+												onFocus={() => setShowDropdown(true)}
+												placeholder="Search for an institution..."
+												className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400"
+												required
+											/>
+											{searchTerm && (
+												<button
+													type="button"
+													onClick={clearInstitutionSelection}
+													className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+												>
+													<svg
+														xmlns="http://www.w3.org/2000/svg"
+														className="h-5 w-5"
+														viewBox="0 0 20 20"
+														fill="currentColor"
+													>
+														<path
+															fillRule="evenodd"
+															d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+															clipRule="evenodd"
+														/>
+													</svg>
+												</button>
+											)}
+										</div>
+
+										{/* Institution Dropdown */}
+										{showDropdown && (
+											<div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-md bg-white py-1 shadow-lg dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+												{filteredInstitutions.length > 0 ? (
+													filteredInstitutions.map((institution) => (
+														<div
+															key={institution.id}
+															className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 flex flex-col"
+															onClick={() => selectInstitution(institution)}
+														>
+															<span className="font-medium text-gray-900 dark:text-white">
+																{institution.name}
+															</span>
+															<span className="text-xs text-gray-500 dark:text-gray-400">
+																{institution.country}
+															</span>
+														</div>
+													))
+												) : (
+													<div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+														{searchTerm
+															? "No institutions found"
+															: "Type to search for institutions"}
+													</div>
+												)}
+											</div>
+										)}
+									</>
+								)}
+
+								{/* Selected Institution Info */}
+								{formData.institution_id && (
+									<div className="mt-2 rounded-md bg-blue-50 p-2 dark:bg-blue-900/20">
+										<div className="flex justify-between items-start">
+											<div>
+												<p className="text-sm font-medium text-gray-900 dark:text-white">
+													{formData.institution_name || searchTerm}
+												</p>
+												<p className="text-xs text-gray-500 dark:text-gray-400">
+													{formData.institution_country}
+												</p>
+											</div>
+											<button
+												type="button"
+												onClick={clearInstitutionSelection}
+												className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+											>
+												<svg
+													xmlns="http://www.w3.org/2000/svg"
+													className="h-4 w-4"
+													viewBox="0 0 20 20"
+													fill="currentColor"
+												>
+													<path
+														fillRule="evenodd"
+														d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+														clipRule="evenodd"
+													/>
+												</svg>
+											</button>
+										</div>
+									</div>
+								)}
+
+								{!formData.institution_id && !isLoadingInstitutions && (
+									<p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+										Search and select an institution from the database
+									</p>
+								)}
 							</div>
+
 							<div>
 								<Label htmlFor="program_name">Program Name</Label>
 								<Input

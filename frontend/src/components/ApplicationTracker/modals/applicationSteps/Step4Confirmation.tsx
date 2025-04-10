@@ -44,11 +44,14 @@ export default function Step4Confirmation({ data }: StepProps) {
 
 			<div className="rounded-lg border border-gray-200 overflow-hidden dark:border-gray-700/80">
 				<div className="bg-gray-50 px-4 py-3 dark:bg-gray-800/80">
-					<h6 className="font-medium text-gray-800 dark:text-white">
-						{data.program_name || "New Program"}
+					<h6 className="text-xl font-bold text-gray-900 dark:text-white">
+						{data.institution_name || "No institution selected"}
 					</h6>
-					<p className="text-sm text-gray-500 dark:text-gray-300">
-						{data.institution}
+					<p className="text-md font-medium mt-1 text-gray-700 dark:text-gray-200">
+						{data.program_name || "New Program"}
+					</p>
+					<p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+						{data.institution_country && `${data.institution_country}`}
 					</p>
 				</div>
 
