@@ -13,7 +13,7 @@ import {
 	ApplicationFilterParams,
 	ApplicationProps,
 } from "../../types/applications";
-import ApplicationFilters from "./ApplicationFilters";
+import ApplicationFilters from "./ApplicationFilters"
 
 interface ExtendedApplicationProps extends ApplicationProps {
 	onEdit?: (application: Application) => void;
