@@ -4,6 +4,7 @@ import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import { useState, useEffect } from "react";
 import { Application } from "../../../types/applications";
+import { formatDateForInput } from "../../../utils/dateUtils";
 
 interface EditApplicationModalProps {
 	data: Application;
@@ -35,9 +36,9 @@ export default function EditApplicationModal({
 		scholarship_link: data?.scholarship_link || "",
 		program_info_link: data?.program_info_link || "",
 		status: data?.status || "Draft",
-		start_date: data?.start_date || "",
-		submitted_date: data?.submitted_date || "",
-		decision_date: data?.decision_date || "",
+		start_date: formatDateForInput(data?.start_date),
+		submitted_date: formatDateForInput(data?.submitted_date),
+		decision_date: formatDateForInput(data?.decision_date),
 		notes: data?.notes || "",
 		created_at: data?.created_at || "",
 		updated_at: data?.updated_at || "",
@@ -48,6 +49,12 @@ export default function EditApplicationModal({
 	useEffect(() => {
 		if (data) {
 			console.log("EditApplicationModal updating form data with:", data);
+			console.log("Start date before formatting:", data.start_date);
+			console.log(
+				"Start date after formatting:",
+				formatDateForInput(data.start_date)
+			);
+
 			setData({
 				id: data.id || 0,
 				institution: data.institution || "",
@@ -63,9 +70,9 @@ export default function EditApplicationModal({
 				scholarship_link: data.scholarship_link || "",
 				program_info_link: data.program_info_link || "",
 				status: data.status || "Draft",
-				start_date: data.start_date || "",
-				submitted_date: data.submitted_date || "",
-				decision_date: data.decision_date || "",
+				start_date: formatDateForInput(data.start_date),
+				submitted_date: formatDateForInput(data.submitted_date),
+				decision_date: formatDateForInput(data.decision_date),
 				notes: data.notes || "",
 				created_at: data.created_at || "",
 				updated_at: data.updated_at || "",
@@ -335,7 +342,12 @@ export default function EditApplicationModal({
 				</div>
 
 				<div className="flex items-center gap-3 border-t border-gray-200 px-2 pt-6 mt-4 dark:border-gray-700 lg:justify-end">
-					<Button size="sm" variant="outline" onClick={onClose} disabled={isLoading}>
+					<Button
+						size="sm"
+						variant="outline"
+						onClick={onClose}
+						disabled={isLoading}
+					>
 						Cancel
 					</Button>
 					<Button size="sm" type="submit" disabled={isLoading}>

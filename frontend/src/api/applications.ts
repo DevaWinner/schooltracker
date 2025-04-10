@@ -99,13 +99,39 @@ export const createApplication = async (
  * Update an application
  */
 export const updateApplication = async (
-	id: string | number,
-	applicationData: Partial<Application>
+	id: number,
+	data: Partial<Application>
 ): Promise<Application> => {
 	try {
+		// Clone the data to avoid mutating the original object
+		const formattedData = { ...data };
+
+		// Ensure date fields are formatted correctly (YYYY-MM-DD)
+		const dateFields = [
+			"start_date",
+			"submitted_date",
+			"decision_date",
+		] as const;
+		dateFields.forEach((field) => {
+			if (formattedData[field as keyof Application]) {
+				try {
+					const date = new Date(
+						formattedData[field as keyof Application] as string
+					);
+					if (!isNaN(date.getTime())) {
+						// Format as YYYY-MM-DD
+						formattedData[field] = date.toISOString().split("T")[0];
+					}
+				} catch (error) {
+					console.error(`Error formatting ${field}:`, error);
+				}
+			}
+		});
+
+		console.log("Sending formatted data to API:", formattedData);
 		const response = await applicationsApi.patch<Application>(
-			`/applications/${id}/status/`,
-			applicationData
+			`/applications/${id}/`,
+			formattedData
 		);
 		return response.data;
 	} catch (error: any) {
@@ -126,6 +152,14 @@ export const deleteApplication = async (id: string | number): Promise<void> => {
 		await applicationsApi.delete(`/applications/${id}/delete/`);
 	} catch (error: any) {
 		console.error("Error deleting application:", error);
+		// Re-throw the error with the specific API error message if available
+		if (error.response?.data?.error) {
+			const apiError = new Error(error.response.data.error);
+			// Attach the original response to the error for access to detailed info
+			(apiError as any).originalResponse = error.response;
+			throw apiError;
+		}
+		// Otherwise, throw a generic error
 		const message =
 			error.response?.data?.detail ||
 			error.message ||

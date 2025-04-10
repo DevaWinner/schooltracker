@@ -39,7 +39,9 @@ interface ApplicationContextProps {
 		id: number,
 		application: Partial<Application>
 	) => Promise<Application | null>;
-	removeApplication: (id: number) => Promise<boolean>;
+	removeApplication: (
+		id: number
+	) => Promise<{ success: boolean; message: string }>;
 	lastUpdated: Date | null;
 }
 
@@ -57,7 +59,7 @@ export const ApplicationContext = createContext<ApplicationContextProps>({
 	filterApplications: async () => {},
 	addApplication: async () => null,
 	updateApplicationItem: async () => null,
-	removeApplication: async () => false,
+	removeApplication: async () => ({ success: false, message: "" }),
 	lastUpdated: null,
 });
 
@@ -219,48 +221,42 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 	// Update an existing application
 	const updateApplicationItem = useCallback(
 		async (id: number, applicationData: Partial<Application>) => {
-			if (!accessToken) {
-				toast.error("Authentication required to update applications");
-				return null;
-			}
-
 			try {
+				console.log("Updating application:", id, applicationData);
 				const updatedApplication = await updateApplication(id, applicationData);
+				console.log(
+					"Updated application received from API:",
+					updatedApplication
+				);
 
-				// Update both arrays
-				const updateState = (apps: Application[]) =>
-					apps.map((app) => (app.id === id ? updatedApplication : app));
+				// Update the applications list
+				setApplications((prevApps) =>
+					prevApps.map((app) => (app.id === id ? updatedApplication : app))
+				);
 
-				setApplications(updateState);
-				setFilteredApplications((prev) => {
-					// Check if updated app still matches filters
-					if (
-						currentFilters.status &&
-						updatedApplication.status !== currentFilters.status
-					) {
-						// No longer matches filter, remove it
-						return prev.filter((app) => app.id !== id);
-					}
-					return updateState(prev);
-				});
+				// Also update the filtered list for immediate UI updates
+				setFilteredApplications((prevApps) =>
+					prevApps.map((app) => (app.id === id ? updatedApplication : app))
+				);
 
 				setLastUpdated(new Date());
-				toast.success("Application updated successfully");
 				return updatedApplication;
 			} catch (err: any) {
-				toast.error("Failed to update application");
+				console.error("Failed to update application:", err);
 				return null;
 			}
 		},
-		[accessToken, currentFilters.status]
+		[]
 	);
 
 	// Remove an application
 	const removeApplication = useCallback(
 		async (id: number) => {
 			if (!accessToken) {
-				toast.error("Authentication required to delete applications");
-				return false;
+				return {
+					success: false,
+					message: "Authentication required to delete applications",
+				};
 			}
 
 			try {
@@ -277,10 +273,21 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 
 				setLastUpdated(new Date());
 				toast.success("Application deleted successfully");
-				return true;
+				return {
+					success: true,
+					message: "Application deleted successfully",
+				};
 			} catch (err: any) {
-				toast.error("Failed to delete application");
-				return false;
+				console.error("Error deleting application:", err);
+
+				// Get the most specific error message available
+				let errorMessage = err.message || "Failed to delete application";
+
+				// Don't display toast here since we're showing the error in the modal
+				return {
+					success: false,
+					message: errorMessage,
+				};
 			}
 		},
 		[accessToken]

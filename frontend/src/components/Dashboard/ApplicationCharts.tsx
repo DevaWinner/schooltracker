@@ -117,6 +117,7 @@ export default function ApplicationCharts({
 			labels,
 			datasets: [
 				{
+					label: "Degree Types",
 					data,
 					backgroundColor,
 					borderColor: backgroundColor.map((color) =>
@@ -128,10 +129,11 @@ export default function ApplicationCharts({
 		};
 	}, [applications]);
 
-	// Calculate timeline data (applications by month)
+	// Calculate application timeline data (submissions and decisions by month)
 	const timelineChartData = useMemo(() => {
-		// Create a map of months with application counts
-		const monthlyData: Record<string, number> = {};
+		// Create maps for submitted and decision dates
+		const submittedData: Record<string, number> = {};
+		const decisionData: Record<string, number> = {};
 		const monthNames = [
 			"Jan",
 			"Feb",
@@ -153,29 +155,48 @@ export default function ApplicationCharts({
 			const d = new Date(today);
 			d.setMonth(today.getMonth() - i);
 			const monthKey = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-			monthlyData[monthKey] = 0;
+			submittedData[monthKey] = 0;
+			decisionData[monthKey] = 0;
 		}
 
-		// Count applications by created month
+		// Count applications by submitted date and decision date
 		applications.forEach((app) => {
-			if (app.created_at) {
-				const date = new Date(app.created_at);
+			// Track submissions
+			if (app.submitted_date) {
+				const date = new Date(app.submitted_date);
 				const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
-				monthlyData[monthKey] = (monthlyData[monthKey] || 0) + 1;
+				submittedData[monthKey] = (submittedData[monthKey] || 0) + 1;
+			}
+
+			// Track decisions (Accepted or Rejected)
+			if (
+				app.decision_date &&
+				(app.status === "Accepted" || app.status === "Rejected")
+			) {
+				const date = new Date(app.decision_date);
+				const monthKey = `${monthNames[date.getMonth()]} ${date.getFullYear()}`;
+				decisionData[monthKey] = (decisionData[monthKey] || 0) + 1;
 			}
 		});
 
-		const labels = Object.keys(monthlyData);
-		const data = labels.map((label) => monthlyData[label]);
+		const labels = Object.keys(submittedData);
 
 		return {
 			labels,
 			datasets: [
 				{
-					label: "Applications Created",
-					data,
-					borderColor: "rgba(79, 70, 229, 1)",
-					backgroundColor: "rgba(79, 70, 229, 0.2)",
+					label: "Applications Submitted",
+					data: labels.map((label) => submittedData[label]),
+					borderColor: "rgba(59, 130, 246, 1)", // blue
+					backgroundColor: "rgba(59, 130, 246, 0.2)",
+					tension: 0.3,
+					fill: true,
+				},
+				{
+					label: "Decisions Received",
+					data: labels.map((label) => decisionData[label]),
+					borderColor: "rgba(139, 92, 246, 1)", // purple
+					backgroundColor: "rgba(139, 92, 246, 0.2)",
 					tension: 0.3,
 					fill: true,
 				},
@@ -219,7 +240,7 @@ export default function ApplicationCharts({
 			labels: topCountries,
 			datasets: [
 				{
-					label: "Applications by Country",
+					label: "",
 					data,
 					backgroundColor,
 					borderColor: backgroundColor.map((color) =>
@@ -241,6 +262,7 @@ export default function ApplicationCharts({
 				labels: {
 					usePointStyle: true,
 					boxWidth: 8,
+					display: true,
 				},
 			},
 			tooltip: {
@@ -253,6 +275,18 @@ export default function ApplicationCharts({
 		},
 	};
 
+	// Options for charts without dataset labels (like country chart)
+	const chartOptionsNoDatasetLabels = {
+		...chartOptions,
+		plugins: {
+			...chartOptions.plugins,
+			legend: {
+				...chartOptions.plugins.legend,
+				display: false, // Don't show dataset labels for country chart
+			},
+		},
+	};
+
 	// Line chart options
 	const lineChartOptions = {
 		...chartOptions,
@@ -261,6 +295,17 @@ export default function ApplicationCharts({
 				beginAtZero: true,
 				ticks: {
 					stepSize: 1,
+				},
+			},
+		},
+		plugins: {
+			...chartOptions.plugins,
+			tooltip: {
+				callbacks: {
+					label: function (context: any) {
+						const datasetLabel = context.dataset.label || "";
+						return `${datasetLabel}: ${context.raw}`;
+					},
 				},
 			},
 		},
@@ -294,7 +339,7 @@ export default function ApplicationCharts({
 						<Bar
 							data={degreeChartData}
 							options={{
-								...chartOptions,
+								...chartOptionsNoDatasetLabels, // Use the options without dataset labels
 								indexAxis: "y" as const,
 							}}
 						/>
@@ -306,10 +351,10 @@ export default function ApplicationCharts({
 				</div>
 			</div>
 
-			{/* Timeline Chart */}
+			{/* Application Progress Timeline Chart */}
 			<div className="rounded-xl border border-gray-200 bg-white p-5 dark:border-white/[0.05] dark:bg-white/[0.03]">
 				<h3 className="mb-4 text-lg font-medium text-gray-800 dark:text-white/90">
-					Application Timeline
+					Application Progress Timeline
 				</h3>
 				<div className="h-64">
 					{applications.length > 0 ? (
@@ -329,7 +374,10 @@ export default function ApplicationCharts({
 				</h3>
 				<div className="h-64">
 					{applications.length > 0 ? (
-						<Bar data={countryChartData} options={chartOptions} />
+						<Bar
+							data={countryChartData}
+							options={chartOptionsNoDatasetLabels}
+						/>
 					) : (
 						<div className="flex h-full items-center justify-center text-gray-500 dark:text-gray-400">
 							No application data available

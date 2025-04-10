@@ -290,35 +290,6 @@ export default function ApplicationStats({
 							</div>
 						</div>
 					)}
-
-					{/* Upcoming deadlines */}
-					<div>
-						<h4 className="mb-3 text-sm font-medium text-gray-700 dark:text-gray-300">
-							Upcoming Deadlines
-						</h4>
-
-						{stats.upcomingDeadlines.length === 0 ? (
-							<p className="text-sm text-gray-500 dark:text-gray-400">
-								No upcoming deadlines
-							</p>
-						) : (
-							<div className="space-y-2">
-								{stats.upcomingDeadlines.slice(0, 3).map((deadline, index) => (
-									<div
-										key={index}
-										className="flex items-center justify-between"
-									>
-										<span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[180px]">
-											{deadline.program}
-										</span>
-										<span className="text-xs font-medium text-brand-500 dark:text-brand-400">
-											{formatDate(deadline.date)}
-										</span>
-									</div>
-								))}
-							</div>
-						)}
-					</div>
 				</div>
 			</div>
 		</div>

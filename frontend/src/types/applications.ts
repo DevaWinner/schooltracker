@@ -28,6 +28,7 @@ export interface Application {
 	created_at: string;
 	updated_at: string;
 	user?: number;
+	onRefresh?: () => void;
 }
 
 export interface ApplicationResponse {

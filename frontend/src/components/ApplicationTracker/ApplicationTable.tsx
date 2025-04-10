@@ -55,6 +55,20 @@ export default function ApplicationTable({
 		navigate(`/applications/detail/${application.id}`);
 	};
 
+	// Helper function to format dates consistently
+	const formatDate = (dateStr?: string | null): string => {
+		if (!dateStr) return "Not set";
+
+		try {
+			const date = new Date(dateStr);
+			if (isNaN(date.getTime())) return "Invalid date";
+			return date.toLocaleDateString();
+		} catch (error) {
+			console.error("Error formatting date:", error);
+			return "Error";
+		}
+	};
+
 	// Skeleton table rows for loading state
 	const TableSkeleton = () => (
 		<Table>
@@ -237,11 +251,7 @@ export default function ApplicationTable({
 												</span>
 											</TableCell>
 											<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
-												{application.start_date
-													? new Date(
-															application.start_date
-													  ).toLocaleDateString()
-													: "Not set"}
+												{formatDate(application.start_date)}
 											</TableCell>
 											<TableCell className="px-5 py-4 text-theme-sm">
 												<div className="flex items-center space-x-8">

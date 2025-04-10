@@ -71,16 +71,16 @@ export default function ApplicationDetail() {
 	};
 
 	const handleConfirmDelete = async () => {
-		if (!application?.id) return;
+		if (!application?.id)
+			return { success: false, message: "No application selected" };
 
-		const success = await removeApplication(application.id);
+		const result = await removeApplication(application.id);
 
-		if (success) {
-			toast.success("Application deleted successfully");
+		if (result.success) {
 			navigate(ROUTES.Applications.tracker);
-		} else {
-			toast.error("Failed to delete application");
 		}
+
+		return result;
 	};
 
 	// Format date for display

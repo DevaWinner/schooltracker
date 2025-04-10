@@ -6,7 +6,7 @@ interface StepProps {
 
 export default function Step4Confirmation({ data }: StepProps) {
 	// Format date for display
-	const formatDate = (dateStr?: string): string => {
+	const formatDate = (dateStr?: string | null): string => {
 		if (!dateStr) return "Not specified";
 		const date = new Date(dateStr);
 		return date.toLocaleDateString("en-US", {

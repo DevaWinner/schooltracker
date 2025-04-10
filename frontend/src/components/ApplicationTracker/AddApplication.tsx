@@ -1,10 +1,15 @@
+import React from "react";
 import { useModal } from "../../hooks/useModal";
 import { Application } from "../../types/applications";
 import { Modal } from "../ui/modal";
 import MultiStepApplicationModal from "./modals/MultiStepApplicationModal";
 import { useApplications } from "../../context/ApplicationContext";
 
-export default function AddApplication() {
+interface AddApplicationProps {
+	onRefresh?: () => void;
+}
+
+const AddApplication: React.FC<AddApplicationProps> = ({ onRefresh }) => {
 	const { isOpen, openModal, closeModal } = useModal();
 	const { addApplication } = useApplications();
 
@@ -12,6 +17,9 @@ export default function AddApplication() {
 		const result = await addApplication(data);
 		if (result) {
 			closeModal();
+			if (onRefresh) {
+				onRefresh();
+			}
 		}
 	};
 
@@ -43,4 +51,6 @@ export default function AddApplication() {
 			</Modal>
 		</>
 	);
-}
+};
+
+export default AddApplication;
