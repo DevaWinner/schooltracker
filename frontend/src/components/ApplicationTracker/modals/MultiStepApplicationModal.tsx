@@ -63,7 +63,7 @@ export default function MultiStepApplicationModal({
 					}
 				}
 			} catch (error) {
-				console.error("Error fetching institutions:", error);
+				// Remove console.error
 			} finally {
 				setIsLoadingInstitutions(false);
 			}
@@ -146,7 +146,6 @@ export default function MultiStepApplicationModal({
 			delete (finalData as Record<string, any>).id;
 		}
 
-		console.log("Submitting application with data:", finalData);
 		await onSave(finalData);
 	};
 

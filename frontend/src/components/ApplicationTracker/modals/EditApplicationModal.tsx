@@ -26,8 +26,6 @@ export default function EditApplicationModal({
 	onClose,
 	isLoading = false,
 }: EditApplicationModalProps) {
-	console.log("EditApplicationModal received data:", data);
-
 	const [formData, setData] = useState({
 		id: data?.id || 0,
 		institution: data?.institution || "",
@@ -91,7 +89,7 @@ export default function EditApplicationModal({
 					}
 				}
 			} catch (error) {
-				console.error("Error fetching institutions:", error);
+				// Error handling removed
 			} finally {
 				setIsLoadingInstitutions(false);
 			}
@@ -103,8 +101,6 @@ export default function EditApplicationModal({
 	// Update form data when the data prop changes
 	useEffect(() => {
 		if (data) {
-			console.log("EditApplicationModal updating form data with:", data);
-
 			setData({
 				id: data.id || 0,
 				institution: data.institution || "",
@@ -172,7 +168,7 @@ export default function EditApplicationModal({
 			setData((prevState) => ({
 				...prevState,
 				institution_id: undefined,
-				institution: undefined,
+				institution: "", // Use empty string instead of undefined
 				institution_name: "",
 				institution_country: "",
 			}));
@@ -181,8 +177,6 @@ export default function EditApplicationModal({
 
 	// Select institution from dropdown
 	const selectInstitution = (institution: Institution) => {
-		console.log("Selected institution:", institution);
-
 		// Important: Set both institution_id (for local use) and institution (for API)
 		setData((prevState) => ({
 			...prevState,
@@ -202,7 +196,7 @@ export default function EditApplicationModal({
 		setData((prevState) => ({
 			...prevState,
 			institution_id: undefined,
-			institution: undefined,
+			institution: "", // Use empty string instead of undefined
 			institution_name: "",
 			institution_country: "",
 		}));
@@ -219,7 +213,6 @@ export default function EditApplicationModal({
 			user: formData.user === null ? undefined : formData.user,
 		};
 
-		console.log("Submitting updated application:", updatedApplication);
 		onSave(updatedApplication);
 	};
 

@@ -36,8 +36,6 @@ export const getInstitutions = async (
 		if (filters.page_size) params.page_size = filters.page_size;
 		if (filters.ordering) params.ordering = filters.ordering;
 
-		console.log("API request with parameters:", params);
-
 		const response = await institutionsApi.get<PaginatedInstitutions>(
 			"/institutions/",
 			{
@@ -45,27 +43,8 @@ export const getInstitutions = async (
 			}
 		);
 
-		// Log the received data structure
-		console.log("API response structure:", {
-			count: response.data.count,
-			next: response.data.next ? "present" : "null",
-			previous: response.data.previous ? "present" : "null",
-			resultsCount: response.data.results.length,
-			// Log first result to see data structure
-			firstResult:
-				response.data.results.length > 0
-					? {
-							id: response.data.results[0].id,
-							rank: response.data.results[0].rank,
-							// Check if rank is a string as per API spec
-							rankType: typeof response.data.results[0].rank,
-					  }
-					: "no results",
-		});
-
 		return response.data;
 	} catch (error: any) {
-		console.error("API Error:", error);
 		const message =
 			error.response?.data?.detail ||
 			error.message ||
@@ -105,7 +84,6 @@ export const getCountries = async (): Promise<string[]> => {
 		);
 		return response.data.countries || []; // Return the countries array from the response
 	} catch (error: any) {
-		console.error("Failed to fetch countries:", error);
 		const message =
 			error.response?.data?.detail ||
 			error.message ||
@@ -138,7 +116,6 @@ export const getInstitutionsForSelect = async (): Promise<
 			country: inst.country,
 		}));
 	} catch (error: any) {
-		console.error("Failed to fetch institutions for select:", error);
 		const message =
 			error.response?.data?.detail ||
 			error.message ||

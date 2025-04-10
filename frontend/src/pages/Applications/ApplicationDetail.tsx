@@ -31,10 +31,8 @@ export default function ApplicationDetail() {
 			try {
 				// Get fresh data directly from the API
 				const data = await getApplicationById(id);
-				console.log("Loaded application data:", data);
 				setApplication(data);
 			} catch (error) {
-				console.error("Error fetching application:", error);
 				toast.error("Failed to fetch application details");
 			} finally {
 				setLoading(false);
@@ -46,7 +44,6 @@ export default function ApplicationDetail() {
 
 	const handleEdit = () => {
 		if (application) {
-			console.log("Opening edit modal with application:", application);
 			setIsEditModalOpen(true);
 		}
 	};

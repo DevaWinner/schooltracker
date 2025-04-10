@@ -65,8 +65,6 @@ export default function Step1BasicInfo({
 	};
 
 	const selectInstitution = (institution: Institution) => {
-		console.log("Selected institution:", institution);
-
 		// Important: Set both institution_id (for local use) and institution (for API)
 		// The API expects the institution ID in the 'institution' field
 		updateData({

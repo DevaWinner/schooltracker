@@ -57,14 +57,9 @@ export default function ApplicationTracker() {
 			const completeData = await loadApplicationById(application.id);
 
 			if (completeData) {
-				console.log(
-					"Loaded complete application data for editing:",
-					completeData
-				);
 				setCurrentApplication(completeData);
 			}
 		} catch (error) {
-			console.error("Error preparing application for edit:", error);
 			toast.error("Failed to load complete application details");
 			// Modal stays open with partial data
 		} finally {
@@ -164,7 +159,6 @@ export default function ApplicationTracker() {
 
 			toast.success("Applications exported successfully");
 		} catch (error) {
-			console.error("Export error:", error);
 			toast.error("Failed to export applications");
 		}
 	}, [filteredApplications]);

@@ -39,7 +39,6 @@ export default function ApplicationTable({
 	};
 
 	const handleEdit = (application: Application) => {
-		console.log("Edit button clicked for application:", application.id);
 		if (onEdit) onEdit(application);
 	};
 
@@ -64,7 +63,6 @@ export default function ApplicationTable({
 			if (isNaN(date.getTime())) return "Invalid date";
 			return date.toLocaleDateString();
 		} catch (error) {
-			console.error("Error formatting date:", error);
 			return "Error";
 		}
 	};

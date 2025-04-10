@@ -43,7 +43,6 @@ export const getApplications = async (
 		);
 		return response.data;
 	} catch (error: any) {
-		console.error("Error fetching applications:", error);
 		const message =
 			error.response?.data?.detail ||
 			error.message ||
@@ -64,7 +63,6 @@ export const getApplicationById = async (
 		);
 		return response.data;
 	} catch (error: any) {
-		console.error("Error fetching application details:", error);
 		const message =
 			error.response?.data?.detail ||
 			error.message ||
@@ -80,8 +78,6 @@ export const createApplication = async (
 	applicationData: Partial<Application>
 ): Promise<Application> => {
 	try {
-		console.log("Creating application with data:", applicationData);
-
 		// Clone the data to avoid mutating the original object
 		const formattedData = { ...applicationData };
 
@@ -89,15 +85,10 @@ export const createApplication = async (
 		// This is what the API expects according to the ERD
 		if (formattedData.institution_id && !formattedData.institution) {
 			formattedData.institution = formattedData.institution_id;
-			console.log(
-				"Setting institution field to institution_id:",
-				formattedData.institution_id
-			);
 		}
 
 		// Remove any fields the API doesn't expect
 		const apiExpectedFields = [
-			// Removed "id" - let the API handle ID generation
 			"institution",
 			"program_name",
 			"degree_type",
@@ -122,19 +113,14 @@ export const createApplication = async (
 				return obj;
 			}, {} as Record<string, any>);
 
-		console.log("Sending cleaned data to API:", cleanedData);
-
 		const response = await applicationsApi.post<Application>(
 			`/applications/create/`,
 			cleanedData
 		);
 		return response.data;
 	} catch (error: any) {
-		console.error("Error creating application:", error);
-
-		// Add more detailed error logging
 		if (error.response?.data) {
-			console.error("API error response:", error.response.data);
+			// Detailed error logging removed
 		}
 
 		const message =
@@ -173,19 +159,17 @@ export const updateApplication = async (
 						formattedData[field] = date.toISOString().split("T")[0];
 					}
 				} catch (error) {
-					console.error(`Error formatting ${field}:`, error);
+					// Error logging removed
 				}
 			}
 		});
 
-		console.log("Sending formatted data to API:", formattedData);
 		const response = await applicationsApi.patch<Application>(
 			`/applications/${id}/`,
 			formattedData
 		);
 		return response.data;
 	} catch (error: any) {
-		console.error("Error updating application:", error);
 		const message =
 			error.response?.data?.detail ||
 			error.message ||
@@ -201,15 +185,11 @@ export const deleteApplication = async (id: string | number): Promise<void> => {
 	try {
 		await applicationsApi.delete(`/applications/${id}/delete/`);
 	} catch (error: any) {
-		console.error("Error deleting application:", error);
-		// Re-throw the error with the specific API error message if available
 		if (error.response?.data?.error) {
 			const apiError = new Error(error.response.data.error);
-			// Attach the original response to the error for access to detailed info
 			(apiError as any).originalResponse = error.response;
 			throw apiError;
 		}
-		// Otherwise, throw a generic error
 		const message =
 			error.response?.data?.detail ||
 			error.message ||
