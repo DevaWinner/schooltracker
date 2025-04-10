@@ -207,7 +207,6 @@ class DocumentUploadView(generics.CreateAPIView):
                         path=unique_filename,
                         file=file_content,
                         file_options={"contentType": content_type},
-                        file_options_extra={"upsert": "true"}
                     )
                 
                 # Get public URL for the uploaded file

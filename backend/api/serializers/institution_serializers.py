@@ -72,7 +72,9 @@ class InstitutionDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class InstitutionListSerializer(serializers.ModelSerializer):
-    """Simplified serializer for listing institutions"""
+    """Serializer for listing institutions"""
+    rank = serializers.CharField()  # Changed to CharField to preserve original format
+    
     class Meta:
         model = Institution
-        fields = ('id', 'rank', 'name', 'country', 'overall_score')
+        fields = ['id', 'rank', 'name', 'country', 'overall_score']

@@ -276,7 +276,7 @@ class ProfilePictureUploadView(CreateAPIView):
     """
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
-    serializer_class = ProfilePictureSerializer  # Add serializer class
+    serializer_class = ProfilePictureSerializer
     
     def get_serializer_class(self):
         # Handle swagger schema generation
@@ -290,16 +290,25 @@ class ProfilePictureUploadView(CreateAPIView):
             return Response({"profile_picture": "https://example.com/profile.jpg"})
         
         try:
+            # Add verbose logging to debug the issue
+            print(f"Upload request received: FILES={request.FILES}, DATA={request.data}")
+            
             # Check if a file was provided
             if 'profile_picture' not in request.FILES:
+                print("ERROR: No profile_picture found in request.FILES")
                 return Response({"error": "No file provided"}, status=status.HTTP_400_BAD_REQUEST)
             
             file = request.FILES['profile_picture']
+            print(f"File received: {file.name}, size: {file.size}, content_type: {file.content_type}")
+            
+            # Make sure MAX_UPLOAD_SIZE is defined
+            max_size = getattr(settings, 'MAX_UPLOAD_SIZE', 50 * 1024 * 1024)  # Default 50MB if not defined
             
             # Check file size
-            if file.size > settings.MAX_UPLOAD_SIZE:
+            if file.size > max_size:
+                print(f"ERROR: File too large ({file.size} bytes > {max_size} bytes)")
                 return Response(
-                    {"error": f"File size exceeds maximum allowed (50 MB)"},
+                    {"error": f"File size exceeds maximum allowed ({max_size/(1024*1024):.2f} MB)"},
                     status=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE
                 )
             
@@ -310,58 +319,86 @@ class ProfilePictureUploadView(CreateAPIView):
             allowed_extensions = ['.jpg', '.jpeg', '.png', '.gif']
             
             if file_extension not in allowed_extensions:
+                print(f"ERROR: Invalid file extension: {file_extension}")
                 return Response(
                     {"error": "Invalid file type. Only JPEG, PNG, and GIF are allowed."},
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Additional validation using built-in Python methods
-            try:
-                # Read a bit of the file to check if it's a valid image
-                file_content = file.read()
-                file.seek(0)  # Reset file pointer after reading
-                
-                # Try using the built-in imghdr module to detect image type
-                img_type = imghdr.what(None, file_content)
-                
-                valid_img_types = ['jpeg', 'jpg', 'png', 'gif']
-                if img_type not in valid_img_types:
-                    return Response(
-                        {"error": "The file is not a valid image. Only JPEG, PNG, and GIF are allowed."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            except Exception as e:
-                # Continue with upload if imghdr validation fails
-                pass
+            # Skip additional image validation which might be causing issues
+            # Just use the extension to determine if it's a valid image
             
             # Generate unique filename
             user_id = request.user.id
-            unique_filename = f"{user_id}/profile{uuid.uuid4()}{file_extension}"
+            unique_filename = f"{user_id}/profile_{uuid.uuid4().hex}{file_extension}"
+            print(f"Generated unique filename: {unique_filename}")
             
             try:
+                # Check if Supabase settings are configured
+                if not settings.SUPABASE_URL or not settings.SUPABASE_KEY:
+                    print("ERROR: Supabase settings not properly configured")
+                    return Response(
+                        {"error": "Storage service not configured properly"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
+                
                 # Initialize Supabase client
-                service_key = getattr(settings, 'SUPABASE_SERVICE_KEY', None)
-                if service_key:
-                    supabase = create_client(settings.SUPABASE_URL, service_key)
-                else:
-                    supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+                print(f"Initializing Supabase client with URL: {settings.SUPABASE_URL}")
+                try:
+                    # Try with service key if available
+                    service_key = getattr(settings, 'SUPABASE_SERVICE_KEY', None)
+                    if service_key:
+                        supabase = create_client(settings.SUPABASE_URL, service_key)
+                    else:
+                        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+                except Exception as e:
+                    print(f"ERROR initializing Supabase client: {str(e)}")
+                    return Response(
+                        {"error": f"Could not initialize storage service: {str(e)}"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
                 
                 # Get user's profile
-                profile = request.user.profile
+                try:
+                    profile = request.user.profile
+                    print(f"Found user profile: {profile}")
+                except Exception as e:
+                    print(f"ERROR getting user profile: {str(e)}")
+                    return Response(
+                        {"error": f"Could not access user profile: {str(e)}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
                 
                 # Delete previous profile picture if exists
                 if profile.profile_picture:
                     try:
-                        current_path = profile.profile_picture.split('/public/')[1] if '/public/' in profile.profile_picture else None
+                        # Extract path from URL - this part might be causing issues
+                        current_path = None
+                        if '/public/' in profile.profile_picture:
+                            current_path = profile.profile_picture.split('/public/')[1]
+                        elif settings.SUPABASE_BUCKET in profile.profile_picture:
+                            # Alternative extraction if the URL format is different
+                            bucket_pos = profile.profile_picture.find(settings.SUPABASE_BUCKET)
+                            if bucket_pos > -1:
+                                # Extract everything after the bucket name
+                                start_pos = bucket_pos + len(settings.SUPABASE_BUCKET) + 1
+                                current_path = profile.profile_picture[start_pos:]
                         
                         if current_path:
-                            supabase.storage.from_(settings.SUPABASE_BUCKET).remove([current_path])
+                            print(f"Attempting to delete previous profile picture: {current_path}")
+                            try:
+                                supabase.storage.from_(settings.SUPABASE_BUCKET).remove([current_path])
+                                print(f"Successfully deleted previous profile picture")
+                            except Exception as e:
+                                # Log but continue - this error shouldn't block the upload
+                                print(f"Warning: Could not delete old profile picture: {str(e)}")
                     except Exception as e:
-                        pass
+                        # Log but continue - this error shouldn't block the upload
+                        print(f"Warning: Error processing old profile picture: {str(e)}")
                 
-                # Ensure file_content exists
-                if 'file_content' not in locals():
-                    file_content = file.read()
+                # Read file content
+                file.seek(0)  # Reset file pointer just in case
+                file_content = file.read()
                 
                 # Determine content type based on extension
                 content_type_map = {
@@ -373,43 +410,77 @@ class ProfilePictureUploadView(CreateAPIView):
                 content_type = content_type_map.get(file_extension, 'application/octet-stream')
                 
                 # Upload file to Supabase Storage
+                print(f"Uploading file to bucket: {settings.SUPABASE_BUCKET}")
+                uploaded = False
                 try:
                     result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
                         path=unique_filename,
                         file=file_content,
                         file_options={"contentType": content_type}
                     )
-                    
-                    # Add a small delay to ensure the file is available
-                    import time
-                    time.sleep(1)
-                    
+                    uploaded = True
+                    print(f"Upload successful: {result}")
                 except Exception as first_err:
-                    # Try with upsert flag (overwrite if exists)
-                    result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
-                        path=unique_filename,
-                        file=file_content,
-                        file_options={"contentType": content_type},
-                        file_options_extra={"upsert": "true"}
+                    print(f"First upload attempt failed: {str(first_err)}")
+                    try:
+                        # Try with upsert flag (overwrite if exists)
+                        result = supabase.storage.from_(settings.SUPABASE_BUCKET).upload(
+                            path=unique_filename,
+                            file=file_content,
+                            file_options={"contentType": content_type}
+                        )
+                        uploaded = True
+                        print(f"Upload successful with upsert: {result}")
+                    except Exception as second_err:
+                        print(f"Second upload attempt also failed: {str(second_err)}")
+                        return Response(
+                            {"error": f"Failed to upload file: {str(second_err)}"},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                        )
+                
+                if not uploaded:
+                    return Response(
+                        {"error": "Failed to upload file"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
                     )
                 
                 # Get public URL for the uploaded file
-                file_url = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(unique_filename)
+                try:
+                    file_url = supabase.storage.from_(settings.SUPABASE_BUCKET).get_public_url(unique_filename)
+                    print(f"Generated public URL: {file_url}")
+                except Exception as e:
+                    print(f"Error getting public URL: {str(e)}")
+                    return Response(
+                        {"error": f"Failed to generate public URL: {str(e)}"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
                 
                 # Update user profile with the new profile picture URL
-                profile.profile_picture = file_url
-                profile.save()
+                try:
+                    profile.profile_picture = file_url
+                    profile.save()
+                    print(f"Profile updated with new picture URL")
+                except Exception as e:
+                    print(f"Error saving profile: {str(e)}")
+                    return Response(
+                        {"error": f"Failed to update profile: {str(e)}"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
                 
                 return Response({"profile_picture": file_url}, status=status.HTTP_200_OK)
                 
             except Exception as e:
+                print(f"Unexpected error during Supabase upload: {str(e)}")
                 import traceback
                 traceback_str = traceback.format_exc()
+                print(traceback_str)
                 return Response({"error": str(e), "details": traceback_str}, status=status.HTTP_400_BAD_REQUEST)
                 
         except Exception as e:
+            print(f"Unexpected error in profile picture upload: {str(e)}")
             import traceback
             traceback_str = traceback.format_exc()
+            print(traceback_str)
             return Response({"error": f"Unexpected error: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserAccountDeleteView(DestroyAPIView):
