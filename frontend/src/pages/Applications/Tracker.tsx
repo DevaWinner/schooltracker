@@ -10,13 +10,11 @@ import { Application } from "../../types/applications";
 import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
-import ApplicationDetailModal from "../../components/ApplicationTracker/modals/ApplicationDetailModal";
 
 export default function ApplicationTracker() {
 	const [applications, setApplications] = useState(tableData);
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 	const [currentApplication, setCurrentApplication] =
 		useState<Application | null>(null);
 
@@ -28,13 +26,11 @@ export default function ApplicationTracker() {
 
 	const handleView = useCallback((application: Application) => {
 		setCurrentApplication(application);
-		setIsDetailModalOpen(true);
 	}, []);
 
 	const handleEdit = useCallback((application: Application) => {
 		setCurrentApplication(application);
 		setIsEditModalOpen(true);
-		setIsDetailModalOpen(false);
 	}, []);
 
 	const handleDelete = useCallback(
@@ -70,7 +66,6 @@ export default function ApplicationTracker() {
 			prevApplications.filter((app) => app.id !== currentApplication.id)
 		);
 		setIsDeleteModalOpen(false);
-		setIsDetailModalOpen(false);
 		setCurrentApplication(null);
 	}, [currentApplication]);
 
@@ -116,21 +111,6 @@ export default function ApplicationTracker() {
 					</div>
 				</div>
 			</div>
-
-			{/* Application Detail Modal */}
-			<Modal
-				isOpen={isDetailModalOpen}
-				onClose={() => setIsDetailModalOpen(false)}
-				className="max-w-[900px] m-4"
-			>
-				{currentApplication && (
-					<ApplicationDetailModal
-						application={currentApplication}
-						onClose={() => setIsDetailModalOpen(false)}
-						onEdit={handleEdit}
-					/>
-				)}
-			</Modal>
 
 			{/* Edit Application Modal */}
 			<Modal
