@@ -53,8 +53,14 @@ const navItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
-	const { isExpanded, isMobileOpen, isHovered, setIsHovered, isHoverEnabled } =
-		useSidebar();
+	const {
+		isExpanded,
+		isMobileOpen,
+		isHovered,
+		setIsHovered,
+		isHoverEnabled,
+		toggleMobileSidebar, // Add this to close mobile sidebar
+	} = useSidebar();
 	const [isMobileScreen, setIsMobileScreen] = useState(false);
 	const location = useLocation();
 
@@ -185,15 +191,26 @@ const AppSidebar: React.FC = () => {
 		};
 	}, []);
 
+	// Function to handle navigation item clicks
+	const handleNavItemClick = () => {
+		// Only close sidebar on mobile
+		if (isMobileScreen || window.innerWidth < 768) {
+			toggleMobileSidebar();
+		}
+	};
+
 	const renderMenuItems = (items: NavItem[]) => (
 		<ul className="flex flex-col gap-4">
 			{items.map((nav, index) => (
-				<li key={nav.name} className="relative">
+				<li
+					key={nav.name}
+					onMouseEnter={(e) => handleTooltipEnter(nav.name, e)}
+					onMouseLeave={handleTooltipLeave}
+					className="relative"
+				>
 					{nav.subItems ? (
 						<button
 							onClick={() => handleSubmenuToggle(index)}
-							onMouseEnter={(e) => handleTooltipEnter(nav.name, e)}
-							onMouseLeave={handleTooltipLeave}
 							className={`menu-item group ${
 								openSubmenu?.index === index
 									? "menu-item-active"
@@ -230,8 +247,7 @@ const AppSidebar: React.FC = () => {
 						nav.path && (
 							<Link
 								to={nav.path}
-								onMouseEnter={(e) => handleTooltipEnter(nav.name, e)}
-								onMouseLeave={handleTooltipLeave}
+								onClick={handleNavItemClick} // Add click handler here
 								className={`menu-item group ${
 									isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
 								}`}
@@ -269,6 +285,7 @@ const AppSidebar: React.FC = () => {
 									<li key={subItem.name}>
 										<Link
 											to={subItem.path}
+											onClick={handleNavItemClick} // Add click handler for submenu items too
 											className={`menu-dropdown-item ${
 												isActive(subItem.path)
 													? "menu-dropdown-item-active"
