@@ -92,7 +92,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 	};
 
 	return (
-		<div className="w-full max-w-3xl rounded-xl bg-white p-6 dark:bg-gray-900">
+		<div className="w-full max-w-md mx-auto rounded-xl bg-white p-6 dark:bg-gray-900">
 			<div className="mb-6">
 				<h2 className="text-xl font-semibold text-gray-900 dark:text-white">
 					Upload Document

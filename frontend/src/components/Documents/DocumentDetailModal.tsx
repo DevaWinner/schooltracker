@@ -24,13 +24,13 @@ const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
 	};
 
 	return (
-		<div className="w-full max-w-2xl rounded-lg bg-white p-6 dark:bg-gray-900">
+		<div className="w-full max-w-md mx-auto rounded-lg bg-white p-6 dark:bg-gray-900">
 			<div className="mb-6 flex items-start justify-between">
 				<div>
-					<h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
+					<h2 className="text-xl font-semibold text-gray-900 dark:text-white">
 						{document.file_name}
 					</h2>
-					<p className="mt-1 text-gray-500 dark:text-gray-400">
+					<p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
 						Uploaded on {formatDate(document.uploaded_at)}
 					</p>
 				</div>
@@ -40,7 +40,7 @@ const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
 					aria-label="Close"
 				>
 					<svg
-						className="h-6 w-6"
+						className="h-5 w-5"
 						fill="none"
 						stroke="currentColor"
 						viewBox="0 0 24 24"
@@ -60,7 +60,7 @@ const DocumentDetailModal: React.FC<DocumentDetailModalProps> = ({
 				<div className="mb-4 sm:mb-0">
 					<FileIcon
 						fileType={document.file_name}
-						className="h-24 w-24 md:h-32 md:w-32"
+						className="h-20 w-20 md:h-24 md:w-24"
 					/>
 				</div>
 				<div className="flex flex-col space-y-4">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import PageMeta from "../../components/common/PageMeta";
 import DocumentTypeFolder from "../../components/Documents/DocumentTypeFolder";
@@ -112,9 +112,14 @@ export default function DocumentLibrary() {
 			/>
 
 			<div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-				<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-					Document Library
-				</h1>
+				<div>
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+						Document Library
+					</h1>
+					<p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+						Organize and manage all your academic documents
+					</p>
+				</div>
 
 				<div className="flex gap-3">
 					<div className="relative">
@@ -166,56 +171,132 @@ export default function DocumentLibrary() {
 				</div>
 			</div>
 
-			{/* Document Type Folders */}
-			<div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-				<DocumentTypeFolder
-					type="All"
-					count={documentsByType.All.length}
-					isActive={selectedType === "All"}
-					onClick={() => setSelectedType("All")}
-				/>
-				<DocumentTypeFolder
-					type="Transcript"
-					count={documentsByType.Transcript.length}
-					isActive={selectedType === "Transcript"}
-					onClick={() => setSelectedType("Transcript")}
-				/>
-				<DocumentTypeFolder
-					type="Essay"
-					count={documentsByType.Essay.length}
-					isActive={selectedType === "Essay"}
-					onClick={() => setSelectedType("Essay")}
-				/>
-				<DocumentTypeFolder
-					type="CV"
-					count={documentsByType.CV.length}
-					isActive={selectedType === "CV"}
-					onClick={() => setSelectedType("CV")}
-				/>
-				<DocumentTypeFolder
-					type="Recommendation Letter"
-					count={documentsByType["Recommendation Letter"].length}
-					isActive={selectedType === "Recommendation Letter"}
-					onClick={() => setSelectedType("Recommendation Letter")}
-				/>
-				<DocumentTypeFolder
-					type="Other"
-					count={documentsByType.Other.length}
-					isActive={selectedType === "Other"}
-					onClick={() => setSelectedType("Other")}
-				/>
+			{/* Document Type Folders - Updated with a bg, shadow and improved spacing */}
+			<div className="mb-6 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800 shadow-sm">
+				<h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white">
+					Categories
+				</h2>
+				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+					<DocumentTypeFolder
+						type="All"
+						count={documentsByType.All.length}
+						isActive={selectedType === "All"}
+						onClick={() => setSelectedType("All")}
+					/>
+					<DocumentTypeFolder
+						type="Transcript"
+						count={documentsByType.Transcript.length}
+						isActive={selectedType === "Transcript"}
+						onClick={() => setSelectedType("Transcript")}
+					/>
+					<DocumentTypeFolder
+						type="Essay"
+						count={documentsByType.Essay.length}
+						isActive={selectedType === "Essay"}
+						onClick={() => setSelectedType("Essay")}
+					/>
+					<DocumentTypeFolder
+						type="CV"
+						count={documentsByType.CV.length}
+						isActive={selectedType === "CV"}
+						onClick={() => setSelectedType("CV")}
+					/>
+					<DocumentTypeFolder
+						type="Recommendation Letter"
+						count={documentsByType["Recommendation Letter"].length}
+						isActive={selectedType === "Recommendation Letter"}
+						onClick={() => setSelectedType("Recommendation Letter")}
+					/>
+					<DocumentTypeFolder
+						type="Other"
+						count={documentsByType.Other.length}
+						isActive={selectedType === "Other"}
+						onClick={() => setSelectedType("Other")}
+					/>
+				</div>
 			</div>
 
-			{/* Main Document Grid */}
-			<div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-				<div className="mb-4 flex items-center justify-between">
-					<h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+			{/* Main Document Grid - Updated with better visual hierarchy */}
+			<div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 shadow-sm">
+				<div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-4 dark:border-gray-700">
+					<h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+						{selectedType === "All" ? (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-5 w-5 text-gray-500 dark:text-gray-400"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+							</svg>
+						) : selectedType === "Transcript" ? (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-5 w-5 text-blue-500"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+							</svg>
+						) : selectedType === "Essay" ? (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-5 w-5 text-green-500"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path
+									fillRule="evenodd"
+									d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+									clipRule="evenodd"
+								/>
+							</svg>
+						) : selectedType === "CV" ? (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-5 w-5 text-amber-500"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path
+									fillRule="evenodd"
+									d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4zm3 1h6v4H7V5zm2 7a1 1 0 11-2 0 1 1 0 012 0zm-2-3h6v1H7v-1zm0 2h6v1H7v-1zm6 2H7v1h6v-1z"
+									clipRule="evenodd"
+								/>
+							</svg>
+						) : selectedType === "Recommendation Letter" ? (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-5 w-5 text-purple-500"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+								<path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+							</svg>
+						) : (
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								className="h-5 w-5 text-gray-500"
+								viewBox="0 0 20 20"
+								fill="currentColor"
+							>
+								<path
+									fillRule="evenodd"
+									d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+									clipRule="evenodd"
+								/>
+							</svg>
+						)}
 						{selectedType === "All"
 							? "All Documents"
 							: `${selectedType} Documents`}
 					</h2>
-					<div className="text-sm text-gray-500 dark:text-gray-400">
-						{documentsByType[selectedType].length} document(s)
+					<div className="flex items-center gap-3">
+						<div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
+							{documentsByType[selectedType].length} document
+							{documentsByType[selectedType].length !== 1 && "s"}
+						</div>
 					</div>
 				</div>
 
@@ -278,6 +359,20 @@ export default function DocumentLibrary() {
 							onClick={() => setIsUploadModalOpen(true)}
 							className="mt-4"
 						>
+							<svg
+								className="mr-2 h-4 w-4"
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={2}
+									d="M12 4v16m8-8H4"
+								/>
+							</svg>
 							Upload a document
 						</Button>
 					</div>
@@ -299,6 +394,7 @@ export default function DocumentLibrary() {
 			<Modal
 				isOpen={isUploadModalOpen}
 				onClose={() => setIsUploadModalOpen(false)}
+				className="max-w-md mx-auto"
 			>
 				<UploadDocumentModal onClose={() => setIsUploadModalOpen(false)} />
 			</Modal>
@@ -307,6 +403,7 @@ export default function DocumentLibrary() {
 			<Modal
 				isOpen={isDetailModalOpen}
 				onClose={() => setIsDetailModalOpen(false)}
+				className="max-w-md mx-auto"
 			>
 				{selectedDocument && (
 					<DocumentDetailModal
@@ -321,6 +418,7 @@ export default function DocumentLibrary() {
 			<Modal
 				isOpen={isDeleteModalOpen}
 				onClose={() => setIsDeleteModalOpen(false)}
+				className="max-w-md mx-auto"
 			>
 				{selectedDocument && (
 					<DeleteDocumentModal

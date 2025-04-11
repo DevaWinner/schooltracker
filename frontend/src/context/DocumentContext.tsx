@@ -32,7 +32,14 @@ interface DocumentContextProps {
 const DocumentContext = createContext<DocumentContextProps>({
 	documents: [],
 	filteredDocuments: [],
-	documentsByType: { All: [] },
+	documentsByType: {
+		All: [],
+		Transcript: [],
+		Essay: [],
+		CV: [],
+		"Recommendation Letter": [],
+		Other: [],
+	},
 	isLoading: false,
 	error: null,
 	fetchDocuments: async () => {},
@@ -64,9 +71,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const [error, setError] = useState<string | null>(null);
 	const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-	const [currentFilters, setCurrentFilters] = useState<DocumentFilterParams>(
-		{}
-	);
+	const [, setCurrentFilters] = useState<DocumentFilterParams>({});
 
 	const { isAuthenticated } = useAuth();
 
@@ -94,7 +99,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 	const fetchDocuments = useCallback(
 		async (refresh = false) => {
 			// If we already have documents and not explicitly refreshing, use cached data
-			if (documents.length > 0 && !refresh && lastUpdated) {
+			if (!refresh && lastUpdated) {
 				// Only refetch if data is older than 5 minutes
 				const fiveMinutesAgo = new Date();
 				fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
@@ -105,6 +110,11 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 			}
 
 			if (!isAuthenticated) {
+				return;
+			}
+
+			// Prevent duplicate fetches
+			if (isLoading) {
 				return;
 			}
 
@@ -124,7 +134,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 				setIsLoading(false);
 			}
 		},
-		[isAuthenticated, documents.length, lastUpdated, organizeDocumentsByType]
+		[isAuthenticated, lastUpdated, organizeDocumentsByType, isLoading]
 	);
 
 	// Filter documents based on provided filters
@@ -266,10 +276,20 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 
 	// Initial fetch when component mounts if user is authenticated
 	useEffect(() => {
-		if (isAuthenticated) {
-			fetchDocuments();
-		}
-	}, [isAuthenticated, fetchDocuments]);
+		let isMounted = true;
+
+		const initialFetch = async () => {
+			if (isAuthenticated && isMounted && !lastUpdated) {
+				await fetchDocuments();
+			}
+		};
+
+		initialFetch();
+
+		return () => {
+			isMounted = false;
+		};
+	}, [isAuthenticated, fetchDocuments, lastUpdated]);
 
 	const value: DocumentContextProps = {
 		documents,
