@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { ROUTES } from "../../constants/Routes";
@@ -24,12 +24,8 @@ export default function ApplicationDocuments() {
 	const [application, setApplication] = useState<any>(null);
 	const [isLoading, setIsLoading] = useState(true);
 
-	const {
-		fetchDocuments,
-		filterDocuments,
-		removeDocument,
-		getDocumentsByApplication,
-	} = useDocuments();
+	const { fetchDocuments, removeDocument, getDocumentsByApplication } =
+		useDocuments();
 
 	const [documents, setDocuments] = useState<Document[]>([]);
 	const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
@@ -43,103 +39,148 @@ export default function ApplicationDocuments() {
 	const [initialDocType, setInitialDocType] = useState<
 		DocumentType | undefined
 	>(undefined);
+	const [documentsLoaded, setDocumentsLoaded] = useState(false);
 
-	// Add a function to filter documents by type
-	const filterDocumentsByType = (type: string) => {
-		setActiveFilter(type);
+	const [minLoadingTimeElapsed, setMinLoadingTimeElapsed] = useState(false);
 
-		if (type === "All") {
-			setFilteredDocuments(documents);
+	useEffect(() => {
+		const minLoadingTime = setTimeout(() => {
+			setMinLoadingTimeElapsed(true);
+		}, 600);
+
+		return () => clearTimeout(minLoadingTime);
+	}, []);
+
+	const filterDocumentsByType = useCallback(
+		(type: string) => {
+			setActiveFilter(type);
+
+			if (type === "All") {
+				setFilteredDocuments(documents);
+			} else {
+				const typeMapping: Record<string, string> = {
+					Transcripts: "Transcript",
+					Essays: "Essay",
+					CVs: "CV",
+					Recommendations: "Recommendation Letter",
+				};
+
+				const filterType = typeMapping[type] || type;
+				const filtered = documents.filter(
+					(doc) => doc.document_type === filterType
+				);
+				setFilteredDocuments(filtered);
+			}
+		},
+		[documents]
+	);
+
+	useEffect(() => {
+		if (documents.length > 0) {
+			filterDocumentsByType(activeFilter);
 		} else {
-			// Map UI filter names to actual document types
-			const typeMapping: Record<string, string> = {
-				Transcripts: "Transcript",
-				Essays: "Essay",
-				CVs: "CV",
-				Recommendations: "Recommendation Letter",
-			};
-
-			const filterType = typeMapping[type] || type;
-			const filtered = documents.filter(
-				(doc) => doc.document_type === filterType
-			);
-			setFilteredDocuments(filtered);
+			setFilteredDocuments([]);
 		}
-	};
+	}, [documents, activeFilter, filterDocumentsByType]);
 
-	// Set initial filteredDocuments when documents change
-	useEffect(() => {
-		setFilteredDocuments(documents);
-	}, [documents]);
+	const refreshDocuments = useCallback(async () => {
+		if (applicationId) {
+			await fetchDocuments(true);
+			const updatedDocs = getDocumentsByApplication(applicationId);
+			setDocuments(updatedDocs);
+			setDocumentsLoaded(true);
+		}
+	}, [applicationId, fetchDocuments, getDocumentsByApplication]);
 
-	// Load application data and related documents
 	useEffect(() => {
+		let isMounted = true;
+
 		const loadData = async () => {
 			if (!applicationId) {
 				navigate(ROUTES.Applications.tracker);
 				return;
 			}
 
-			setIsLoading(true);
+			if (isLoading) {
+				try {
+					let app = applications.find((a) => a.id === applicationId);
 
-			// First, fetch application details
-			try {
-				// Try to find in existing applications first
-				let app = applications.find((a) => a.id === applicationId);
+					if (!app) {
+						const loadedApp = await loadApplicationById(applicationId);
+						app = loadedApp || undefined;
+					}
 
-				// If not found locally, load from API
-				if (!app) {
-					const loadedApp = await loadApplicationById(applicationId);
-					app = loadedApp || undefined;
+					if (app && isMounted) {
+						setApplication(app);
+
+						if (!documentsLoaded) {
+							await fetchDocuments();
+							const appDocuments = getDocumentsByApplication(applicationId);
+							if (isMounted) {
+								setDocuments(appDocuments);
+								setFilteredDocuments(appDocuments);
+								setDocumentsLoaded(true);
+							}
+						}
+					} else if (isMounted) {
+						toast.error("Application not found");
+						navigate(ROUTES.Applications.tracker);
+					}
+				} catch (error) {
+					if (isMounted) {
+						toast.error("Failed to load application data");
+					}
+				} finally {
+					if (isMounted) {
+						if (minLoadingTimeElapsed) {
+							setIsLoading(false);
+						} else {
+							const remainingTimeCheck = setInterval(() => {
+								if (minLoadingTimeElapsed && isMounted) {
+									setIsLoading(false);
+									clearInterval(remainingTimeCheck);
+								}
+							}, 100);
+						}
+					}
 				}
-
-				if (app) {
-					setApplication(app);
-
-					// Then fetch documents for this application
-					await fetchDocuments();
-					await filterDocuments({ application: applicationId });
-
-					// Get documents for this application ID
-					const appDocuments = getDocumentsByApplication(applicationId);
-					setDocuments(appDocuments);
-					setFilteredDocuments(appDocuments); // Initialize filtered documents
-				} else {
-					toast.error("Application not found");
-					navigate(ROUTES.Applications.tracker);
-				}
-			} catch (error) {
-				toast.error("Failed to load application data");
-			} finally {
-				setIsLoading(false);
 			}
 		};
 
 		loadData();
+
+		return () => {
+			isMounted = false;
+		};
 	}, [
 		applicationId,
 		applications,
-		fetchDocuments,
-		filterDocuments,
-		getDocumentsByApplication,
 		navigate,
+		isLoading,
+		documentsLoaded,
+		fetchDocuments,
+		getDocumentsByApplication,
+		minLoadingTimeElapsed,
 	]);
 
-	const handleSelectDocument = (doc: Document) => {
+	const handleSelectDocument = useCallback((doc: Document) => {
 		setSelectedDocument(doc);
 		setIsDetailModalOpen(true);
-	};
+	}, []);
 
-	const handleDeleteClick = (id: number) => {
-		const docToDelete = documents.find((doc) => doc.id === id);
-		if (docToDelete) {
-			setSelectedDocument(docToDelete);
-			setIsDetailModalOpen(false);
-			setIsDeleteModalOpen(true);
-		}
-	};
+	const handleDeleteClick = useCallback(
+		(id: number) => {
+			const docToDelete = documents.find((doc) => doc.id === id);
+			if (docToDelete) {
+				setSelectedDocument(docToDelete);
+				setIsDetailModalOpen(false);
+				setIsDeleteModalOpen(true);
+			}
+		},
+		[documents]
+	);
 
-	const handleConfirmDelete = async () => {
+	const handleConfirmDelete = useCallback(async () => {
 		if (!selectedDocument) return false;
 
 		try {
@@ -148,7 +189,6 @@ export default function ApplicationDocuments() {
 				toast.success("Document deleted successfully");
 				setIsDeleteModalOpen(false);
 
-				// Update local documents list
 				setDocuments((prev) =>
 					prev.filter((doc) => doc.id !== selectedDocument.id)
 				);
@@ -158,20 +198,12 @@ export default function ApplicationDocuments() {
 		} catch (error) {
 			return false;
 		}
-	};
+	}, [selectedDocument, removeDocument]);
 
-	const refreshDocuments = async () => {
-		if (applicationId) {
-			await fetchDocuments(true);
-			const updatedDocs = getDocumentsByApplication(applicationId);
-			setDocuments(updatedDocs);
-		}
-	};
-
-	const handleQuickUpload = (documentType: DocumentType) => {
+	const handleQuickUpload = useCallback((documentType: DocumentType) => {
 		setInitialDocType(documentType);
 		setIsUploadModalOpen(true);
-	};
+	}, []);
 
 	if (isLoading) {
 		return (
@@ -181,15 +213,66 @@ export default function ApplicationDocuments() {
 					<div className="h-10 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
 				</div>
 
-				<div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800">
-					<div className="mb-6 h-8 w-1/3 rounded bg-gray-200 dark:bg-gray-700"></div>
-					<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-						{[1, 2, 3, 4].map((i) => (
-							<div
-								key={i}
-								className="h-64 rounded bg-gray-200 dark:bg-gray-700"
-							></div>
-						))}
+				<div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+					<div className="md:col-span-1">
+						<div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 overflow-hidden mb-6 shadow-sm">
+							<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/70">
+								<div className="h-6 w-32 rounded bg-gray-300 dark:bg-gray-600"></div>
+							</div>
+							<div className="p-4 space-y-3">
+								{[1, 2, 3].map((idx) => (
+									<div key={idx} className="space-y-2">
+										<div className="h-4 w-20 rounded bg-gray-300 dark:bg-gray-600"></div>
+										<div className="h-5 w-28 rounded bg-gray-200 dark:bg-gray-700"></div>
+									</div>
+								))}
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 overflow-hidden shadow-sm">
+							<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/70">
+								<div className="h-6 w-40 rounded bg-gray-300 dark:bg-gray-600"></div>
+							</div>
+							<div className="p-4 space-y-3">
+								<div className="h-4 w-full rounded bg-gray-200 dark:bg-gray-700"></div>
+								<div className="space-y-3">
+									{[1, 2, 3, 4].map((idx) => (
+										<div
+											key={idx}
+											className="h-10 w-full rounded bg-gray-200 dark:bg-gray-700 flex items-center px-3"
+										>
+											<div className="h-4 w-4 rounded-full bg-gray-300 dark:bg-gray-600 mr-2"></div>
+											<div className="h-4 w-32 rounded bg-gray-300 dark:bg-gray-600"></div>
+										</div>
+									))}
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div className="md:col-span-3 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 shadow-sm">
+						<div className="mb-6 h-8 w-1/3 rounded bg-gray-300 dark:bg-gray-600 border-b border-gray-200 dark:border-gray-700 pb-4"></div>
+						<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+							{[1, 2, 3, 4, 5, 6].map((i) => (
+								<div
+									key={i}
+									className="h-64 rounded-lg border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-750 p-4 flex flex-col"
+								>
+									<div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 pb-2 mb-3">
+										<div className="h-5 w-16 rounded bg-gray-300 dark:bg-gray-600"></div>
+										<div className="h-5 w-8 rounded bg-gray-300 dark:bg-gray-600"></div>
+									</div>
+									<div className="flex-1 flex flex-col items-center justify-center">
+										<div className="h-16 w-16 rounded-full bg-gray-300 dark:bg-gray-600 mb-4"></div>
+										<div className="h-4 w-24 rounded bg-gray-300 dark:bg-gray-600 mb-2"></div>
+										<div className="h-3 w-32 rounded bg-gray-200 dark:bg-gray-700"></div>
+									</div>
+									<div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-center">
+										<div className="h-4 w-20 rounded bg-gray-300 dark:bg-gray-600"></div>
+									</div>
+								</div>
+							))}
+						</div>
 					</div>
 				</div>
 			</div>
@@ -303,7 +386,6 @@ export default function ApplicationDocuments() {
 			</div>
 
 			<div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-				{/* Left Sidebar with Application Info */}
 				<div className="md:col-span-1">
 					<div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 overflow-hidden mb-6 shadow-sm">
 						<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/70">
@@ -353,7 +435,6 @@ export default function ApplicationDocuments() {
 						</div>
 					</div>
 
-					{/* Quick Upload Box */}
 					<div className="rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800 overflow-hidden shadow-sm">
 						<div className="border-b border-gray-200 px-6 py-4 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/70">
 							<h2 className="text-lg font-medium text-gray-900 dark:text-white">
@@ -450,7 +531,6 @@ export default function ApplicationDocuments() {
 					</div>
 				</div>
 
-				{/* Main Content - Document Grid */}
 				<div className="md:col-span-3 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 shadow-sm">
 					<h2 className="mb-6 text-xl font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-4">
 						{application.program_name} Documents
@@ -505,7 +585,6 @@ export default function ApplicationDocuments() {
 						</div>
 					) : (
 						<>
-							{/* Document Type Filters */}
 							<div className="mb-4 flex flex-wrap gap-2">
 								<button
 									onClick={() => filterDocumentsByType("All")}
@@ -584,7 +663,6 @@ export default function ApplicationDocuments() {
 				</div>
 			</div>
 
-			{/* Modals */}
 			<Modal
 				isOpen={isUploadModalOpen}
 				onClose={() => {
