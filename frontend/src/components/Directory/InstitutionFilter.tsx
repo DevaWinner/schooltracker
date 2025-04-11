@@ -4,8 +4,6 @@ import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Button from "../ui/button/Button";
 
-
-
 interface FiltersProps {
 	onApplyFilters: (filters: InstitutionFilters) => void;
 	countries: string[];
@@ -32,9 +30,9 @@ export default function InstitutionFilter({
 	});
 
 	const [isExpanded, setIsExpanded] = useState(false);
-	const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
-		null
-	);
+	const [searchTimeout, setSearchTimeout] = useState<ReturnType<
+		typeof setTimeout
+	> | null>(null);
 
 	// Update filters if initialFilters change
 	useEffect(() => {

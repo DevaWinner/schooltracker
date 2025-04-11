@@ -42,17 +42,19 @@ export default function EditApplicationModal({
 		scholarship_link: data?.scholarship_link || "",
 		program_info_link: data?.program_info_link || "",
 		status: data?.status || "Draft",
-		start_date: formatDateForInput(data?.start_date),
-		submitted_date: formatDateForInput(data?.submitted_date),
-		decision_date: formatDateForInput(data?.decision_date),
+		start_date: formatDateForInput(data?.start_date) as string | null,
+		submitted_date: formatDateForInput(data?.submitted_date) as string | null,
+		decision_date: formatDateForInput(data?.decision_date) as string | null,
 		notes: data?.notes || "",
 		created_at: data?.created_at || "",
 		updated_at: data?.updated_at || "",
 		user: data?.user || undefined,
 	});
 
-	// Institution search functionality
-	const [searchTerm, setSearchTerm] = useState(data?.institution_name || "");
+	// Set institution search term based on available data
+	const initialSearchTerm =
+		data?.institution_name || (data?.institution_details?.name ?? "") || "";
+	const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
 	const [institutions, setInstitutions] = useState<Institution[]>([]);
 	const [filteredInstitutions, setFilteredInstitutions] = useState<
 		Institution[]
@@ -68,25 +70,47 @@ export default function EditApplicationModal({
 				const institutionsList = await getInstitutionsForSelect();
 				setInstitutions(institutionsList);
 
-				// Find the selected institution in the list if it exists
-				if (data?.institution_id) {
-					const selectedInstitution = institutionsList.find(
-						(inst) => inst.id === data.institution_id
+				// Look for institution by ID or by name when ID is missing
+				let institutionIdToLookFor = data?.institution_id || data?.institution;
+				let selectedInstitution = null;
+
+				// First try to find by ID
+				if (institutionIdToLookFor) {
+					selectedInstitution = institutionsList.find(
+						(inst) => inst.id === institutionIdToLookFor
 					);
+				}
 
-					if (selectedInstitution) {
-						// Update the search term with the institution name
-						setSearchTerm(selectedInstitution.name);
+				// If still not found and we have institution_details, try to match by name
+				if (!selectedInstitution && data?.institution_details?.name) {
+					selectedInstitution = institutionsList.find(
+						(inst) => inst.name === data.institution_details?.name
+					);
+				}
 
-						// Update form data with complete institution info
-						setData((prev) => ({
-							...prev,
-							institution_id: selectedInstitution.id,
-							institution: selectedInstitution.id, // for API
-							institution_name: selectedInstitution.name,
-							institution_country: selectedInstitution.country,
-						}));
-					}
+				// If found, update form data with complete institution info
+				if (selectedInstitution) {
+					// Update the search term with the institution name
+					setSearchTerm(selectedInstitution.name);
+
+					// Update form data with complete institution info
+					setData((prev) => ({
+						...prev,
+						institution_id: selectedInstitution.id,
+						institution: selectedInstitution.id, // for API
+						institution_name: selectedInstitution.name,
+						institution_country: selectedInstitution.country,
+					}));
+				} else if (data?.institution_details) {
+					const institutionName = data.institution_details?.name || "";
+					const institutionCountry = data.institution_details?.country || "";
+
+					setSearchTerm(institutionName);
+					setData((prev) => ({
+						...prev,
+						institution_name: institutionName,
+						institution_country: institutionCountry,
+					}));
 				}
 			} catch (error) {
 				// Error handling removed
@@ -96,7 +120,7 @@ export default function EditApplicationModal({
 		};
 
 		fetchInstitutions();
-	}, [data?.institution_id]);
+	}, [data?.institution_id, data?.institution, data?.institution_details]);
 
 	// Update form data when the data prop changes
 	useEffect(() => {
@@ -105,8 +129,12 @@ export default function EditApplicationModal({
 				id: data.id || 0,
 				institution: data.institution || "",
 				institution_id: data.institution_id || data.institution || "",
-				institution_name: data.institution_name || "",
-				institution_country: data.institution_country || "",
+				institution_name:
+					data.institution_name || (data.institution_details?.name ?? "") || "",
+				institution_country:
+					data.institution_country ||
+					(data.institution_details?.country ?? "") ||
+					"",
 				institution_details: data.institution_details || null,
 				program_name: data.program_name || "",
 				degree_type: data.degree_type || "Master",
@@ -127,8 +155,10 @@ export default function EditApplicationModal({
 			});
 
 			// Update search term when data changes
-			if (data.institution_name) {
-				setSearchTerm(data.institution_name);
+			const newSearchTerm =
+				data.institution_name || (data.institution_details?.name ?? "") || "";
+			if (newSearchTerm) {
+				setSearchTerm(newSearchTerm);
 			}
 		}
 	}, [data]);
@@ -167,7 +197,7 @@ export default function EditApplicationModal({
 		if (e.target.value === "") {
 			setData((prevState) => ({
 				...prevState,
-				institution_id: undefined,
+				institution_id: "" as any, // Use empty string with type assertion instead of undefined
 				institution: "", // Use empty string instead of undefined
 				institution_name: "",
 				institution_country: "",
@@ -195,7 +225,7 @@ export default function EditApplicationModal({
 		setSearchTerm("");
 		setData((prevState) => ({
 			...prevState,
-			institution_id: undefined,
+			institution_id: "" as any, // Use empty string with type assertion instead of undefined
 			institution: "", // Use empty string instead of undefined
 			institution_name: "",
 			institution_country: "",
@@ -205,12 +235,28 @@ export default function EditApplicationModal({
 	const submitForm = (e: React.FormEvent) => {
 		e.preventDefault();
 
+		// Process date fields to ensure empty strings become null
+		const processedFormData = { ...formData };
+		const dateFields = ["start_date", "submitted_date", "decision_date"];
+
+		dateFields.forEach((field) => {
+			if (processedFormData[field as keyof typeof processedFormData] === "") {
+				(processedFormData as any)[field] = null;
+			}
+		});
+
 		// Create a properly typed Application object
 		const updatedApplication: Application = {
 			...(data as Application),
-			...formData,
+			...processedFormData,
+			// Ensure institution_details is preserved if present
+			institution_details:
+				processedFormData.institution_details ||
+				data?.institution_details ||
+				null,
 			updated_at: new Date().toISOString(),
-			user: formData.user === null ? undefined : formData.user,
+			user:
+				processedFormData.user === null ? undefined : processedFormData.user,
 		};
 
 		onSave(updatedApplication);
@@ -514,7 +560,7 @@ export default function EditApplicationModal({
 									type="date"
 									id="start_date"
 									name="start_date"
-									value={formData.start_date}
+									value={formData.start_date || ""}
 									onChange={changeForm}
 								/>
 							</div>
@@ -524,7 +570,7 @@ export default function EditApplicationModal({
 									type="date"
 									id="submitted_date"
 									name="submitted_date"
-									value={formData.submitted_date}
+									value={formData.submitted_date || ""}
 									onChange={changeForm}
 								/>
 							</div>
@@ -534,7 +580,7 @@ export default function EditApplicationModal({
 									type="date"
 									id="decision_date"
 									name="decision_date"
-									value={formData.decision_date}
+									value={formData.decision_date || ""}
 									onChange={changeForm}
 								/>
 							</div>

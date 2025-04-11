@@ -37,22 +37,47 @@ export const formatDate = (
 };
 
 /**
- * Format a date for input fields (YYYY-MM-DD)
- * @param dateStr Date string to format
- * @returns Formatted date string for input fields
+ * Format a date string for use in an input[type="date"] element
+ * Returns empty string for null, undefined or invalid dates
  */
 export const formatDateForInput = (dateStr?: string | null): string => {
-	if (!dateStr) return "";
+	// If date is null or undefined, return empty string
+	if (dateStr === null || dateStr === undefined || dateStr === "") {
+		return "";
+	}
 
 	try {
 		const date = new Date(dateStr);
-		if (isNaN(date.getTime())) return "";
 
-		// Format as YYYY-MM-DD for input type="date"
+		// Check if date is valid
+		if (isNaN(date.getTime())) {
+			return "";
+		}
+
+		// Format as YYYY-MM-DD (expected by input[type="date"])
 		return date.toISOString().split("T")[0];
 	} catch (error) {
-		console.error("Error formatting date for input:", dateStr, error);
 		return "";
+	}
+};
+
+/**
+ * Parse date string from input and return a properly formatted date value or null
+ */
+export const parseDateInput = (inputValue: string): string | null => {
+	if (!inputValue || inputValue.trim() === "") {
+		return null;
+	}
+
+	try {
+		// Validate the date
+		const date = new Date(inputValue);
+		if (isNaN(date.getTime())) {
+			return null;
+		}
+		return inputValue; // Return the validated input
+	} catch (error) {
+		return null;
 	}
 };
 

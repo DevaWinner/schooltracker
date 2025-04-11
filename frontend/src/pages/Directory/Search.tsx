@@ -61,9 +61,9 @@ export default function SchoolSearch() {
 		const loadCountries = async () => {
 			try {
 				const countryList = await getCountries();
-				setCountries(countryList); // This now expects an array from the API response
+				setCountries(countryList);
 			} catch (error) {
-				setCountries([]); // Set empty array on error
+				setCountries([]);
 			}
 		};
 
