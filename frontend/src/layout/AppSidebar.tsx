@@ -20,36 +20,36 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  {
-    icon: <GridIcon />,
-    name: "Dashboard",
-    path: "/",
-  },
-  {
-    icon: <ListIcon />,
-    name: "Applications",
-    path: "/applications/tracker",
-  },
-  {
-    icon: <PageIcon />,
-    name: "Documents",
-    path: "/documents/library",
-  },
-  {
-    icon: <BoxCubeIcon />,
-    name: "School Directory",
-    path: "/directory/search",
-  },
-  {
-    icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
-  },
-  {
-    icon: <PlugInIcon />,
-    name: "Recommendations",
-    path: "/recommendations",
-  },
+	{
+		icon: <GridIcon />,
+		name: "Dashboard",
+		path: "/",
+	},
+	{
+		icon: <ListIcon />,
+		name: "Applications",
+		path: "/applications/tracker",
+	},
+	{
+		icon: <PageIcon />,
+		name: "Documents",
+		path: "/documents/library",
+	},
+	{
+		icon: <BoxCubeIcon />,
+		name: "School Directory",
+		path: "/directory/search",
+	},
+	{
+		icon: <CalenderIcon />,
+		name: "Calendar",
+		path: "/calendar",
+	},
+	{
+		icon: <PlugInIcon />,
+		name: "Recommendations",
+		path: "/recommendations",
+	},
 ];
 
 const AppSidebar: React.FC = () => {

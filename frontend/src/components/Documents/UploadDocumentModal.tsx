@@ -12,14 +12,18 @@ import { useDocuments } from "../../context/DocumentContext";
 interface UploadDocumentModalProps {
 	onClose: () => void;
 	initialApplicationId?: number | null;
+	initialDocumentType?: DocumentType;
 }
 
 const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 	onClose,
 	initialApplicationId = null,
+	initialDocumentType,
 }) => {
 	const [file, setFile] = useState<File | null>(null);
-	const [documentType, setDocumentType] = useState<DocumentType>("Transcript");
+	const [documentType, setDocumentType] = useState<DocumentType>(
+		initialDocumentType || "Transcript"
+	);
 	const [applicationId, setApplicationId] = useState<number | null>(
 		initialApplicationId
 	);
@@ -28,6 +32,13 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 
 	const { applications } = useApplications();
 	const { uploadNewDocument } = useDocuments();
+
+	// Effect to set initial document type if provided
+	useEffect(() => {
+		if (initialDocumentType) {
+			setDocumentType(initialDocumentType);
+		}
+	}, [initialDocumentType]);
 
 	// Effect to set initial application if provided
 	useEffect(() => {

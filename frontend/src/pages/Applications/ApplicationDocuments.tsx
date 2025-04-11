@@ -12,7 +12,7 @@ import DocumentDetailModal from "../../components/Documents/DocumentDetailModal"
 import DeleteDocumentModal from "../../components/Documents/DeleteDocumentModal";
 import { useDocuments } from "../../context/DocumentContext";
 import { useApplications } from "../../context/ApplicationContext";
-import { Document } from "../../types/documents";
+import { Document, DocumentType } from "../../types/documents";
 import { loadApplicationById } from "../../utils/applicationUtils";
 
 export default function ApplicationDocuments() {
@@ -32,12 +32,45 @@ export default function ApplicationDocuments() {
 	} = useDocuments();
 
 	const [documents, setDocuments] = useState<Document[]>([]);
+	const [filteredDocuments, setFilteredDocuments] = useState<Document[]>([]);
+	const [activeFilter, setActiveFilter] = useState<string>("All");
 	const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 	const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [selectedDocument, setSelectedDocument] = useState<Document | null>(
 		null
 	);
+	const [initialDocType, setInitialDocType] = useState<
+		DocumentType | undefined
+	>(undefined);
+
+	// Add a function to filter documents by type
+	const filterDocumentsByType = (type: string) => {
+		setActiveFilter(type);
+
+		if (type === "All") {
+			setFilteredDocuments(documents);
+		} else {
+			// Map UI filter names to actual document types
+			const typeMapping: Record<string, string> = {
+				Transcripts: "Transcript",
+				Essays: "Essay",
+				CVs: "CV",
+				Recommendations: "Recommendation Letter",
+			};
+
+			const filterType = typeMapping[type] || type;
+			const filtered = documents.filter(
+				(doc) => doc.document_type === filterType
+			);
+			setFilteredDocuments(filtered);
+		}
+	};
+
+	// Set initial filteredDocuments when documents change
+	useEffect(() => {
+		setFilteredDocuments(documents);
+	}, [documents]);
 
 	// Load application data and related documents
 	useEffect(() => {
@@ -70,6 +103,7 @@ export default function ApplicationDocuments() {
 					// Get documents for this application ID
 					const appDocuments = getDocumentsByApplication(applicationId);
 					setDocuments(appDocuments);
+					setFilteredDocuments(appDocuments); // Initialize filtered documents
 				} else {
 					toast.error("Application not found");
 					navigate(ROUTES.Applications.tracker);
@@ -132,6 +166,11 @@ export default function ApplicationDocuments() {
 			const updatedDocs = getDocumentsByApplication(applicationId);
 			setDocuments(updatedDocs);
 		}
+	};
+
+	const handleQuickUpload = (documentType: DocumentType) => {
+		setInitialDocType(documentType);
+		setIsUploadModalOpen(true);
 	};
 
 	if (isLoading) {
@@ -327,10 +366,7 @@ export default function ApplicationDocuments() {
 							</p>
 							<div className="grid grid-cols-1 gap-2">
 								<button
-									onClick={() => {
-										setIsUploadModalOpen(true);
-										// You can set the initial document type here
-									}}
+									onClick={() => handleQuickUpload("Transcript")}
 									className="flex items-center gap-2 text-left py-2.5 px-3 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/70"
 								>
 									<svg
@@ -350,10 +386,7 @@ export default function ApplicationDocuments() {
 									<span>Upload Transcript</span>
 								</button>
 								<button
-									onClick={() => {
-										setIsUploadModalOpen(true);
-										// You can set the initial document type here
-									}}
+									onClick={() => handleQuickUpload("Essay")}
 									className="flex items-center gap-2 text-left py-2.5 px-3 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/70"
 								>
 									<svg
@@ -373,10 +406,7 @@ export default function ApplicationDocuments() {
 									<span>Upload Essay/Personal Statement</span>
 								</button>
 								<button
-									onClick={() => {
-										setIsUploadModalOpen(true);
-										// You can set the initial document type here
-									}}
+									onClick={() => handleQuickUpload("CV")}
 									className="flex items-center gap-2 text-left py-2.5 px-3 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/70"
 								>
 									<svg
@@ -394,6 +424,26 @@ export default function ApplicationDocuments() {
 										/>
 									</svg>
 									<span>Upload CV/Resume</span>
+								</button>
+								<button
+									onClick={() => handleQuickUpload("Recommendation Letter")}
+									className="flex items-center gap-2 text-left py-2.5 px-3 text-sm rounded-lg border border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/70"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										className="h-4 w-4 text-purple-600 dark:text-purple-400"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke="currentColor"
+									>
+										<path
+											strokeLinecap="round"
+											strokeLinejoin="round"
+											strokeWidth={2}
+											d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12"
+										/>
+									</svg>
+									<span>Upload Recommendation Letter</span>
 								</button>
 							</div>
 						</div>
@@ -458,8 +508,9 @@ export default function ApplicationDocuments() {
 							{/* Document Type Filters */}
 							<div className="mb-4 flex flex-wrap gap-2">
 								<button
+									onClick={() => filterDocumentsByType("All")}
 									className={`px-3 py-1 text-sm rounded-full ${
-										true // active filter - replace with your filter state
+										activeFilter === "All"
 											? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
 											: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
 									}`}
@@ -467,32 +518,67 @@ export default function ApplicationDocuments() {
 									All
 								</button>
 								<button
-									className={`px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/10`}
+									onClick={() => filterDocumentsByType("Transcripts")}
+									className={`px-3 py-1 text-sm rounded-full ${
+										activeFilter === "Transcripts"
+											? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+											: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/10"
+									}`}
 								>
 									Transcripts
 								</button>
 								<button
-									className={`px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/10`}
+									onClick={() => filterDocumentsByType("Essays")}
+									className={`px-3 py-1 text-sm rounded-full ${
+										activeFilter === "Essays"
+											? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+											: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/10"
+									}`}
 								>
 									Essays
 								</button>
 								<button
-									className={`px-3 py-1 text-sm rounded-full bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/10`}
+									onClick={() => filterDocumentsByType("CVs")}
+									className={`px-3 py-1 text-sm rounded-full ${
+										activeFilter === "CVs"
+											? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+											: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/10"
+									}`}
 								>
 									CVs
 								</button>
+								<button
+									onClick={() => filterDocumentsByType("Recommendations")}
+									className={`px-3 py-1 text-sm rounded-full ${
+										activeFilter === "Recommendations"
+											? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400"
+											: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/10"
+									}`}
+								>
+									Recommendations
+								</button>
 							</div>
 
-							<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
-								{documents.map((doc) => (
-									<DocumentCard
-										key={doc.id}
-										document={doc}
-										onView={handleSelectDocument}
-										onDelete={handleDeleteClick}
-									/>
-								))}
-							</div>
+							{filteredDocuments.length === 0 ? (
+								<div className="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center dark:border-gray-700">
+									<p className="text-gray-500 dark:text-gray-400">
+										No{" "}
+										{activeFilter !== "All" ? activeFilter.toLowerCase() : ""}{" "}
+										documents found for this application.
+									</p>
+								</div>
+							) : (
+								<div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3">
+									{filteredDocuments.map((doc) => (
+										<DocumentCard
+											key={doc.id}
+											document={doc}
+											onView={handleSelectDocument}
+											onDelete={handleDeleteClick}
+										/>
+									))}
+								</div>
+							)}
 						</>
 					)}
 				</div>
@@ -501,15 +587,20 @@ export default function ApplicationDocuments() {
 			{/* Modals */}
 			<Modal
 				isOpen={isUploadModalOpen}
-				onClose={() => setIsUploadModalOpen(false)}
+				onClose={() => {
+					setIsUploadModalOpen(false);
+					setInitialDocType(undefined);
+				}}
 				className="max-w-md mx-auto"
 			>
 				<UploadDocumentModal
 					onClose={() => {
 						setIsUploadModalOpen(false);
 						refreshDocuments();
+						setInitialDocType(undefined);
 					}}
 					initialApplicationId={applicationId}
+					initialDocumentType={initialDocType}
 				/>
 			</Modal>
 
