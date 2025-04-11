@@ -93,16 +93,6 @@ export default function ApplicationStats({
 		return result;
 	}, [applications]);
 
-	// Format date for display
-	const formatDate = (dateStr: string): string => {
-		const date = new Date(dateStr);
-		return date.toLocaleDateString("en-US", {
-			year: "numeric",
-			month: "short",
-			day: "numeric",
-		});
-	};
-
 	// Helper function to get status color
 	const getStatusColor = (status: string): string => {
 		switch (status) {

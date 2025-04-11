@@ -1,5 +1,3 @@
-// src/App.tsx
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ROUTES } from "./constants/Routes";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -13,7 +11,7 @@ import { ApplicationProvider } from "./context/ApplicationContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
 
 // Import page components
-import Home from "./pages/Dashboard/Home";
+import Home from "./pages/Home/Home";
 import Calendar from "./pages/Calendar";
 import Recommendations from "./pages/Recommendations";
 import ApplicationTracker from "./pages/Applications/Tracker";
@@ -23,7 +21,7 @@ import ApplicationDetail from "./pages/Applications/ApplicationDetail";
 import DocumentUpload from "./pages/Documents/Upload";
 import DocumentLibrary from "./pages/Documents/Library";
 import SchoolSearch from "./pages/Directory/Search";
-import InstitutionDetail from "./pages/Directory/InstitutionDetail"; // Import the InstitutionDetail component
+import InstitutionDetail from "./pages/Directory/InstitutionDetail";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import UserProfiles from "./pages/UserProfile/UserProfileInformation";

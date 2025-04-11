@@ -1,18 +1,9 @@
-import axios from "axios";
+import { authenticatedApi } from "../utils/apiUtils";
 import {
 	InstitutionDetail,
 	InstitutionFilters,
 	PaginatedInstitutions,
 } from "../types/institutions";
-
-const API_BASE_URL = import.meta.env.VITE_BASE_URL || "/api";
-
-const institutionsApi = axios.create({
-	baseURL: API_BASE_URL,
-	headers: {
-		"Content-Type": "application/json",
-	},
-});
 
 /**
  * Fetch a paginated list of institutions with optional filters
@@ -26,7 +17,7 @@ export const getInstitutions = async (
 
 		// Add only the defined parameters, exactly matching the API spec
 		if (filters.search) params.search = filters.search;
-		if (filters.country) params.country = filters.country; // This is the field we're ensuring is correct
+		if (filters.country) params.country = filters.country;
 		if (filters.rank_gte !== undefined) params.rank_gte = filters.rank_gte;
 		if (filters.rank_lte !== undefined) params.rank_lte = filters.rank_lte;
 		if (filters.research) params.research = filters.research;
@@ -36,7 +27,7 @@ export const getInstitutions = async (
 		if (filters.page_size) params.page_size = filters.page_size;
 		if (filters.ordering) params.ordering = filters.ordering;
 
-		const response = await institutionsApi.get<PaginatedInstitutions>(
+		const response = await authenticatedApi.get<PaginatedInstitutions>(
 			"/institutions/",
 			{
 				params,
@@ -60,7 +51,7 @@ export const getInstitutionById = async (
 	id: string
 ): Promise<InstitutionDetail> => {
 	try {
-		const response = await institutionsApi.get<InstitutionDetail>(
+		const response = await authenticatedApi.get<InstitutionDetail>(
 			`/institutions/${id}/`
 		);
 		return response.data;
@@ -79,7 +70,7 @@ export const getInstitutionById = async (
 export const getCountries = async (): Promise<string[]> => {
 	try {
 		// Updated to match the API response format in the documentation
-		const response = await institutionsApi.get<{ countries: string[] }>(
+		const response = await authenticatedApi.get<{ countries: string[] }>(
 			"/institutions/countries/"
 		);
 		return response.data.countries || []; // Return the countries array from the response
@@ -99,7 +90,7 @@ export const getInstitutionsForSelect = async (): Promise<
 	{ id: string; name: string; country: string }[]
 > => {
 	try {
-		const response = await institutionsApi.get<PaginatedInstitutions>(
+		const response = await authenticatedApi.get<PaginatedInstitutions>(
 			"/institutions/",
 			{
 				params: {

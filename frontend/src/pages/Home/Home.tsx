@@ -7,7 +7,7 @@ import ApplicationStats from "../../components/ApplicationTracker/ApplicationSta
 import ApplicationCharts from "../../components/Dashboard/ApplicationCharts";
 import ComponentCard from "../../components/common/ComponentCard";
 import { useApplications } from "../../context/ApplicationContext";
-import { formatDate, getRelativeTimeString } from "../../utils/dateUtils";
+import { formatDate } from "../../utils/dateUtils";
 
 export default function Home() {
 	const { applications, isLoading, fetchApplications } = useApplications();

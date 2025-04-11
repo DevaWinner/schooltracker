@@ -25,10 +25,8 @@ export default function ApplicationTable({
 	data,
 	isLoading,
 	onFilterChange,
-	onRefresh,
 	onEdit,
 	onDelete,
-	onView,
 }: ApplicationTableProps) {
 	const navigate = useNavigate();
 	const [filters, setFilters] = useState<ApplicationFilterParams>({});
