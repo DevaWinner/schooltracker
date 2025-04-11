@@ -8,6 +8,8 @@ export const ROUTES = {
 	},
 	Applications: {
 		tracker: "/applications/tracker",
+		detail: "/applications/detail/:id",
+		documents: "/applications/detail/:id/documents",
 	},
 	Documents: {
 		upload: "/documents/upload",
@@ -15,6 +17,7 @@ export const ROUTES = {
 	},
 	Directory: {
 		search: "/directory/search",
+		institution: "/directory/institution/:id",
 	},
 	Profile: {
 		information: "/profile/information",

@@ -4,7 +4,7 @@ export interface SignUpRequest {
 	first_name: string;
 	last_name: string;
 	phone?: string;
-	date_of_birth?: string; // ISO date string (YYYY-MM-DD)
+	date_of_birth?: string;
 	gender?: "Male" | "Female" | "Other";
 	country: string;
 }
@@ -16,7 +16,7 @@ export interface UserData {
 	last_name: string;
 	phone?: string;
 	date_of_birth?: string;
-	gender?: "Male" | "Female" | "Other"; // Updated to match UserInfo
+	gender?: "Male" | "Female" | "Other";
 	country: string;
 	created_at: string;
 	updated_at: string;

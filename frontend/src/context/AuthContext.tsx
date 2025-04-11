@@ -1,41 +1,58 @@
-// src/context/AuthContext.tsx
-import React, { createContext, useState, useEffect, ReactNode } from "react";
+import React, {
+	createContext,
+	useState,
+	useEffect,
+	ReactNode,
+	useCallback,
+} from "react";
 import { UserInfo, UserProfile, UserSettings } from "../types/user";
 import { getProfile, getUserProfile, getUserSettings } from "../api/profile";
-import { getAccessToken } from "../api/auth";
+import {
+	getAccessToken,
+	getRefreshToken,
+	clearAuthTokens,
+	verifyToken,
+} from "../api/auth";
 
 interface AuthContextProps {
 	user: any;
 	accessToken: string | null;
 	profile: UserInfo | null;
-	userProfile: UserProfile | null; // Added
-	userSettings: UserSettings | null; // Added
-	signIn: (user: any, token: string) => void;
+	userProfile: UserProfile | null;
+	userSettings: UserSettings | null;
+	signIn: (
+		user: any,
+		token: string,
+		refreshTokenStr: string,
+		rememberMe?: boolean
+	) => void;
 	signOut: () => void;
 	setProfile: (profile: UserInfo) => void;
-	setUserProfile: (profile: UserProfile | null) => void; // Added
-	setUserSettings: (settings: UserSettings | null) => void; // Added
-	refreshProfileData: () => Promise<void>; // Added
+	setUserProfile: (profile: UserProfile | null) => void;
+	setUserSettings: (settings: UserSettings | null) => void;
+	refreshProfileData: () => Promise<void>;
 	isFirstLogin: boolean;
 	setIsFirstLogin: (value: boolean) => void;
 	isLoading: boolean;
+	isAuthenticated: boolean;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
 	user: null,
 	accessToken: null,
 	profile: null,
-	userProfile: null, // Added
-	userSettings: null, // Added
+	userProfile: null,
+	userSettings: null,
 	signIn: () => {},
 	signOut: () => {},
 	setProfile: () => {},
-	setUserProfile: () => {}, // Added
-	setUserSettings: () => {}, // Added
-	refreshProfileData: async () => {}, // Added
+	setUserProfile: () => {},
+	setUserSettings: () => {},
+	refreshProfileData: async () => {},
 	isFirstLogin: false,
 	setIsFirstLogin: () => {},
 	isLoading: true,
+	isAuthenticated: false,
 });
 
 interface AuthProviderProps {
@@ -46,20 +63,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const [user, setUser] = useState<any>(null);
 	const [accessToken, setAccessToken] = useState<string | null>(null);
 	const [profile, setProfile] = useState<UserInfo | null>(null);
-	const [userProfile, setUserProfile] = useState<UserProfile | null>(null); // Added
-	const [userSettings, setUserSettings] = useState<UserSettings | null>(null); // Added
+	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+	const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
 	const [isFirstLogin, setIsFirstLogin] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
+	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
 	// Function to fetch all profile data
-	const fetchProfileData = async (token: string) => {
+	const fetchProfileData = async () => {
 		try {
 			// Fetch profile data in parallel
 			const [profileData, profileDetailsData, settingsData] = await Promise.all(
 				[
-					getProfile(token),
-					getUserProfile(token).catch(() => null),
-					getUserSettings(token).catch(() => null),
+					getProfile(),
+					getUserProfile().catch(() => null),
+					getUserSettings().catch(() => null),
 				]
 			);
 
@@ -75,86 +93,137 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 			return { profileData, profileDetailsData, settingsData };
 		} catch (error) {
-			console.error("Error fetching profile data:", error);
 			throw error;
 		}
 	};
 
 	// Function to refresh profile data (used after profile updates)
-	const refreshProfileData = async () => {
-		if (!accessToken) return;
-
+	const refreshProfileData = useCallback(async () => {
 		try {
-			await fetchProfileData(accessToken);
-		} catch (error) {
-			console.error("Error refreshing profile data:", error);
+			await fetchProfileData();
+		} catch (error) {}
+	}, []);
+
+	// Function to check if token is valid
+	const checkTokenValidity = useCallback(async (token: string) => {
+		try {
+			const result = await verifyToken(token);
+			return result.valid;
+		} catch {
+			return false;
 		}
-	};
+	}, []);
 
 	// On mount, check if a token exists and load profile data
 	useEffect(() => {
 		const initAuth = async () => {
 			const token = getAccessToken();
+			const refreshTokenStr = getRefreshToken();
 			const userData = localStorage.getItem("userData");
 			const rememberMe = localStorage.getItem("rememberMe");
 
-			// Only restore session if token exists and either rememberMe is true or we're not checking
-			if (token && (rememberMe === "true" || rememberMe === null)) {
-				setAccessToken(token);
+			// Only restore session if tokens exist and either rememberMe is true or we're not checking
+			if (
+				token &&
+				refreshTokenStr &&
+				(rememberMe === "true" || rememberMe === null)
+			) {
+				// Verify token validity
+				const isValid = await checkTokenValidity(token);
 
-				if (userData) {
-					try {
-						setUser(JSON.parse(userData));
-					} catch (e) {
-						console.error("Failed to parse user data from localStorage");
+				if (isValid) {
+					setAccessToken(token);
+					setIsAuthenticated(true);
+
+					if (userData) {
+						try {
+							setUser(JSON.parse(userData));
+						} catch (e) {}
 					}
-				}
 
-				// Fetch all profile data
-				try {
-					await fetchProfileData(token);
-				} catch (error) {
-					console.error("Error fetching profile:", error);
-					// If we can't fetch the profile with the token, it might be invalid
+					// Fetch all profile data
+					try {
+						await fetchProfileData();
+					} catch (error) {
+						// If we can't fetch the profile with the token, it might be invalid
+						signOutHandler();
+					}
+				} else {
+					// Token is invalid, sign out
 					signOutHandler();
 				}
+			} else {
+				// No valid authentication, ensure we're signed out
+				signOutHandler();
 			}
 
 			setIsLoading(false);
 		};
 
 		initAuth();
-	}, []);
+	}, [checkTokenValidity]);
 
-	const signInHandler = (userData: any, token: string) => {
+	const signInHandler = (
+		userData: any,
+		token: string,
+		refreshTokenStr: string,
+		rememberMe: boolean = false
+	) => {
 		setUser(userData);
 		setAccessToken(token);
+		setIsAuthenticated(true);
 
-		// Always save token and user data
+		// Store tokens based on rememberMe preference
+		const storage = rememberMe ? localStorage : sessionStorage;
+
+		// Save auth data
 		try {
-			localStorage.setItem("accessToken", token);
-			localStorage.setItem("userData", JSON.stringify(userData));
+			storage.setItem("access_token", token);
+			storage.setItem("refresh_token", refreshTokenStr);
+			storage.setItem("userData", JSON.stringify(userData));
+			storage.setItem("rememberMe", String(rememberMe));
 
 			// Fetch profile data immediately after sign in
-			fetchProfileData(token).catch(console.error);
-		} catch (e) {
-			console.error("Failed to save auth data to localStorage:", e);
-		}
+			fetchProfileData().catch(() => {});
+		} catch (e) {}
 	};
 
 	const signOutHandler = () => {
 		setUser(null);
 		setAccessToken(null);
 		setProfile(null);
-		setUserProfile(null); // Added
-		setUserSettings(null); // Added
+		setUserProfile(null);
+		setUserSettings(null);
 		setIsFirstLogin(false);
+		setIsAuthenticated(false);
 
-		// Clear all auth-related data from localStorage
-		localStorage.removeItem("accessToken");
+		// Clear all auth-related data from storage
+		clearAuthTokens();
 		localStorage.removeItem("userData");
 		localStorage.removeItem("rememberMe");
 	};
+
+	// Listen for authentication errors that might happen in API calls
+	useEffect(() => {
+		const handleAuthError = (event: CustomEvent) => {
+			if (event.detail?.type === "auth_error") {
+				// If we get an auth error event from our API utilities
+				signOutHandler();
+			}
+		};
+
+		window.addEventListener(
+			"auth_error" as any,
+			handleAuthError as EventListener
+		);
+
+		return () => {
+			window.removeEventListener(
+				"auth_error" as any,
+				handleAuthError as EventListener
+			);
+		};
+	}, []);
 
 	return (
 		<AuthContext.Provider
@@ -162,20 +231,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				user,
 				accessToken,
 				profile,
-				userProfile, // Added
-				userSettings, // Added
+				userProfile,
+				userSettings,
 				signIn: signInHandler,
 				signOut: signOutHandler,
 				setProfile,
-				setUserProfile, // Added
-				setUserSettings, // Added
-				refreshProfileData, // Added
+				setUserProfile,
+				setUserSettings,
+				refreshProfileData,
 				isFirstLogin,
 				setIsFirstLogin,
 				isLoading,
+				isAuthenticated,
 			}}
 		>
 			{!isLoading && children}
 		</AuthContext.Provider>
 	);
 };
+
+export const useAuth = () => React.useContext(AuthContext);
