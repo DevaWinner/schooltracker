@@ -14,6 +14,10 @@ from api.views.application_views import (
 from api.views.document_views import (
     DocumentListView, DocumentUploadView, DocumentDetailView, DocumentDeleteView
 )
+from api.views.event_views import (
+    EventCreateAPIView, EventRetrievePatchAPIView, EventsByApplicationAPIView,
+    EventDeleteAPIView, EventListAPIView, EventUpdateAPIView
+)
 
 # Define URL patterns for each module
 auth_urls = [
@@ -77,6 +81,16 @@ document_urls = [
     path('<int:pk>/delete/', DocumentDeleteView.as_view(), name='document_delete'),
 ]
 
+# Event management endpoints
+event_urls = [
+    path('', EventListAPIView.as_view(), name='event-list'),
+    path('create/', EventCreateAPIView.as_view(), name='event-create'),
+    path('<int:pk>/', EventRetrievePatchAPIView.as_view(), name='event-detail-patch'),
+    path('<int:pk>/update/', EventUpdateAPIView.as_view(), name='event-update'),
+    path('<int:pk>/delete/', EventDeleteAPIView.as_view(), name='event-delete'),
+    path('applications/<int:application_id>/', EventsByApplicationAPIView.as_view(), name='events-by-application'),
+]
+
 # Main URL patterns with modules grouped together
 urlpatterns = [
     # Auth endpoints
@@ -93,4 +107,7 @@ urlpatterns = [
     
     # Document management endpoints
     path('documents/', include((document_urls, 'documents'))),
+
+    # Event management endpoints
+    path('events/', include((event_urls, 'events'))),
 ]
