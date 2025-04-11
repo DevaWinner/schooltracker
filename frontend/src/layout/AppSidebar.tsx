@@ -53,7 +53,9 @@ const navItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
-	const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+	const { isExpanded, isMobileOpen, isHovered, setIsHovered, isHoverEnabled } =
+		useSidebar();
+	const [isMobileScreen, setIsMobileScreen] = useState(false);
 	const location = useLocation();
 
 	const [openSubmenu, setOpenSubmenu] = useState<{ index: number } | null>(
@@ -64,10 +66,38 @@ const AppSidebar: React.FC = () => {
 	);
 	const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
+	// Change from NodeJS.Timeout to number type for browser compatibility
+	const hoverTimeoutRef = useRef<number | null>(null);
+
+	// Add tooltip state
+	const [tooltipItem, setTooltipItem] = useState<string | null>(null);
+	const [tooltipPosition, setTooltipPosition] = useState({ top: 0 });
+
 	const isActive = useCallback(
 		(path: string) => location.pathname === path,
 		[location.pathname]
 	);
+
+	// Render tooltip for an icon when sidebar is minimized
+	const handleTooltipEnter = (
+		name: string,
+		e: React.MouseEvent<HTMLElement>
+	) => {
+		if (!isExpanded && !isHovered) {
+			// Calculate the position based on the target element
+			const target = e.currentTarget;
+			const rect = target.getBoundingClientRect();
+			// Position the tooltip centered vertically with the icon
+			setTooltipPosition({
+				top: rect.top + rect.height / 2,
+			});
+			setTooltipItem(name);
+		}
+	};
+
+	const handleTooltipLeave = () => {
+		setTooltipItem(null);
+	};
 
 	// Auto-open submenu if a subItem matches the current route
 	useEffect(() => {
@@ -105,13 +135,65 @@ const AppSidebar: React.FC = () => {
 		setOpenSubmenu((prev) => (prev && prev.index === index ? null : { index }));
 	};
 
+	// Improved hover handlers with debouncing to prevent flickering
+	const handleMouseEnter = () => {
+		if (hoverTimeoutRef.current) {
+			clearTimeout(hoverTimeoutRef.current);
+			hoverTimeoutRef.current = null;
+		}
+		// Only set hover state if hover expansion is enabled
+		if (isHoverEnabled) {
+			setIsHovered(true);
+		}
+	};
+
+	const handleMouseLeave = () => {
+		if (hoverTimeoutRef.current) {
+			clearTimeout(hoverTimeoutRef.current);
+		}
+		// Use window.setTimeout instead of just setTimeout to be explicit
+		hoverTimeoutRef.current = window.setTimeout(() => {
+			setIsHovered(false);
+			hoverTimeoutRef.current = null;
+		}, 100); // Small delay to prevent flickering
+	};
+
+	// Clean up the timeout on unmount
+	useEffect(() => {
+		return () => {
+			if (hoverTimeoutRef.current) {
+				clearTimeout(hoverTimeoutRef.current);
+			}
+		};
+	}, []);
+
+	// Add window resize listener to detect mobile screens
+	useEffect(() => {
+		const handleResize = () => {
+			setIsMobileScreen(window.innerWidth < 768);
+		};
+
+		// Set initial value
+		handleResize();
+
+		// Add listener
+		window.addEventListener("resize", handleResize);
+
+		// Clean up
+		return () => {
+			window.removeEventListener("resize", handleResize);
+		};
+	}, []);
+
 	const renderMenuItems = (items: NavItem[]) => (
 		<ul className="flex flex-col gap-4">
 			{items.map((nav, index) => (
-				<li key={nav.name}>
+				<li key={nav.name} className="relative">
 					{nav.subItems ? (
 						<button
 							onClick={() => handleSubmenuToggle(index)}
+							onMouseEnter={(e) => handleTooltipEnter(nav.name, e)}
+							onMouseLeave={handleTooltipLeave}
 							className={`menu-item group ${
 								openSubmenu?.index === index
 									? "menu-item-active"
@@ -148,6 +230,8 @@ const AppSidebar: React.FC = () => {
 						nav.path && (
 							<Link
 								to={nav.path}
+								onMouseEnter={(e) => handleTooltipEnter(nav.name, e)}
+								onMouseLeave={handleTooltipLeave}
 								className={`menu-item group ${
 									isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
 								}`}
@@ -228,55 +312,72 @@ const AppSidebar: React.FC = () => {
 	);
 
 	return (
-		<aside
-			className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        ${
-					isExpanded || isMobileOpen
+		<>
+			<aside
+				className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen will-change-transform z-50 border-r border-gray-200 
+				${
+					isExpanded
 						? "w-[290px]"
-						: isHovered
+						: isHovered && isHoverEnabled
 						? "w-[290px]"
 						: "w-[90px]"
 				}
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0`}
-			onMouseEnter={() => !isExpanded && setIsHovered(true)}
-			onMouseLeave={() => setIsHovered(false)}
-		>
-			<div
-				className={`py-8 flex ${
-					!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
-				}`}
+				${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+				lg:translate-x-0 transition-[width,transform] duration-300 ease-out`}
+				onMouseEnter={handleMouseEnter}
+				onMouseLeave={handleMouseLeave}
 			>
-				<Link to="/">
-					{isExpanded || isHovered || isMobileOpen ? (
-						<>
-							<span className="text-3xl font-bold text-gray-900 dark:hidden">
-								School Tracker
-							</span>
-							<span className="text-3xl font-bold text-white hidden dark:block">
-								School Tracker
-							</span>
-						</>
-					) : (
-						<span className="text-xl font-bold text-gray-900 dark:text-white">
-							ST
-						</span>
+				<div
+					className={`py-8 flex ${
+						!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+					}`}
+				>
+					{!isMobileScreen && (
+						<Link to="/">
+							{/* Show logo only on non-mobile screens */}
+							{isExpanded || isHovered || isMobileScreen ? (
+								<>
+									<span className="text-3xl font-bold text-gray-900 dark:hidden">
+										School Tracker
+									</span>
+									<span className="text-3xl font-bold text-white hidden dark:block">
+										School Tracker
+									</span>
+								</>
+							) : (
+								<span className="text-xl font-bold text-gray-900 dark:text-white">
+									ST
+								</span>
+							)}
+						</Link>
 					)}
-				</Link>
-			</div>
-			<div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-				<nav className="mb-6">
-					<div className="flex flex-col gap-4">
-						{(isExpanded || isHovered || isMobileOpen) && (
-							<h2 className="mb-4 text-xs uppercase flex leading-[20px] text-gray-400">
-								Menu
-							</h2>
-						)}
-						{renderMenuItems(navItems)}
+				</div>
+				<div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+					<nav className="mb-6 w-full">
+						<div className="flex flex-col gap-4 w-full">
+							{(isExpanded || isHovered || isMobileOpen) && (
+								<h2 className="mb-4 text-xs uppercase flex leading-[20px] text-gray-400">
+									Menu
+								</h2>
+							)}
+							{renderMenuItems(navItems)}
+						</div>
+					</nav>
+				</div>
+			</aside>
+			{/* Tooltip container - rendered outside the sidebar for better positioning */}
+			{tooltipItem && !isExpanded && !isHovered && (
+				<div
+					className="fixed z-[60] left-[90px] transform -translate-y-1/2 bg-gray-800 text-white text-xs px-2.5 py-1.5 rounded shadow-md pointer-events-none"
+					style={{ top: `${tooltipPosition.top}px` }}
+				>
+					<div className="flex items-center whitespace-nowrap">
+						<div className="absolute left-[-6px] w-0 h-0 border-t-[6px] border-t-transparent border-r-[6px] border-r-gray-800 border-b-[6px] border-b-transparent"></div>
+						{tooltipItem}
 					</div>
-				</nav>
-			</div>
-		</aside>
+				</div>
+			)}
+		</>
 	);
 };
 

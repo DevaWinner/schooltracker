@@ -464,7 +464,7 @@ export default function ApplicationDocuments() {
 											d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12"
 										/>
 									</svg>
-									<span>Upload Transcript</span>
+									<span className="dark:text-gray-400">Upload Transcript</span>
 								</button>
 								<button
 									onClick={() => handleQuickUpload("Essay")}
@@ -484,7 +484,9 @@ export default function ApplicationDocuments() {
 											d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12"
 										/>
 									</svg>
-									<span>Upload Essay/Personal Statement</span>
+									<span className="dark:text-gray-400">
+										Upload Essay/Personal Statement
+									</span>
 								</button>
 								<button
 									onClick={() => handleQuickUpload("CV")}
@@ -504,7 +506,7 @@ export default function ApplicationDocuments() {
 											d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12"
 										/>
 									</svg>
-									<span>Upload CV/Resume</span>
+									<span className="dark:text-gray-400">Upload CV/Resume</span>
 								</button>
 								<button
 									onClick={() => handleQuickUpload("Recommendation Letter")}
@@ -524,7 +526,9 @@ export default function ApplicationDocuments() {
 											d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4-4m0 0l-4 4m4-4v12"
 										/>
 									</svg>
-									<span>Upload Recommendation Letter</span>
+									<span className="dark:text-gray-400">
+										Upload Recommendation Letter
+									</span>
 								</button>
 							</div>
 						</div>
