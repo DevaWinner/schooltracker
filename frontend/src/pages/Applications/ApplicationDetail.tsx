@@ -19,6 +19,8 @@ export default function ApplicationDetail() {
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 	const [loading, setLoading] = useState(true);
+	const [currentApplication, setCurrentApplication] =
+		useState<Application | null>(null);
 
 	const { updateApplicationItem, removeApplication } = useApplications();
 
@@ -44,7 +46,20 @@ export default function ApplicationDetail() {
 
 	const handleEdit = () => {
 		if (application) {
+			// Ensure application has required fields for the edit modal
+			// especially for the institution
+			const enrichedApplication = {
+				...application,
+				// If institution_details exists, make sure we use both the ID and name
+				institution_id: application.institution,
+				institution_name:
+					application.institution_details?.name ||
+					application.institution_name ||
+					"",
+			};
+
 			setIsEditModalOpen(true);
+			setCurrentApplication(enrichedApplication);
 		}
 	};
 
@@ -53,9 +68,18 @@ export default function ApplicationDetail() {
 	};
 
 	const handleSaveEdit = async (updatedApplication: Application) => {
+		// Make sure we preserve institution_details if not changed
+		const mergedApplication = {
+			...updatedApplication,
+			institution_details:
+				updatedApplication.institution_details ||
+				application?.institution_details ||
+				null,
+		};
+
 		const result = await updateApplicationItem(
-			updatedApplication.id,
-			updatedApplication
+			mergedApplication.id,
+			mergedApplication
 		);
 
 		if (result) {
@@ -564,11 +588,13 @@ export default function ApplicationDetail() {
 				onClose={() => setIsEditModalOpen(false)}
 				className="max-w-[800px] m-4"
 			>
-				<EditApplicationModal
-					data={application}
-					onSave={handleSaveEdit}
-					onClose={() => setIsEditModalOpen(false)}
-				/>
+				{currentApplication && (
+					<EditApplicationModal
+						data={currentApplication}
+						onSave={handleSaveEdit}
+						onClose={() => setIsEditModalOpen(false)}
+					/>
+				)}
 			</Modal>
 
 			{/* Delete Confirmation Modal */}

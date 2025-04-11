@@ -6,10 +6,7 @@ import React, {
 	useCallback,
 	useContext,
 } from "react";
-import {
-	Application,
-	ApplicationFilterParams,
-} from "../types/applications";
+import { Application, ApplicationFilterParams } from "../types/applications";
 import {
 	getApplications,
 	createApplication,
@@ -85,7 +82,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 		previous: null as string | null,
 	});
 
-	const { accessToken } = useContext(AuthContext);
+	const { isAuthenticated } = useContext(AuthContext);
 
 	// Fetch applications from API
 	const fetchApplications = useCallback(
@@ -101,7 +98,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				}
 			}
 
-			if (!accessToken) {
+			if (!isAuthenticated) {
 				return;
 			}
 
@@ -125,7 +122,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				setIsLoading(false);
 			}
 		},
-		[accessToken, applications.length, lastUpdated]
+		[isAuthenticated, applications.length, lastUpdated]
 	);
 
 	// Filter applications based on provided filters
@@ -182,7 +179,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 	// Add a new application
 	const addApplication = useCallback(
 		async (applicationData: Partial<Application>) => {
-			if (!accessToken) {
+			if (!isAuthenticated) {
 				toast.error("Authentication required to add applications");
 				return null;
 			}
@@ -214,7 +211,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				return null;
 			}
 		},
-		[accessToken, currentFilters.status]
+		[isAuthenticated, currentFilters.status]
 	);
 
 	// Update an existing application
@@ -245,7 +242,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 	// Remove an application
 	const removeApplication = useCallback(
 		async (id: number) => {
-			if (!accessToken) {
+			if (!isAuthenticated) {
 				return {
 					success: false,
 					message: "Authentication required to delete applications",
@@ -281,15 +278,15 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				};
 			}
 		},
-		[accessToken]
+		[isAuthenticated]
 	);
 
 	// Initial fetch when component mounts if user is authenticated
 	useEffect(() => {
-		if (accessToken) {
+		if (isAuthenticated) {
 			fetchApplications();
 		}
-	}, [accessToken, fetchApplications]);
+	}, [isAuthenticated, fetchApplications]);
 
 	const value = {
 		applications,

@@ -1,14 +1,5 @@
-import axios from "axios";
 import { UserInfo, UserProfile, UserSettings } from "../types/user";
-
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
-
-const axiosInstance = axios.create({
-	baseURL: API_BASE_URL,
-	headers: {
-		"Content-Type": "application/json",
-	},
-});
+import { authenticatedApi } from "../utils/apiUtils";
 
 // Basic user info interfaces and functions
 export interface UserInfoUpdateRequest {
@@ -21,24 +12,18 @@ export interface UserInfoUpdateRequest {
 }
 
 // Retrieve the authenticated user's basic info
-export const getProfile = async (token: string): Promise<UserInfo> => {
-	const response = await axiosInstance.get<UserInfo>("/user/info/", {
-		headers: { Authorization: `Bearer ${token}` },
-	});
+export const getProfile = async (): Promise<UserInfo> => {
+	const response = await authenticatedApi.get<UserInfo>("/user/info/");
 	return response.data;
 };
 
 // Update the user's basic information
 export const updateBasicInfo = async (
-	token: string,
 	data: UserInfoUpdateRequest
 ): Promise<UserInfo> => {
-	const response = await axiosInstance.put<UserInfo>(
+	const response = await authenticatedApi.put<UserInfo>(
 		"/user/info/update/",
-		data,
-		{
-			headers: { Authorization: `Bearer ${token}` },
-		}
+		data
 	);
 	return response.data;
 };
@@ -54,11 +39,9 @@ export interface ProfileUpdateRequest {
 }
 
 // Get user profile (bio, social links) - Improve error handling
-export const getUserProfile = async (token: string): Promise<UserProfile> => {
+export const getUserProfile = async (): Promise<UserProfile> => {
 	try {
-		const response = await axiosInstance.get<UserProfile>("/user/profile/", {
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		const response = await authenticatedApi.get<UserProfile>("/user/profile/");
 		return response.data;
 	} catch (error) {
 		throw error;
@@ -67,22 +50,17 @@ export const getUserProfile = async (token: string): Promise<UserProfile> => {
 
 // Update user profile (bio, social links)
 export const updateUserProfile = async (
-	token: string,
 	data: ProfileUpdateRequest
 ): Promise<UserProfile> => {
-	const response = await axiosInstance.put<UserProfile>(
+	const response = await authenticatedApi.put<UserProfile>(
 		"/user/profile/update/",
-		data,
-		{
-			headers: { Authorization: `Bearer ${token}` },
-		}
+		data
 	);
 	return response.data;
 };
 
 // Upload profile picture to Supabase Storage
 export const uploadProfilePicture = async (
-	token: string,
 	file: File
 ): Promise<{ profile_picture: string }> => {
 	// Create form data for file upload
@@ -91,12 +69,11 @@ export const uploadProfilePicture = async (
 
 	try {
 		// Special headers for multipart/form-data
-		const response = await axiosInstance.post<{ profile_picture: string }>(
+		const response = await authenticatedApi.post<{ profile_picture: string }>(
 			"/user/upload-profile-picture/",
 			formData,
 			{
 				headers: {
-					Authorization: `Bearer ${token}`,
 					"Content-Type": "multipart/form-data",
 				},
 			}
@@ -128,11 +105,11 @@ export interface SettingsUpdateRequest {
 }
 
 // Get user settings - Improve error handling
-export const getUserSettings = async (token: string): Promise<UserSettings> => {
+export const getUserSettings = async (): Promise<UserSettings> => {
 	try {
-		const response = await axiosInstance.get<UserSettings>("/user/settings/", {
-			headers: { Authorization: `Bearer ${token}` },
-		});
+		const response = await authenticatedApi.get<UserSettings>(
+			"/user/settings/"
+		);
 		return response.data;
 	} catch (error) {
 		throw error;
@@ -141,15 +118,11 @@ export const getUserSettings = async (token: string): Promise<UserSettings> => {
 
 // Update user settings
 export const updateUserSettings = async (
-	token: string,
 	data: SettingsUpdateRequest
 ): Promise<UserSettings> => {
-	const response = await axiosInstance.put<UserSettings>(
+	const response = await authenticatedApi.put<UserSettings>(
 		"/user/settings/update/",
-		data,
-		{
-			headers: { Authorization: `Bearer ${token}` },
-		}
+		data
 	);
 	return response.data;
 };
@@ -167,7 +140,6 @@ export interface PartialUserProfileUpdate extends UserInfoUpdateRequest {
 
 // Update all user data at once (for compatibility with existing code)
 export const updatePartialProfile = async (
-	token: string,
 	data: PartialUserProfileUpdate
 ): Promise<any> => {
 	const promises = [];
@@ -186,7 +158,7 @@ export const updatePartialProfile = async (
 
 	// Update basic info if provided
 	if (Object.keys(basicInfo).length > 0) {
-		promises.push(updateBasicInfo(token, basicInfo));
+		promises.push(updateBasicInfo(basicInfo));
 	}
 
 	// Update profile if provided
@@ -199,12 +171,12 @@ export const updatePartialProfile = async (
 		instagram,
 	};
 	if (Object.values(profileData).some((val) => val !== undefined)) {
-		promises.push(updateUserProfile(token, profileData));
+		promises.push(updateUserProfile(profileData));
 	}
 
 	// Update settings if provided
 	if (settings && Object.keys(settings).length > 0) {
-		promises.push(updateUserSettings(token, settings));
+		promises.push(updateUserSettings(settings));
 	}
 
 	// Wait for all updates to complete
@@ -215,17 +187,15 @@ export const updatePartialProfile = async (
 };
 
 // New function to fetch combined profile data for dropdown
-export const getProfileForDropdown = async (
-	token: string
-): Promise<{
+export const getProfileForDropdown = async (): Promise<{
 	userInfo: UserInfo;
 	userProfile: UserProfile | null;
 }> => {
 	try {
 		// Fetch both user info and profile in parallel
 		const [userInfoResponse, userProfileResponse] = await Promise.all([
-			getProfile(token),
-			getUserProfile(token).catch(() => null), // Handle if profile doesn't exist yet
+			getProfile(),
+			getUserProfile().catch(() => null), // Handle if profile doesn't exist yet
 		]);
 
 		return {
