@@ -112,9 +112,9 @@ class ApplicationCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-class ApplicationDetailView(generics.RetrieveUpdateAPIView):  # Changed from RetrieveAPIView
+class ApplicationDetailView(generics.RetrieveUpdateAPIView):
     """
-    View Application Details
+    View and Update Application Details
     
     **GET /api/applications/{id}/**
     
@@ -156,12 +156,25 @@ class ApplicationDetailView(generics.RetrieveUpdateAPIView):  # Changed from Ret
     """
     permission_classes = [IsAuthenticated]
     serializer_class = ApplicationDetailSerializer
-    http_method_names = ['get', 'patch']  # Explicitly allow GET and PATCH methods
+    http_method_names = ['get', 'patch']  # Allow both GET and PATCH
     
     def get_queryset(self):
         if getattr(self, 'swagger_fake_view', False):
             return Application.objects.none()
         return Application.objects.filter(user=self.request.user)
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            self.perform_update(serializer)
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+    def perform_update(self, serializer):
+        serializer.save()
 
 class ApplicationFullUpdateView(viewsets.ModelViewSet):
     """

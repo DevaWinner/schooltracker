@@ -1,5 +1,5 @@
 from django.urls import path, include
-from api.views.auth_views import RegisterAPIView, LoginAPIView
+from api.views.auth_views import RegisterAPIView, LoginAPIView, TokenRefreshAPIView, TokenVerifyAPIView
 from api.views.user_views import (
     UserInfoRetrieveView, UserInfoUpdateView,
     UserProfileRetrieveView, UserProfileUpdateView,
@@ -19,6 +19,8 @@ from api.views.document_views import (
 auth_urls = [
     path('register/', RegisterAPIView.as_view(), name='register'),
     path('signin/', LoginAPIView.as_view(), name='signin'),
+    path('token/refresh/', TokenRefreshAPIView.as_view(), name='token_refresh'),
+    path('token/verify/', TokenVerifyAPIView.as_view(), name='token_verify'),
 ]
 
 # Updated user URLs with separate views for GET and PUT operations
@@ -54,13 +56,13 @@ application_urls = [
     path('', ApplicationListView.as_view(), name='application_list'),
     path('create/', ApplicationCreateView.as_view(), name='application_create'),
     
-    # Detail endpoint (GET)
+    # Detail endpoint (GET and PATCH)
     path('<int:pk>/', ApplicationDetailView.as_view(), name='application_detail'),
     
     # Full update endpoint (PUT only)
     path('<int:pk>/update/', ApplicationFullUpdateView.as_view({'put': 'update'}), name='application_update'),
     
-    # Status update endpoint (PATCH only)
+    # Status update endpoint (PATCH only) - This might be redundant with the detail view's PATCH support
     path('<int:pk>/status/', ApplicationStatusUpdateView.as_view({'patch': 'partial_update'}), name='application_status_update'),
     
     # Delete endpoint

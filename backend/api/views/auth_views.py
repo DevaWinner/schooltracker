@@ -3,9 +3,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.exceptions import TokenError, InvalidToken
 
 from api.models.user_models import Userinfo
-from api.serializers.auth_serializers import RegisterSerializer, LoginSerializer
+from api.serializers.auth_serializers import RegisterSerializer, LoginSerializer, CustomTokenRefreshSerializer
 from api.serializers.user_serializers import UserInfoSerializer
 
 class RegisterAPIView(APIView):
@@ -159,3 +161,83 @@ class LoginAPIView(APIView):
                 return Response(data, status=status.HTTP_200_OK)
             return Response({"error": "Invalid email or password"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class TokenRefreshAPIView(TokenRefreshView):
+    """
+    Refresh Authentication Token
+    
+    **POST /api/auth/token/refresh/**
+    
+    Obtain a new access token using a valid refresh token.
+    This extends the user's session without requiring them to log in again.
+    
+    ## Request Body
+    
+    | Field | Type | Required | Description |
+    | ----- | ---- | -------- | ----------- |
+    | refresh | string | Yes | Valid refresh token previously obtained during login |
+    
+    ## Response Format (Success)
+    ```json
+    {
+        "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+        "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+    }
+    ```
+    
+    ## Error Response
+    ```json
+    {
+        "detail": "Token is invalid or expired",
+        "code": "token_not_valid"
+    }
+    ```
+    """
+    serializer_class = CustomTokenRefreshSerializer
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            return super().post(request, *args, **kwargs)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+
+class TokenVerifyAPIView(APIView):
+    """
+    Verify Authentication Token
+    
+    **POST /api/auth/token/verify/**
+    
+    Check if a token is still valid without making an authenticated request.
+    
+    ## Request Body
+    
+    | Field | Type | Required | Description |
+    | ----- | ---- | -------- | ----------- |
+    | token | string | Yes | JWT token to verify |
+    
+    ## Response Format (Success)
+    ```json
+    {
+        "valid": true
+    }
+    ```
+    
+    ## Response Format (Invalid Token)
+    ```json
+    {
+        "valid": false
+    }
+    ```
+    """
+    def post(self, request, *args, **kwargs):
+        token = request.data.get('token', '')
+        
+        if not token:
+            return Response({"valid": False}, status=status.HTTP_200_OK)
+            
+        try:
+            # Attempt to parse the token - will raise an exception if invalid
+            RefreshToken(token)
+            return Response({"valid": True}, status=status.HTTP_200_OK)
+        except Exception:
+            return Response({"valid": False}, status=status.HTTP_200_OK)

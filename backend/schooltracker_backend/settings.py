@@ -14,6 +14,7 @@ from pathlib import Path
 from decouple import config
 import dj_database_url
 import os
+from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -155,7 +156,6 @@ if 'django.contrib.staticfiles' not in INSTALLED_APPS:
 # Make sure whitenoise middleware is positioned correctly
 if 'whitenoise.middleware.WhiteNoiseMiddleware' in MIDDLEWARE:
     MIDDLEWARE.remove('whitenoise.middleware.WhiteNoiseMiddleware')
-    # Add it right after security middleware
     security_index = MIDDLEWARE.index('django.middleware.security.SecurityMiddleware')
     MIDDLEWARE.insert(security_index + 1, 'whitenoise.middleware.WhiteNoiseMiddleware')
 
@@ -233,3 +233,28 @@ SUPABASE_BUCKET = config('SUPABASE_BUCKET', default='profile-pictures')
 
 # File upload settings
 MAX_UPLOAD_SIZE = 52428800
+
+# JWT Settings
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+
+    'JTI_CLAIM': 'jti',
+}

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from api.models.user_models import Userinfo
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
@@ -16,3 +17,9 @@ class RegisterSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    """Serializer for token refresh"""
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        return data
