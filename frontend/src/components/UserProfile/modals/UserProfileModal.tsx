@@ -12,7 +12,7 @@ export default function UserProfileModal({
 	onSave,
 	onClose,
 }: ComponentCardProps) {
-	const { accessToken, refreshProfileData } = useContext(AuthContext);
+	const { refreshProfileData } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [imagePreview, setImagePreview] = useState<string | null>(
 		userProfile?.profile_picture || null
@@ -61,10 +61,6 @@ export default function UserProfileModal({
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		if (!accessToken) {
-			toast.error("Authentication required");
-			return;
-		}
 
 		setLoading(true);
 		try {
@@ -81,10 +77,7 @@ export default function UserProfileModal({
 			// If there's a new image file, upload it first
 			if (imageFile) {
 				try {
-					const uploadResult = await uploadProfilePicture(
-						accessToken,
-						imageFile
-					);
+					const uploadResult = await uploadProfilePicture(imageFile);
 					// Update the profile_picture field with the URL from the upload
 					updateData = {
 						...updateData,
@@ -97,8 +90,8 @@ export default function UserProfileModal({
 				}
 			}
 
-			// Send update request directly to profile API
-			await updateUserProfile(accessToken, updateData);
+			// Send update request without passing token
+			await updateUserProfile(updateData);
 
 			// Refresh global profile state
 			await refreshProfileData();

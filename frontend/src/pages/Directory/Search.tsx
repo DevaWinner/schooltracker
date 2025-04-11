@@ -43,8 +43,6 @@ export default function SchoolSearch() {
 				}
 			});
 
-			console.log("Fetching institutions with filters:", currentFilters);
-
 			const data = await getInstitutions(currentFilters);
 
 			// Update state with received data
@@ -63,10 +61,9 @@ export default function SchoolSearch() {
 		const loadCountries = async () => {
 			try {
 				const countryList = await getCountries();
-				setCountries(countryList); // This now expects an array from the API response
+				setCountries(countryList);
 			} catch (error) {
-				console.error("Failed to load countries:", error);
-				setCountries([]); // Set empty array on error
+				setCountries([]);
 			}
 		};
 
@@ -80,8 +77,6 @@ export default function SchoolSearch() {
 
 	// Handler for applying filters from filter component
 	const handleApplyFilters = (newFilters: InstitutionFilters) => {
-		console.log("Applying filters:", newFilters);
-
 		// Reset to page 1 when filters change
 		setCurrentPage(1);
 
@@ -94,7 +89,6 @@ export default function SchoolSearch() {
 
 	// Handle page change from pagination component
 	const handlePageChange = (page: number) => {
-		console.log(`Changing to page ${page}`);
 		setCurrentPage(page);
 	};
 
@@ -102,13 +96,8 @@ export default function SchoolSearch() {
 	const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
 		const newPageSize = parseInt(e.target.value, 10);
 		if (isNaN(newPageSize) || newPageSize <= 0) {
-			console.error("Invalid page size:", e.target.value);
 			return;
 		}
-
-		console.log(
-			`Changing page size from ${filters.page_size} to ${newPageSize}`
-		);
 
 		// Reset to page 1 when changing page size
 		setCurrentPage(1);

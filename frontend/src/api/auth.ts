@@ -54,6 +54,36 @@ export const signIn = async (data: SignInRequest): Promise<SignInResponse> => {
 	}
 };
 
+// Function to refresh token using new endpoint
+export const refreshToken = async (
+	refreshTokenStr: string
+): Promise<{ access: string; refresh: string }> => {
+	try {
+		const response = await axiosInstance.post<{
+			access: string;
+			refresh: string;
+		}>("/auth/token/refresh/", { refresh: refreshTokenStr });
+		return response.data;
+	} catch (error) {
+		throw error;
+	}
+};
+
+// Function to verify a token is valid
+export const verifyToken = async (
+	token: string
+): Promise<{ valid: boolean }> => {
+	try {
+		const response = await axiosInstance.post<{ valid: boolean }>(
+			"/auth/token/verify/",
+			{ token }
+		);
+		return response.data;
+	} catch (error) {
+		return { valid: false };
+	}
+};
+
 // Store auth tokens in local storage
 export const storeAuthTokens = (
 	accessToken: string,
@@ -79,4 +109,37 @@ export const getAccessToken = (): string | null => {
 		localStorage.getItem("access_token") ||
 		sessionStorage.getItem("access_token")
 	);
+};
+
+// Get the stored refresh token
+export const getRefreshToken = (): string | null => {
+	return (
+		localStorage.getItem("refresh_token") ||
+		sessionStorage.getItem("refresh_token")
+	);
+};
+
+// Update the stored access token
+export const updateAccessToken = (newToken: string): void => {
+	if (localStorage.getItem("access_token")) {
+		localStorage.setItem("access_token", newToken);
+	}
+	if (sessionStorage.getItem("access_token")) {
+		sessionStorage.setItem("access_token", newToken);
+	}
+};
+
+// Update both access and refresh tokens
+export const updateAuthTokens = (
+	accessToken: string,
+	refreshToken: string
+): void => {
+	if (localStorage.getItem("access_token")) {
+		localStorage.setItem("access_token", accessToken);
+		localStorage.setItem("refresh_token", refreshToken);
+	}
+	if (sessionStorage.getItem("access_token")) {
+		sessionStorage.setItem("access_token", accessToken);
+		sessionStorage.setItem("refresh_token", refreshToken);
+	}
 };

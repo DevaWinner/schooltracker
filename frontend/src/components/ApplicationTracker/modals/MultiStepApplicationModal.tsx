@@ -1,15 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Application } from "../../../types/applications";
+import { getInstitutionsForSelect } from "../../../api/institutions";
 import Button from "../../ui/button/Button";
 import StepIndicator from "./StepIndicator";
 import Step1BasicInfo from "./applicationSteps/Step1BasicInfo";
 import Step2ProgramDetails from "./applicationSteps/Step2ProgramDetails";
 import Step3LinksResources from "./applicationSteps/Step3LinksResources";
 import Step4Confirmation from "./applicationSteps/Step4Confirmation";
+import { toast } from "react-toastify";
+
+interface Institution {
+	id: string;
+	name: string;
+	country: string;
+}
 
 interface MultiStepApplicationModalProps {
-	onSave: (data: Application) => void;
+	onSave: (data: Application) => Promise<void>;
 	onClose: () => void;
+	isLoading?: boolean;
+	data?: Application;
 }
 
 const TOTAL_STEPS = 4;
@@ -17,14 +27,50 @@ const TOTAL_STEPS = 4;
 export default function MultiStepApplicationModal({
 	onSave,
 	onClose,
+	data,
 }: MultiStepApplicationModalProps) {
-	const [currentStep, setCurrentStep] = useState(1);
-	const [formData, setFormData] = useState<Partial<Application>>({
-		status: "Draft",
-		degree_type: "Master",
-	});
+	const [formData, setFormData] = useState<Partial<Application>>(
+		data || {
+			status: "Draft",
+			degree_type: "Master",
+		}
+	);
 
-	// Updates values when the form is updated
+	const [currentStep, setCurrentStep] = useState(1);
+	const [institutions, setInstitutions] = useState<Institution[]>([]);
+	const [isLoadingInstitutions, setIsLoadingInstitutions] = useState(false);
+
+	useEffect(() => {
+		const fetchInstitutions = async () => {
+			setIsLoadingInstitutions(true);
+			try {
+				const institutionsList = await getInstitutionsForSelect();
+				setInstitutions(institutionsList);
+
+				if (data?.institution_id) {
+					const selectedInstitution = institutionsList.find(
+						(inst) => inst.id === data.institution_id
+					);
+
+					if (selectedInstitution) {
+						setFormData((prev) => ({
+							...prev,
+							institution_id: selectedInstitution.id,
+							institution: selectedInstitution.name,
+							institution_country: selectedInstitution.country,
+						}));
+					}
+				}
+			} catch (error) {
+				// Remove console.error
+			} finally {
+				setIsLoadingInstitutions(false);
+			}
+		};
+
+		fetchInstitutions();
+	}, [data]);
+
 	const updateFormData = (newData: Partial<Application>) => {
 		setFormData((prev) => ({ ...prev, ...newData }));
 	};
@@ -37,24 +83,49 @@ export default function MultiStepApplicationModal({
 		setCurrentStep((prev) => Math.max(prev - 1, 1));
 	};
 
-	const handleSubmit = () => {
-		// Add an ID if this is a new application
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
+
+		// Add validation for required fields
+		if (!formData.program_name) {
+			toast.error("Program name is required");
+			return;
+		}
+
+		if (!formData.institution_id) {
+			toast.error("Please select a valid institution from the dropdown");
+			return;
+		}
+
+		// Ensure institution field has the ID value for API submission
 		const finalData = {
 			...formData,
-			id: formData.id || Math.floor(Date.now() / 1000), // Using timestamp as ID if none exists
+			institution: formData.institution_id, // Ensure institution is set to the ID
 			created_at: formData.created_at || new Date().toISOString(),
 			updated_at: new Date().toISOString(),
-			program_name: formData.program_name || "Unnamed Program", // Ensure required fields have values
+			program_name: formData.program_name || "Unnamed Program",
 		} as Application;
 
-		onSave(finalData);
+		// Remove id field if it exists to prevent conflicts with database
+		// This is a defensive measure that ensures ID is never sent
+		if ("id" in finalData) {
+			delete (finalData as Record<string, any>).id;
+		}
+
+		await onSave(finalData);
 	};
 
-	// Render the correct step based on currentStep
 	const renderStep = () => {
 		switch (currentStep) {
 			case 1:
-				return <Step1BasicInfo data={formData} updateData={updateFormData} />;
+				return (
+					<Step1BasicInfo
+						data={formData}
+						updateData={updateFormData}
+						institutions={institutions}
+						isLoadingInstitutions={isLoadingInstitutions}
+					/>
+				);
 			case 2:
 				return (
 					<Step2ProgramDetails data={formData} updateData={updateFormData} />
@@ -83,17 +154,14 @@ export default function MultiStepApplicationModal({
 				</p>
 			</div>
 
-			{/* Step indicators */}
 			<div className="px-6">
 				<StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
 			</div>
 
-			{/* Step content */}
 			<div className="scrollbar-hide flex-1 overflow-y-auto px-6 py-4">
 				{renderStep()}
 			</div>
 
-			{/* Navigation buttons */}
 			<div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 mt-auto bg-white dark:bg-gray-900 dark:border-gray-700">
 				<div>
 					{currentStep > 1 && (
@@ -111,7 +179,12 @@ export default function MultiStepApplicationModal({
 							Next
 						</Button>
 					) : (
-						<Button size="sm" onClick={handleSubmit}>
+						<Button
+							size="sm"
+							onClick={() =>
+								handleSubmit(new Event("submit") as unknown as React.FormEvent)
+							}
+						>
 							Submit Application
 						</Button>
 					)}

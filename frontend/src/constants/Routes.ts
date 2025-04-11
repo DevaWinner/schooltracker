@@ -16,7 +16,7 @@ export const ROUTES = {
 	},
 	Directory: {
 		search: "/directory/search",
-		institution: "/directory/institution/:id", // Add this institution detail route
+		institution: "/directory/institution/:id",
 	},
 	Profile: {
 		information: "/profile/information",

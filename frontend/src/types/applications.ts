@@ -1,60 +1,42 @@
+export interface InstitutionDetails {
+	id: string;
+	rank: string;
+	name: string;
+	country: string;
+	overall_score?: string;
+}
+
 export interface Application {
 	id: number;
-	user_id?: number;
-	program_id?: number;
+	institution: string;
+	institution_id?: string; // Add this field to store institution ID
 	institution_name?: string;
 	institution_country?: string;
-	institution?: string;
-	institution_details?: {
-		id: string;
-		rank: string;
-		name: string;
-		country: string;
-		overall_score: string;
-	};
+	institution_details?: InstitutionDetails | null;
 	program_name: string;
-	degree_type:
-		| "Associate"
-		| "Bachelor"
-		| "Master"
-		| "PhD"
-		| "Certificate"
-		| "Diploma"
-		| "Other";
+	degree_type: string;
 	department?: string;
-	duration_years?: number;
-	tuition_fee?: number;
+	duration_years?: string | number;
+	tuition_fee?: string | number;
 	application_link?: string;
 	scholarship_link?: string;
 	program_info_link?: string;
-	status:
-		| "Draft"
-		| "In Progress"
-		| "Submitted"
-		| "Interview"
-		| "Accepted"
-		| "Rejected";
-	start_date?: string;
-	submitted_date?: string;
-	decision_date?: string;
+	status: string;
+	start_date?: string | null;
+	submitted_date?: string | null;
+	decision_date?: string | null;
 	notes?: string;
 	created_at: string;
 	updated_at: string;
+	user?: number;
+	onRefresh?: () => void;
 }
 
-export interface ApplicationProps {
-	data: Application[];
-	onRefresh?: () => void;
-	onEdit?: (application: Application) => void;
-	onDelete?: (id: number) => void;
-}
-
-export interface ApplicationCardProps {
-	data: Application;
-	onEdit?: (application: Application) => void;
-	onDelete?: (id: number) => void;
-	onRefresh?: () => void;
-	onView?: (application: Application) => void;
+export interface ApplicationResponse {
+	count: number;
+	next: string | null;
+	previous: string | null;
+	results: Application[];
 }
 
 export interface ApplicationFilterParams {
@@ -64,4 +46,9 @@ export interface ApplicationFilterParams {
 	search?: string;
 	ordering?: string;
 	page?: number;
+}
+
+export interface ApplicationProps {
+	data: Application[];
+	onRefresh?: () => void;
 }

@@ -1,7 +1,8 @@
+import { useState } from "react";
 import Button from "../../ui/button/Button";
 
 interface DeleteConfirmationModalProps {
-	onConfirm: () => void;
+	onConfirm: () => Promise<{ success: boolean; message: string }>;
 	onCancel: () => void;
 	title: string;
 	message: string;
@@ -13,6 +14,27 @@ export default function DeleteConfirmationModal({
 	title,
 	message,
 }: DeleteConfirmationModalProps) {
+	const [error, setError] = useState<string | null>(null);
+	const [isDeleting, setIsDeleting] = useState(false);
+
+	const handleConfirm = async () => {
+		setIsDeleting(true);
+		setError(null);
+
+		try {
+			const result = await onConfirm();
+
+			if (!result.success) {
+				setError(result.message);
+				setIsDeleting(false);
+			}
+		} catch (err: any) {
+			// Fallback error handling
+			setError(err.message || "An unexpected error occurred");
+			setIsDeleting(false);
+		}
+	};
+
 	return (
 		<div className="relative w-full max-w-[500px] rounded-3xl bg-white p-6 dark:bg-gray-900">
 			<div className="mb-6 text-center">
@@ -34,12 +56,28 @@ export default function DeleteConfirmationModal({
 					{title}
 				</h3>
 				<p className="text-gray-600 dark:text-gray-400">{message}</p>
+
+				{error && (
+					<div className="mt-4 rounded-md bg-red-50 p-3 dark:bg-red-900/20">
+						<p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+					</div>
+				)}
 			</div>
 			<div className="flex justify-center gap-3">
-				<Button size="sm" variant="outline" onClick={onCancel}>
+				<Button
+					size="sm"
+					variant="outline"
+					onClick={onCancel}
+					disabled={isDeleting}
+				>
 					Cancel
 				</Button>
-				<Button size="sm" variant="danger" onClick={onConfirm}>
+				<Button
+					size="sm"
+					variant="danger"
+					onClick={handleConfirm}
+					isLoading={isDeleting}
+				>
 					Delete
 				</Button>
 			</div>

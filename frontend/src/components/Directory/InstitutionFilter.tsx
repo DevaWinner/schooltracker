@@ -30,9 +30,9 @@ export default function InstitutionFilter({
 	});
 
 	const [isExpanded, setIsExpanded] = useState(false);
-	const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
-		null
-	);
+	const [searchTimeout, setSearchTimeout] = useState<ReturnType<
+		typeof setTimeout
+	> | null>(null);
 
 	// Update filters if initialFilters change
 	useEffect(() => {

@@ -46,7 +46,7 @@ export default function UserInfoModal({
 	onSave,
 	onClose,
 }: ComponentCardProps) {
-	const { accessToken, refreshProfileData } = useContext(AuthContext);
+	const { refreshProfileData } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		first_name: userInfo?.first_name || "",
@@ -74,10 +74,6 @@ export default function UserInfoModal({
 
 	const handleSubmit = async (e: FormEvent) => {
 		e.preventDefault();
-		if (!accessToken) {
-			toast.error("Authentication required");
-			return;
-		}
 		setLoading(true);
 		try {
 			// Create properly typed request object
@@ -91,8 +87,8 @@ export default function UserInfoModal({
 				gender: formData.gender as "Male" | "Female" | "Other" | undefined,
 			};
 
-			// Send update request to API using updateBasicInfo for /user/info/ endpoint
-			await updateBasicInfo(accessToken, updateData);
+			// Send update request to API without passing token
+			await updateBasicInfo(updateData);
 
 			// Refresh global profile state
 			await refreshProfileData();
