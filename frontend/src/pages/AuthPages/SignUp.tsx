@@ -9,7 +9,7 @@ export default function SignUp() {
 				title="Sign Up | School Tracker"
 				description="Create a new account on School Tracker. Join us and start tracking your school applications."
 			/>
-			<AuthLayout className="max-w-5xl mx-auto">
+			<AuthLayout size="large">
 				<SignUpForm />
 			</AuthLayout>
 		</>

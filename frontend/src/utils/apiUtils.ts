@@ -1,9 +1,10 @@
-import axios, { AxiosInstance, AxiosRequestConfig} from "axios";
+import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import {
 	getAccessToken,
 	getRefreshToken,
 	updateAccessToken,
 	refreshToken,
+	updateAuthTokens,
 } from "../api/auth";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -41,6 +42,7 @@ export const createAuthenticatedApi = (): AxiosInstance => {
 		headers: {
 			"Content-Type": "application/json",
 		},
+		withCredentials: true,
 	});
 
 	// Request interceptor
@@ -83,14 +85,26 @@ export const createAuthenticatedApi = (): AxiosInstance => {
 				if (!refreshTokenStr) {
 					// No refresh token available, reject all pending requests
 					processQueue(new Error("No refresh token available"));
+
+					// Dispatch auth error event to notify app that authentication failed
+					window.dispatchEvent(
+						new CustomEvent("auth_error", {
+							detail: {
+								type: "auth_error",
+								message: "No refresh token available",
+							},
+						})
+					);
+
 					return Promise.reject(error);
 				}
 
 				// Attempt to refresh the token
-				const { access: newAccessToken } = await refreshToken(refreshTokenStr);
+				const { access: newAccessToken, refresh: newRefreshToken } =
+					await refreshToken(refreshTokenStr);
 
-				// Update the token in storage
-				updateAccessToken(newAccessToken);
+				// Update the tokens in storage
+				updateAuthTokens(newAccessToken, newRefreshToken);
 
 				// Update the Authorization header
 				api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
@@ -105,8 +119,13 @@ export const createAuthenticatedApi = (): AxiosInstance => {
 				// Token refresh failed, reject all pending requests
 				processQueue(refreshError);
 
-				// Clear local auth tokens - user needs to login again
-				// We'll let AuthContext handle this when it detects auth failures
+				// Dispatch auth error event to notify app that authentication failed
+				window.dispatchEvent(
+					new CustomEvent("auth_error", {
+						detail: { type: "auth_error", message: "Failed to refresh token" },
+					})
+				);
+
 				return Promise.reject(refreshError);
 			} finally {
 				isRefreshing = false;

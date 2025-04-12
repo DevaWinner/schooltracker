@@ -93,6 +93,9 @@ export const storeAuthTokens = (
 	const storage = rememberMe ? localStorage : sessionStorage;
 	storage.setItem("access_token", accessToken);
 	storage.setItem("refresh_token", refreshToken);
+
+	// Store the preference
+	localStorage.setItem("rememberMe", String(rememberMe));
 };
 
 // Clear auth tokens from storage
@@ -101,6 +104,8 @@ export const clearAuthTokens = () => {
 	localStorage.removeItem("refresh_token");
 	sessionStorage.removeItem("access_token");
 	sessionStorage.removeItem("refresh_token");
+	localStorage.removeItem("userData");
+	localStorage.removeItem("rememberMe");
 };
 
 // Get the stored access token
@@ -134,11 +139,16 @@ export const updateAuthTokens = (
 	accessToken: string,
 	refreshToken: string
 ): void => {
-	if (localStorage.getItem("access_token")) {
+	// Check where tokens are stored (localStorage or sessionStorage)
+	const rememberMe = localStorage.getItem("rememberMe") === "true";
+	const storage = rememberMe ? localStorage : sessionStorage;
+
+	// Update tokens in the appropriate storage
+	if (localStorage.getItem("access_token") || rememberMe) {
 		localStorage.setItem("access_token", accessToken);
 		localStorage.setItem("refresh_token", refreshToken);
 	}
-	if (sessionStorage.getItem("access_token")) {
+	if (sessionStorage.getItem("access_token") || !rememberMe) {
 		sessionStorage.setItem("access_token", accessToken);
 		sessionStorage.setItem("refresh_token", refreshToken);
 	}

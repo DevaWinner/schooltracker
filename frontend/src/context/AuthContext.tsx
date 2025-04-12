@@ -12,6 +12,8 @@ import {
 	getRefreshToken,
 	clearAuthTokens,
 	verifyToken,
+	refreshToken,
+	updateAuthTokens,
 } from "../api/auth";
 
 interface AuthContextProps {
@@ -86,6 +88,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 			setUserProfile(profileDetailsData);
 			setUserSettings(settingsData);
 
+			// Store user data in localStorage for persistence
+			localStorage.setItem("userData", JSON.stringify(profileData));
+
 			// Check if it's first login (created_at equals updated_at)
 			if (profileData.created_at === profileData.updated_at) {
 				setIsFirstLogin(true);
@@ -117,43 +122,71 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	// On mount, check if a token exists and load profile data
 	useEffect(() => {
 		const initAuth = async () => {
-			const token = getAccessToken();
-			const refreshTokenStr = getRefreshToken();
+			setIsLoading(true);
+			const storedToken = getAccessToken();
+			const storedRefreshToken = getRefreshToken();
 			const userData = localStorage.getItem("userData");
-			const rememberMe = localStorage.getItem("rememberMe");
 
-			// Only restore session if tokens exist and either rememberMe is true or we're not checking
-			if (
-				token &&
-				refreshTokenStr &&
-				(rememberMe === "true" || rememberMe === null)
-			) {
-				// Verify token validity
-				const isValid = await checkTokenValidity(token);
+			if (storedToken && storedRefreshToken) {
+				try {
+					// Try to validate the token
+					const isValid = await checkTokenValidity(storedToken);
 
-				if (isValid) {
-					setAccessToken(token);
-					setIsAuthenticated(true);
+					if (isValid) {
+						// Token is valid, set authenticated state
+						setAccessToken(storedToken);
+						setIsAuthenticated(true);
 
-					if (userData) {
+						if (userData) {
+							try {
+								const parsedUserData = JSON.parse(userData);
+								setUser(parsedUserData);
+								setProfile(parsedUserData);
+							} catch (e) {
+								console.error("Error parsing stored user data", e);
+							}
+						}
+
+						// Fetch fresh profile data
 						try {
-							setUser(JSON.parse(userData));
-						} catch (e) {}
-					}
+							await fetchProfileData();
+						} catch (error) {
+							console.error("Failed to fetch profile data", error);
+						}
+					} else {
+						// Token is invalid, try to refresh it
+						try {
+							const { access: newAccessToken, refresh: newRefreshToken } =
+								await refreshToken(storedRefreshToken);
 
-					// Fetch all profile data
-					try {
-						await fetchProfileData();
-					} catch (error) {
-						// If we can't fetch the profile with the token, it might be invalid
-						signOutHandler();
+							// Update tokens in storage
+							updateAuthTokens(newAccessToken, newRefreshToken);
+							setAccessToken(newAccessToken);
+							setIsAuthenticated(true);
+
+							// Load user data from storage if available
+							if (userData) {
+								try {
+									const parsedUserData = JSON.parse(userData);
+									setUser(parsedUserData);
+									setProfile(parsedUserData);
+								} catch (e) {}
+							}
+
+							// Fetch fresh profile data with new token
+							await fetchProfileData();
+						} catch (refreshError) {
+							// Refresh failed, clear auth state
+							console.error("Token refresh failed", refreshError);
+							signOutHandler();
+						}
 					}
-				} else {
-					// Token is invalid, sign out
+				} catch (error) {
+					console.error("Error during authentication validation", error);
 					signOutHandler();
 				}
 			} else {
-				// No valid authentication, ensure we're signed out
+				// No stored tokens found
 				signOutHandler();
 			}
 
@@ -180,8 +213,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		try {
 			storage.setItem("access_token", token);
 			storage.setItem("refresh_token", refreshTokenStr);
-			storage.setItem("userData", JSON.stringify(userData));
-			storage.setItem("rememberMe", String(rememberMe));
+			localStorage.setItem("userData", JSON.stringify(userData));
+			localStorage.setItem("rememberMe", String(rememberMe));
 
 			// Fetch profile data immediately after sign in
 			fetchProfileData().catch(() => {});
