@@ -7,6 +7,7 @@ from api.models.institution_models import (
 )
 from api.models.application_models import Application
 from api.models.document_models import Document
+from api.models.event_models import Event
 
 # Register user models
 admin.site.register(Userinfo)
@@ -31,3 +32,6 @@ admin.site.register(Application)
 
 # Register document model
 admin.site.register(Document)
+
+# Register event model
+admin.site.register(Event)

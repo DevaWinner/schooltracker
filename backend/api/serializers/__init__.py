@@ -22,3 +22,6 @@ from .document_serializers import (
     DocumentDetailSerializer,
     DocumentUploadSerializer
 )
+
+# Event serializers
+from .event_serializers import EventSerializer
