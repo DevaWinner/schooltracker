@@ -59,7 +59,7 @@ const AddApplication: React.FC<AddApplicationProps> = ({ onRefresh }) => {
 				</svg>
 				Add Application
 			</button>
-			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-[800px] m-4">
+			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-4xl">
 				<MultiStepApplicationModal onSave={handleSave} onClose={closeModal} />
 			</Modal>
 		</>

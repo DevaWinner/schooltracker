@@ -36,7 +36,7 @@ export default function DeleteConfirmationModal({
 	};
 
 	return (
-		<div className="relative w-full max-w-[500px] rounded-3xl bg-white p-6 dark:bg-gray-900">
+		<div className="w-full rounded-xl bg-white p-6 dark:bg-gray-900">
 			<div className="mb-6 text-center">
 				<div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600 dark:bg-red-900/20">
 					<svg

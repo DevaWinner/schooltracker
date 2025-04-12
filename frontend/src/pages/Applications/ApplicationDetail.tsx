@@ -622,19 +622,14 @@ export default function ApplicationDetail() {
 			</div>
 
 			{/* Edit Modal */}
-			<Modal
-				isOpen={isEditModalOpen}
-				onClose={() => setIsEditModalOpen(false)}
-				className="max-w-[800px] m-4"
-			>
-				{currentApplication && (
-					<EditApplicationModal
-						data={currentApplication}
-						onSave={handleSaveEdit}
-						onClose={() => setIsEditModalOpen(false)}
-					/>
-				)}
-			</Modal>
+			{currentApplication && (
+				<EditApplicationModal
+					isOpen={isEditModalOpen}
+					data={currentApplication}
+					onSave={handleSaveEdit}
+					onClose={() => setIsEditModalOpen(false)}
+				/>
+			)}
 
 			{/* Delete Confirmation Modal */}
 			<Modal

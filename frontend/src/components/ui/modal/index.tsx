@@ -1,12 +1,13 @@
 import { useRef, useEffect } from "react";
+import ReactDOM from "react-dom";
 
 interface ModalProps {
 	isOpen: boolean;
 	onClose: () => void;
 	className?: string;
 	children: React.ReactNode;
-	showCloseButton?: boolean; // New prop to control close button visibility
-	isFullscreen?: boolean; // Default to false for backwards compatibility
+	showCloseButton?: boolean;
+	isFullscreen?: boolean;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -51,11 +52,11 @@ export const Modal: React.FC<ModalProps> = ({
 
 	const contentClasses = isFullscreen
 		? "w-full h-full"
-		: "relative w-full max-w-lg mx-auto rounded-3xl bg-white dark:bg-gray-900 my-8";
+		: "w-full max-w-lg mx-auto rounded-3xl bg-white dark:bg-gray-900 max-h-[calc(100vh-2rem)] overflow-auto";
 
-	return (
-		<div className="fixed inset-0 z-[9999] overflow-y-auto">
-			<div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+	const modalContent = (
+		<div className="fixed inset-0 z-[100000] overflow-y-auto">
+			<div className="min-h-screen px-4 flex justify-center">
 				{/* Background overlay */}
 				{!isFullscreen && (
 					<div
@@ -65,18 +66,10 @@ export const Modal: React.FC<ModalProps> = ({
 					></div>
 				)}
 
-				{/* This element is to trick the browser into centering the modal contents */}
-				<span
-					className="hidden sm:inline-block sm:align-middle sm:h-screen"
-					aria-hidden="true"
-				>
-					&#8203;
-				</span>
-
 				{/* Modal panel */}
 				<div
 					ref={modalRef}
-					className={`${contentClasses} ${className} inline-block align-bottom sm:align-middle transform transition-all`}
+					className={`${contentClasses} ${className} inline-block align-middle transform transition-all my-8`}
 					onClick={(e) => e.stopPropagation()}
 				>
 					{showCloseButton && (
@@ -100,9 +93,11 @@ export const Modal: React.FC<ModalProps> = ({
 							</svg>
 						</button>
 					)}
-					<div>{children}</div>
+					<div className="max-h-[90vh] overflow-y-auto">{children}</div>
 				</div>
 			</div>
 		</div>
 	);
+
+	return ReactDOM.createPortal(modalContent, document.body);
 };
