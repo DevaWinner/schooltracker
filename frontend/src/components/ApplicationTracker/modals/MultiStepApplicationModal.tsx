@@ -8,6 +8,7 @@ import Step2ProgramDetails from "./applicationSteps/Step2ProgramDetails";
 import Step3LinksResources from "./applicationSteps/Step3LinksResources";
 import Step4Confirmation from "./applicationSteps/Step4Confirmation";
 import { toast } from "react-toastify";
+import { Modal } from "../../ui/modal";
 
 interface Institution {
 	id: string;
@@ -16,6 +17,7 @@ interface Institution {
 }
 
 interface MultiStepApplicationModalProps {
+	isOpen: boolean;
 	onSave: (data: Application) => Promise<void>;
 	onClose: () => void;
 	isLoading?: boolean;
@@ -25,6 +27,7 @@ interface MultiStepApplicationModalProps {
 const TOTAL_STEPS = 4;
 
 export default function MultiStepApplicationModal({
+	isOpen,
 	onSave,
 	onClose,
 	data,
@@ -115,6 +118,11 @@ export default function MultiStepApplicationModal({
 		await onSave(finalData);
 	};
 
+	const handleSubmitButtonClick = () => {
+		const event = new Event("submit") as unknown as React.FormEvent;
+		handleSubmit(event);
+	};
+
 	const renderStep = () => {
 		switch (currentStep) {
 			case 1:
@@ -142,52 +150,54 @@ export default function MultiStepApplicationModal({
 	};
 
 	return (
-		<div className="w-full overflow-hidden rounded-xl bg-white dark:bg-gray-900 flex flex-col">
-			<div className="border-b border-gray-200 px-6 pt-6 pb-4 dark:border-gray-700">
-				<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
-					{formData.id ? "Edit Application" : "Add New Application"}
-				</h4>
-				<p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-					{currentStep === TOTAL_STEPS
-						? "Review and submit your application details"
-						: "Complete the form to add your application"}
-				</p>
-			</div>
-
-			<div className="px-6 mt-2">
-				<StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
-			</div>
-
-			<div className="overflow-y-auto px-6 py-4 flex-grow">{renderStep()}</div>
-
-			<div className="flex items-center justify-between border-t border-gray-200 px-6 py-4 mt-auto bg-white dark:bg-gray-900 dark:border-gray-700">
-				<div>
-					{currentStep > 1 && (
-						<Button size="sm" variant="outline" onClick={handlePrevious}>
-							Previous
-						</Button>
-					)}
+		<Modal isOpen={isOpen} onClose={onClose} className="w-[1000px]">
+			<div className="flex flex-col h-[85vh] bg-white dark:bg-gray-900 rounded-3xl overflow-hidden">
+				{/* Fixed Header */}
+				<div className="w-full flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
+					<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
+						{formData.id ? "Edit Application" : "Add New Application"}
+					</h4>
+					<p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+						{currentStep === TOTAL_STEPS
+							? "Review and submit your application details"
+							: "Complete the form to add your application"}
+					</p>
 				</div>
-				<div className="flex items-center gap-3">
-					<Button size="sm" variant="outline" onClick={onClose}>
-						Cancel
-					</Button>
-					{currentStep < TOTAL_STEPS ? (
-						<Button size="sm" onClick={handleNext}>
-							Next
+
+				<div className="w-full px-8 mt-2 flex-shrink-0">
+					<StepIndicator currentStep={currentStep} totalSteps={TOTAL_STEPS} />
+				</div>
+
+				{/* Scrollable Content */}
+				<div className="flex-1 overflow-y-auto min-h-0">
+					<div className="w-full px-8 py-4">{renderStep()}</div>
+				</div>
+
+				{/* Fixed Footer */}
+				<div className="w-full flex-shrink-0 flex items-center justify-between border-t border-gray-200 px-8 py-4 bg-white dark:bg-gray-900 dark:border-gray-700">
+					<div>
+						{currentStep > 1 && (
+							<Button size="sm" variant="outline" onClick={handlePrevious}>
+								Previous
+							</Button>
+						)}
+					</div>
+					<div className="flex items-center gap-3">
+						<Button size="sm" variant="outline" onClick={onClose}>
+							Cancel
 						</Button>
-					) : (
-						<Button
-							size="sm"
-							onClick={() =>
-								handleSubmit(new Event("submit") as unknown as React.FormEvent)
-							}
-						>
-							Submit Application
-						</Button>
-					)}
+						{currentStep < TOTAL_STEPS ? (
+							<Button size="sm" onClick={handleNext}>
+								Next
+							</Button>
+						) : (
+							<Button size="sm" onClick={handleSubmitButtonClick}>
+								Submit Application
+							</Button>
+						)}
+					</div>
 				</div>
 			</div>
-		</div>
+		</Modal>
 	);
 }

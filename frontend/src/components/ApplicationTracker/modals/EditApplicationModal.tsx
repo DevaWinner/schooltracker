@@ -244,13 +244,10 @@ export default function EditApplicationModal({
 	};
 
 	return (
-		<Modal
-			isOpen={isOpen}
-			onClose={onClose}
-			className="max-w-[1000px] w-full m-4"
-		>
-			<div className="w-full rounded-xl bg-white dark:bg-gray-900 flex flex-col">
-				<div className="border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
+		<Modal isOpen={isOpen} onClose={onClose} className="w-[1000px]">
+			<div className="flex flex-col h-[85vh]">
+				{/* Fixed Header */}
+				<div className="flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
 					<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
 						Edit Application
 					</h4>
@@ -284,9 +281,12 @@ export default function EditApplicationModal({
 					)}
 				</div>
 
-				<form onSubmit={submitForm} className="flex flex-col flex-grow">
+				{/* Scrollable Content */}
+				<form onSubmit={submitForm} className="flex flex-col flex-1 min-h-0">
 					<div
-						className={`flex-grow px-8 py-6 ${isLoading ? "opacity-70" : ""}`}
+						className={`flex-1 px-8 py-6 overflow-y-auto ${
+							isLoading ? "opacity-70" : ""
+						}`}
 					>
 						<div className="space-y-8">
 							{/* Program Information Section */}
@@ -337,7 +337,7 @@ export default function EditApplicationModal({
 															>
 																<path
 																	fillRule="evenodd"
-																	d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+																	d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 101.414 1.414L10 11.414l1.293 1.293a1 1 001.414-1.414L11.414 10l1.293-1.293a1 1 00-1.414-1.414L10 8.586 8.707 7.293z"
 																	clipRule="evenodd"
 																/>
 															</svg>
@@ -398,7 +398,7 @@ export default function EditApplicationModal({
 														>
 															<path
 																fillRule="evenodd"
-																d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+																d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 011.414 1.414L11.414 10l4.293 4.293a1 1 01-1.414 1.414L8.586 10 4.293 5.707a1 1 010-1.414z"
 																clipRule="evenodd"
 															/>
 														</svg>
@@ -627,7 +627,8 @@ export default function EditApplicationModal({
 						</div>
 					</div>
 
-					<div className="flex items-center gap-3 border-t border-gray-200 px-8 py-4 dark:border-gray-700 justify-end">
+					{/* Fixed Footer */}
+					<div className="flex-shrink-0 border-t border-gray-200 px-8 py-4 dark:border-gray-700 flex justify-end gap-3">
 						<Button
 							size="sm"
 							variant="outline"
