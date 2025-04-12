@@ -97,7 +97,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 			// Check if it's first login (created_at equals updated_at)
 			if (profileData.created_at === profileData.updated_at) {
+				// This is a new user, set isFirstLogin to true
 				setIsFirstLogin(true);
+				localStorage.setItem("isFirstLogin", "true");
+				console.log(
+					"AuthContext fetchProfileData: Detected new user, isFirstLogin set to true"
+				);
 			}
 
 			return { profileData, profileDetailsData, settingsData };
@@ -130,6 +135,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 			const storedToken = getAccessToken();
 			const storedRefreshToken = getRefreshToken();
 			const userData = localStorage.getItem("userData");
+			const storedIsFirstLogin = localStorage.getItem("isFirstLogin");
+
+			// Check if there's a stored flag for first login
+			if (storedIsFirstLogin === "true") {
+				console.log(
+					"Found isFirstLogin flag in localStorage, marking user as first-time"
+				);
+				setIsFirstLogin(true);
+			}
 
 			if (storedToken && storedRefreshToken) {
 				try {
@@ -194,6 +208,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				signOutHandler();
 			}
 
+			// Make sure there's no automatic navigation to profile
+			// Log any checks that could influence navigation
+			if (storedIsFirstLogin === "true") {
+				console.log("AuthContext: Found isFirstLogin in localStorage");
+			}
+
 			setIsLoading(false);
 		};
 
@@ -228,6 +248,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		setIsAuthenticated(true);
 		setSessionId(newSessionId);
 
+		// Check if this is a first login
+		const isNewUser = userData.created_at === userData.updated_at;
+
+		// Set this first for debugging clarity
+		if (isNewUser) {
+			console.log("AuthContext signInHandler: Setting isFirstLogin to true");
+		}
+
+		setIsFirstLogin(isNewUser);
+
 		// Store tokens based on rememberMe preference
 		const storage = rememberMe ? localStorage : sessionStorage;
 
@@ -239,6 +269,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 			localStorage.setItem("current_session_id", newSessionId);
 			localStorage.setItem("userData", JSON.stringify(userData));
 			localStorage.setItem("rememberMe", String(rememberMe));
+
+			if (isNewUser) {
+				localStorage.setItem("isFirstLogin", "true");
+			}
 
 			// Fetch profile data immediately after sign in
 			fetchProfileData().catch(() => {});

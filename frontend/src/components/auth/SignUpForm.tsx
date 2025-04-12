@@ -7,10 +7,9 @@ import Input from "../form/input/InputField";
 import Checkbox from "../form/input/Checkbox";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import { signUp, storeAuthTokens } from "../../api/auth";
+import { signUp } from "../../api/auth";
 import { SignUpRequest } from "../../interfaces/auth";
 import { AuthContext } from "../../context/AuthContext";
-import { adaptUserDataToUserInfo } from "../../utils/userAdapter";
 import { countries } from "../../utils/countries";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -174,11 +173,6 @@ export default function SignUpForm() {
 
 	const [isLoading, setIsLoading] = useState(false);
 	const navigate = useNavigate();
-	const {
-		signIn: updateAuth,
-		setProfile,
-		setIsFirstLogin,
-	} = useContext(AuthContext);
 
 	const handleDateChange = (date: Date | null) => {
 		setDateOfBirth(date ? date.toISOString().split("T")[0] : "");
@@ -208,26 +202,9 @@ export default function SignUpForm() {
 		try {
 			const response = await signUp(payload);
 			if (response.status === "User registered successfully") {
-				storeAuthTokens(
-					response.access_token,
-					response.refresh_token,
-					isChecked
-				);
-
-				updateAuth(
-					response.user,
-					response.access_token,
-					response.refresh_token,
-					isChecked
-				);
-
-				const userInfo = adaptUserDataToUserInfo(response.user);
-				setProfile(userInfo);
-
-				setIsFirstLogin(true);
-
-				toast.success("Account created successfully!");
-				navigate("/profile/information");
+				// Don't automatically sign in - instead show success message and redirect to sign in
+				toast.success("Account created successfully! Please sign in.");
+				navigate("/signin");
 			}
 		} catch (err: any) {
 			let errorMessage = "Sign up failed. Please try again.";

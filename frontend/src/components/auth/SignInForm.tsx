@@ -101,6 +101,13 @@ export default function SignInForm() {
 					sessionId
 				);
 
+				// Check if it's a first-time login
+				const isFirstTimeUser =
+					response.user.created_at === response.user.updated_at;
+
+				// Convert UserData to UserInfo before setting profile
+				const userInfo = adaptUserDataToUserInfo(response.user);
+
 				// Update auth context with user info, token, and session ID
 				updateAuth(
 					response.user,
@@ -110,23 +117,22 @@ export default function SignInForm() {
 					sessionId
 				);
 
-				// Convert UserData to UserInfo before setting profile
-				const userInfo = adaptUserDataToUserInfo(response.user);
 				setProfile(userInfo);
+
+				// Set isFirstLogin in the auth context
+				setIsFirstLogin(isFirstTimeUser);
+
+				if (isFirstTimeUser) {
+					console.log("New user detected, setting isFirstLogin to true");
+					// Make sure it's saved to localStorage for persistence
+					localStorage.setItem("isFirstLogin", "true");
+				}
 
 				toast.success("Successfully signed in!");
 
-				// Check if profile is new (for example, if created_at equals updated_at)
-				const isFirstTimeUser =
-					response.user.created_at === response.user.updated_at;
-				setIsFirstLogin(isFirstTimeUser);
-
-				// Redirect based on whether it's first login or not
-				if (isFirstTimeUser) {
-					setTimeout(() => navigate("/profile/information"), 100);
-				} else {
-					setTimeout(() => navigate("/"), 100);
-				}
+				// Force navigation to home page - hard-coded with no conditions
+				console.log("SignInForm: Navigating to home page");
+				navigate("/");
 			}
 		} catch (err: any) {
 			let errorMessage = "Sign in failed. Please try again.";
