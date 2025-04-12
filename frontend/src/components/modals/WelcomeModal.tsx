@@ -18,7 +18,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
 	);
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} className="max-w-md mx-auto">
+		<Modal isOpen={isOpen} onClose={onClose} className="max-w-md">
 			<div className="p-6">
 				<div className="text-center mb-5">
 					<div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-50 text-brand-500 dark:bg-brand-900/20 dark:text-brand-300 mb-4">
