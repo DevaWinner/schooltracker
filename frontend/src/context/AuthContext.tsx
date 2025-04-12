@@ -22,13 +22,15 @@ interface AuthContextProps {
 	profile: UserInfo | null;
 	userProfile: UserProfile | null;
 	userSettings: UserSettings | null;
+	sessionId: string | null;
 	signIn: (
 		user: any,
 		token: string,
 		refreshTokenStr: string,
-		rememberMe?: boolean
+		rememberMe?: boolean,
+		sessionId?: string
 	) => void;
-	signOut: () => void;
+	signOut: (notifyComponents?: boolean) => void;
 	setProfile: (profile: UserInfo) => void;
 	setUserProfile: (profile: UserProfile | null) => void;
 	setUserSettings: (settings: UserSettings | null) => void;
@@ -45,6 +47,7 @@ export const AuthContext = createContext<AuthContextProps>({
 	profile: null,
 	userProfile: null,
 	userSettings: null,
+	sessionId: null,
 	signIn: () => {},
 	signOut: () => {},
 	setProfile: () => {},
@@ -67,6 +70,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const [profile, setProfile] = useState<UserInfo | null>(null);
 	const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 	const [userSettings, setUserSettings] = useState<UserSettings | null>(null);
+	const [sessionId, setSessionId] = useState<string | null>(null);
 	const [isFirstLogin, setIsFirstLogin] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(true);
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -196,15 +200,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		initAuth();
 	}, [checkTokenValidity]);
 
+	useEffect(() => {
+		const handleForceDataReset = () => {
+			console.log("Force data reset received");
+			signOutHandler(true);
+		};
+
+		window.addEventListener("force_data_reset", handleForceDataReset);
+		return () => {
+			window.removeEventListener("force_data_reset", handleForceDataReset);
+		};
+	}, []);
+
 	const signInHandler = (
 		userData: any,
 		token: string,
 		refreshTokenStr: string,
-		rememberMe: boolean = false
+		rememberMe: boolean = false,
+		newSessionId: string = `session_${Date.now()}`
 	) => {
+		// Clear any existing data first to prevent contamination
+		signOutHandler(false);
+
+		// Now set the new auth state
 		setUser(userData);
 		setAccessToken(token);
 		setIsAuthenticated(true);
+		setSessionId(newSessionId);
 
 		// Store tokens based on rememberMe preference
 		const storage = rememberMe ? localStorage : sessionStorage;
@@ -213,6 +235,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		try {
 			storage.setItem("access_token", token);
 			storage.setItem("refresh_token", refreshTokenStr);
+			storage.setItem("session_id", newSessionId);
+			localStorage.setItem("current_session_id", newSessionId);
 			localStorage.setItem("userData", JSON.stringify(userData));
 			localStorage.setItem("rememberMe", String(rememberMe));
 
@@ -221,7 +245,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		} catch (e) {}
 	};
 
-	const signOutHandler = () => {
+	const signOutHandler = (notifyComponents: boolean = true) => {
+		console.log("Signing out and clearing all state");
+
+		// Clear all auth-related state
 		setUser(null);
 		setAccessToken(null);
 		setProfile(null);
@@ -229,11 +256,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		setUserSettings(null);
 		setIsFirstLogin(false);
 		setIsAuthenticated(false);
+		setSessionId(null);
 
-		// Clear all auth-related data from storage
+		// Clear all data from storage
 		clearAuthTokens();
-		localStorage.removeItem("userData");
-		localStorage.removeItem("rememberMe");
+
+		// Only notify components if requested (to avoid recursive loops during sign-in)
+		if (notifyComponents) {
+			// Dispatch an event to notify other contexts that the user has signed out
+			window.dispatchEvent(
+				new CustomEvent("user_signed_out_event", {
+					detail: { timestamp: new Date().getTime(), complete: true },
+				})
+			);
+		}
 	};
 
 	// Listen for authentication errors that might happen in API calls
@@ -241,6 +277,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		const handleAuthError = (event: CustomEvent) => {
 			if (event.detail?.type === "auth_error") {
 				// If we get an auth error event from our API utilities
+				console.log("Auth error detected, signing out");
 				signOutHandler();
 			}
 		};
@@ -266,6 +303,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				profile,
 				userProfile,
 				userSettings,
+				sessionId,
 				signIn: signInHandler,
 				signOut: signOutHandler,
 				setProfile,

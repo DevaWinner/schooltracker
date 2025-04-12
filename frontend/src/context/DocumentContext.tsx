@@ -274,6 +274,54 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 		[documents]
 	);
 
+	// Clear document data when user signs out
+	useEffect(() => {
+		const handleUserSignOut = (_event: CustomEvent) => {
+			console.log("Document context: clearing document data on sign out");
+
+			// Reset all document state
+			setDocuments([]);
+			setFilteredDocuments([]);
+			setDocumentsByType({
+				All: [],
+				Transcript: [],
+				Essay: [],
+				CV: [],
+				"Recommendation Letter": [],
+				Other: [],
+			});
+			setError(null);
+			setIsLoading(false);
+			setLastUpdated(null);
+			setCurrentFilters({});
+
+			// Force data refresh on next load
+			localStorage.removeItem("documentData");
+			sessionStorage.removeItem("documentData");
+		};
+
+		// Listen for sign-out events using the more specific event name
+		window.addEventListener(
+			"user_signed_out_event",
+			handleUserSignOut as EventListener
+		);
+		window.addEventListener(
+			"force_data_reset",
+			handleUserSignOut as EventListener
+		);
+
+		return () => {
+			window.removeEventListener(
+				"user_signed_out_event",
+				handleUserSignOut as EventListener
+			);
+			window.removeEventListener(
+				"force_data_reset",
+				handleUserSignOut as EventListener
+			);
+		};
+	}, []);
+
 	// Initial fetch when component mounts if user is authenticated
 	useEffect(() => {
 		let isMounted = true;

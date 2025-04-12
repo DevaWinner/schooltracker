@@ -74,22 +74,40 @@ export default function SignInForm() {
 		e.preventDefault();
 		setIsLoading(true);
 		try {
+			// First, completely purge ALL storage to ensure no previous user data remains
+			// This will clear both localStorage and sessionStorage
+			window.localStorage.clear();
+			window.sessionStorage.clear();
+
+			// Force a reset of authentication state in all contexts
+			window.dispatchEvent(
+				new CustomEvent("force_data_reset", {
+					detail: { timestamp: Date.now() },
+				})
+			);
+
 			const response = await signIn({ email, password });
 			if (response.status === "success") {
-				// Store auth tokens with persistence preference
+				// Generate a new user session ID to prevent stale data issues
+				const sessionId = `session_${Date.now()}_${Math.random()
+					.toString(36)
+					.substring(2, 9)}`;
+
+				// Store auth tokens with persistence preference and session ID
 				storeAuthTokens(
 					response.access_token,
 					response.refresh_token,
-					isChecked
+					isChecked,
+					sessionId
 				);
 
-				// Update auth context with user info and token
-				// Pass refresh token as third argument and isChecked as fourth
+				// Update auth context with user info, token, and session ID
 				updateAuth(
 					response.user,
 					response.access_token,
 					response.refresh_token,
-					isChecked
+					isChecked,
+					sessionId
 				);
 
 				// Convert UserData to UserInfo before setting profile

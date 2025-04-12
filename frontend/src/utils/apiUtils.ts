@@ -2,9 +2,9 @@ import axios, { AxiosInstance, AxiosRequestConfig } from "axios";
 import {
 	getAccessToken,
 	getRefreshToken,
-	updateAccessToken,
 	refreshToken,
 	updateAuthTokens,
+	getCurrentSessionId,
 } from "../api/auth";
 
 const API_BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -52,6 +52,19 @@ export const createAuthenticatedApi = (): AxiosInstance => {
 			if (token) {
 				config.headers.Authorization = `Bearer ${token}`;
 			}
+
+			// Add session ID to prevent cached responses
+			const sessionId = getCurrentSessionId();
+
+			// Add cache-busting parameter to GET requests
+			if (config.method?.toLowerCase() === "get") {
+				config.params = {
+					...config.params,
+					_sid: sessionId,
+					_t: Date.now(), // Add timestamp for cache busting
+				};
+			}
+
 			return config;
 		},
 		(error) => Promise.reject(error)
