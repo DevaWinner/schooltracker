@@ -59,7 +59,7 @@ const AppSidebar: React.FC = () => {
 		isHovered,
 		setIsHovered,
 		isHoverEnabled,
-		toggleMobileSidebar, // Add this to close mobile sidebar
+		toggleMobileSidebar,
 	} = useSidebar();
 	const [isMobileScreen, setIsMobileScreen] = useState(false);
 	const location = useLocation();
@@ -72,10 +72,8 @@ const AppSidebar: React.FC = () => {
 	);
 	const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-	// Change from NodeJS.Timeout to number type for browser compatibility
 	const hoverTimeoutRef = useRef<number | null>(null);
 
-	// Add tooltip state
 	const [tooltipItem, setTooltipItem] = useState<string | null>(null);
 	const [tooltipPosition, setTooltipPosition] = useState({ top: 0 });
 
@@ -84,16 +82,13 @@ const AppSidebar: React.FC = () => {
 		[location.pathname]
 	);
 
-	// Render tooltip for an icon when sidebar is minimized
 	const handleTooltipEnter = (
 		name: string,
 		e: React.MouseEvent<HTMLElement>
 	) => {
 		if (!isExpanded && !isHovered) {
-			// Calculate the position based on the target element
 			const target = e.currentTarget;
 			const rect = target.getBoundingClientRect();
-			// Position the tooltip centered vertically with the icon
 			setTooltipPosition({
 				top: rect.top + rect.height / 2,
 			});
@@ -105,7 +100,6 @@ const AppSidebar: React.FC = () => {
 		setTooltipItem(null);
 	};
 
-	// Auto-open submenu if a subItem matches the current route
 	useEffect(() => {
 		let submenuMatched = false;
 		navItems.forEach((nav, index) => {
@@ -124,7 +118,6 @@ const AppSidebar: React.FC = () => {
 		}
 	}, [location, isActive]);
 
-	// Calculate submenu height for smooth transition
 	useEffect(() => {
 		if (openSubmenu !== null) {
 			const key = `main-${openSubmenu.index}`;
@@ -141,13 +134,11 @@ const AppSidebar: React.FC = () => {
 		setOpenSubmenu((prev) => (prev && prev.index === index ? null : { index }));
 	};
 
-	// Improved hover handlers with debouncing to prevent flickering
 	const handleMouseEnter = () => {
 		if (hoverTimeoutRef.current) {
 			clearTimeout(hoverTimeoutRef.current);
 			hoverTimeoutRef.current = null;
 		}
-		// Only set hover state if hover expansion is enabled
 		if (isHoverEnabled) {
 			setIsHovered(true);
 		}
@@ -157,14 +148,12 @@ const AppSidebar: React.FC = () => {
 		if (hoverTimeoutRef.current) {
 			clearTimeout(hoverTimeoutRef.current);
 		}
-		// Use window.setTimeout instead of just setTimeout to be explicit
 		hoverTimeoutRef.current = window.setTimeout(() => {
 			setIsHovered(false);
 			hoverTimeoutRef.current = null;
-		}, 100); // Small delay to prevent flickering
+		}, 100);
 	};
 
-	// Clean up the timeout on unmount
 	useEffect(() => {
 		return () => {
 			if (hoverTimeoutRef.current) {
@@ -173,28 +162,22 @@ const AppSidebar: React.FC = () => {
 		};
 	}, []);
 
-	// Add window resize listener to detect mobile screens
 	useEffect(() => {
 		const handleResize = () => {
-			setIsMobileScreen(window.innerWidth < 768);
+			setIsMobileScreen(window.innerWidth < 1024);
 		};
 
-		// Set initial value
 		handleResize();
 
-		// Add listener
 		window.addEventListener("resize", handleResize);
 
-		// Clean up
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
 	}, []);
 
-	// Function to handle navigation item clicks
 	const handleNavItemClick = () => {
-		// Only close sidebar on mobile
-		if (isMobileScreen || window.innerWidth < 768) {
+		if (isMobileScreen || window.innerWidth < 1024) {
 			toggleMobileSidebar();
 		}
 	};
@@ -247,7 +230,7 @@ const AppSidebar: React.FC = () => {
 						nav.path && (
 							<Link
 								to={nav.path}
-								onClick={handleNavItemClick} // Add click handler here
+								onClick={handleNavItemClick}
 								className={`menu-item group ${
 									isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
 								}`}
@@ -285,7 +268,7 @@ const AppSidebar: React.FC = () => {
 									<li key={subItem.name}>
 										<Link
 											to={subItem.path}
-											onClick={handleNavItemClick} // Add click handler for submenu items too
+											onClick={handleNavItemClick}
 											className={`menu-dropdown-item ${
 												isActive(subItem.path)
 													? "menu-dropdown-item-active"
@@ -333,7 +316,7 @@ const AppSidebar: React.FC = () => {
 			<aside
 				className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen will-change-transform z-50 border-r border-gray-200 
 				${
-					isExpanded
+					isExpanded || isMobileScreen
 						? "w-[290px]"
 						: isHovered && isHoverEnabled
 						? "w-[290px]"
@@ -346,33 +329,32 @@ const AppSidebar: React.FC = () => {
 			>
 				<div
 					className={`py-8 flex ${
-						!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
+						!isExpanded && !isHovered && !isMobileScreen
+							? "lg:justify-center"
+							: "justify-start"
 					}`}
 				>
-					{!isMobileScreen && (
-						<Link to="/">
-							{/* Show logo only on non-mobile screens */}
-							{isExpanded || isHovered || isMobileScreen ? (
-								<>
-									<span className="text-3xl font-bold text-gray-900 dark:hidden">
-										School Tracker
-									</span>
-									<span className="text-3xl font-bold text-white hidden dark:block">
-										School Tracker
-									</span>
-								</>
-							) : (
-								<span className="text-xl font-bold text-gray-900 dark:text-white">
-									ST
+					<Link to="/" className="hidden lg:block">
+						{isExpanded || isHovered || isMobileScreen ? (
+							<>
+								<span className="text-3xl font-bold text-gray-900 dark:hidden">
+									School Tracker
 								</span>
-							)}
-						</Link>
-					)}
+								<span className="text-3xl font-bold text-white hidden dark:block">
+									School Tracker
+								</span>
+							</>
+						) : (
+							<span className="text-xl font-bold text-gray-900 dark:text-white">
+								ST
+							</span>
+						)}
+					</Link>
 				</div>
 				<div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
 					<nav className="mb-6 w-full">
 						<div className="flex flex-col gap-4 w-full">
-							{(isExpanded || isHovered || isMobileOpen) && (
+							{(isExpanded || isHovered || isMobileOpen || isMobileScreen) && (
 								<h2 className="mb-4 text-xs uppercase flex leading-[20px] text-gray-400">
 									Menu
 								</h2>
@@ -382,7 +364,6 @@ const AppSidebar: React.FC = () => {
 					</nav>
 				</div>
 			</aside>
-			{/* Tooltip container - rendered outside the sidebar for better positioning */}
 			{tooltipItem && !isExpanded && !isHovered && (
 				<div
 					className="fixed z-[60] left-[90px] transform -translate-y-1/2 bg-gray-800 text-white text-xs px-2.5 py-1.5 rounded shadow-md pointer-events-none"
