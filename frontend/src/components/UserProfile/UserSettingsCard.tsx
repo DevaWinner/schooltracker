@@ -1,11 +1,9 @@
 import { useModal } from "../../hooks/useModal";
-import { Modal } from "../ui/modal";
 import UserSettingsModal from "./modals/UserSettingsModal";
 import { ComponentCardProps } from "../../types/user";
 import { timezones } from "../../utils/timezones";
 import { getLanguageByCode } from "../../utils/languages";
 
-// Update the props to include refreshData function
 interface ExtendedCardProps extends ComponentCardProps {
 	refreshData?: () => void;
 }
@@ -17,7 +15,6 @@ export default function UserSettingsCard({
 	const { isOpen, openModal, closeModal } = useModal();
 
 	const handleSave = () => {
-		// Call the refresh function when modal is saved
 		if (refreshData) {
 			refreshData();
 		}
@@ -87,13 +84,12 @@ export default function UserSettingsCard({
 					</button>
 				</div>
 			</div>
-			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-				<UserSettingsModal
-					userSettings={userSettings}
-					onSave={handleSave}
-					onClose={closeModal}
-				/>
-			</Modal>
+			<UserSettingsModal
+				isOpen={isOpen}
+				userSettings={userSettings}
+				onSave={handleSave}
+				onClose={closeModal}
+			/>
 		</>
 	);
 }

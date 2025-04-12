@@ -1,5 +1,4 @@
 import { useModal } from "../../hooks/useModal";
-import { Modal } from "../ui/modal";
 import UserInfoModal from "./modals/UserInfoModal";
 import { ComponentCardProps } from "../../types/user";
 
@@ -108,13 +107,12 @@ export default function UserInfoCard({
 					Edit
 				</button>
 			</div>
-			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
-				<UserInfoModal
-					userInfo={userInfo}
-					onSave={handleSave}
-					onClose={closeModal}
-				/>
-			</Modal>
+			<UserInfoModal
+				isOpen={isOpen}
+				userInfo={userInfo}
+				onSave={handleSave}
+				onClose={closeModal}
+			/>
 		</div>
 	);
 }

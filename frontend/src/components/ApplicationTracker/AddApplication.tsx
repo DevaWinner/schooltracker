@@ -1,7 +1,6 @@
 import React from "react";
 import { useModal } from "../../hooks/useModal";
 import { Application } from "../../types/applications";
-import { Modal } from "../ui/modal";
 import MultiStepApplicationModal from "./modals/MultiStepApplicationModal";
 import { useApplications } from "../../context/ApplicationContext";
 
