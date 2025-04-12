@@ -22,49 +22,49 @@ const DocumentTypeFolder: React.FC<DocumentTypeFolderProps> = ({
 					icon: "school",
 					color: "from-blue-500 to-blue-600 shadow-blue-500/20",
 					colorInactive: "text-blue-500",
-					displayName: "Transcript"
+					displayName: "Transcript",
 				};
 			case "Essay":
 				return {
 					icon: "book",
 					color: "from-green-500 to-green-600 shadow-green-500/20",
 					colorInactive: "text-green-500",
-					displayName: "Essay"
+					displayName: "Essay",
 				};
 			case "CV":
 				return {
 					icon: "document-text",
 					color: "from-amber-500 to-amber-600 shadow-amber-500/20",
 					colorInactive: "text-amber-500",
-					displayName: "CV"
+					displayName: "CV",
 				};
 			case "Recommendation Letter":
 				return {
 					icon: "mail",
 					color: "from-purple-500 to-purple-600 shadow-purple-500/20",
 					colorInactive: "text-purple-500",
-					displayName: "Recommendation"
+					displayName: "Recommendation",
 				};
 			case "Other":
 				return {
 					icon: "folder",
 					color: "from-gray-500 to-gray-600 shadow-gray-500/20",
 					colorInactive: "text-gray-500",
-					displayName: "Other"
+					displayName: "Other",
 				};
 			case "All":
 				return {
 					icon: "collection",
 					color: "from-brand-500 to-brand-600 shadow-brand-500/20",
 					colorInactive: "text-brand-500",
-					displayName: "All"
+					displayName: "All",
 				};
 			default:
 				return {
 					icon: "folder",
 					color: "from-gray-500 to-gray-600 shadow-gray-500/20",
 					colorInactive: "text-gray-500",
-					displayName: docType
+					displayName: docType,
 				};
 		}
 	};
@@ -248,7 +248,7 @@ const DocumentTypeFolder: React.FC<DocumentTypeFolderProps> = ({
 						{displayName}
 						{type === "Recommendation Letter" && (
 							<span className="block text-xs mt-0.5">Letter</span>
-							)}
+						)}
 					</h3>
 					<p className="text-xs text-gray-500 dark:text-gray-400 truncate">
 						{count} {count === 1 ? "document" : "documents"}
