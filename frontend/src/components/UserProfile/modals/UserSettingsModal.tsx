@@ -8,12 +8,19 @@ import Switch from "../../form/input/Switch";
 import { timezones } from "../../../utils/timezones";
 import { languages } from "../../../utils/languages";
 import { ComponentCardProps } from "../../../types/user";
+import { Modal } from "../../ui/modal";
+
+interface UserSettingsModalProps extends ComponentCardProps {
+	isOpen: boolean;
+	onClose: () => void;
+}
 
 export default function UserSettingsModal({
 	userSettings,
 	onSave,
 	onClose,
-}: ComponentCardProps) {
+	isOpen,
+}: UserSettingsModalProps) {
 	const { refreshProfileData } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
@@ -83,70 +90,79 @@ export default function UserSettingsModal({
 	};
 
 	return (
-		<div className="relative w-full p-4 overflow-y-auto bg-white rounded-3xl dark:bg-gray-900 lg:p-11">
-			<div className="px-2 pr-14">
-				<h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-					Edit Settings
-				</h4>
-				<p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-					Update your language, timezone, and notification preferences.
-				</p>
-			</div>
-			<form className="flex flex-col" onSubmit={handleSubmit}>
-				<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-					<div>
-						<Label>Language</Label>
-						<select
-							className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
-							value={formData.language}
-							onChange={(e) =>
-								setFormData({ ...formData, language: e.target.value })
-							}
-						>
-							{languages.map((lang) => (
-								<option key={lang.code} value={lang.code}>
-									{lang.name}
-								</option>
-							))}
-						</select>
-					</div>
-					<div>
-						<Label>Timezone</Label>
-						<select
-							className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
-							value={formData.timezone}
-							onChange={(e) =>
-								setFormData({ ...formData, timezone: e.target.value })
-							}
-						>
-							{timezones.map((tz) => (
-								<option key={tz.value} value={tz.value}>
-									{tz.label} ({tz.offset})
-								</option>
-							))}
-						</select>
-					</div>
-					<div className="col-span-2">
-						<Label>Notifications</Label>
-						<div className="mt-2">
-							<Switch
-								label="Email Notifications"
-								defaultChecked={formData.notification_email}
-								onChange={handleNotificationChange}
-								color="blue"
-							/>
+		<Modal isOpen={isOpen} onClose={onClose} className="w-[1000px]">
+			<div className="flex flex-col h-[85vh]">
+				{/* Fixed Header */}
+				<div className="flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
+					<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
+						Edit Settings
+					</h4>
+					<p className="text-sm text-gray-500 dark:text-gray-400">
+						Update your language, timezone, and notification preferences.
+					</p>
+				</div>
+
+				{/* Scrollable Content */}
+				<form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+					<div className="flex-1 px-8 py-6 overflow-y-auto">
+						<div className="space-y-8">
+							<div>
+								<Label>Language</Label>
+								<select
+									className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
+									value={formData.language}
+									onChange={(e) =>
+										setFormData({ ...formData, language: e.target.value })
+									}
+								>
+									{languages.map((lang) => (
+										<option key={lang.code} value={lang.code}>
+											{lang.name}
+										</option>
+									))}
+								</select>
+							</div>
+							<div>
+								<Label>Timezone</Label>
+								<select
+									className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
+									value={formData.timezone}
+									onChange={(e) =>
+										setFormData({ ...formData, timezone: e.target.value })
+									}
+								>
+									{timezones.map((tz) => (
+										<option key={tz.value} value={tz.value}>
+											{tz.label} ({tz.offset})
+										</option>
+									))}
+								</select>
+							</div>
+							<div>
+								<Label>Notifications</Label>
+								<div className="mt-2">
+									<Switch
+										label="Email Notifications"
+										defaultChecked={formData.notification_email}
+										onChange={handleNotificationChange}
+										color="blue"
+									/>
+								</div>
+							</div>
 						</div>
 					</div>
-				</div>
-				<div className="flex items-center gap-3 mt-6 lg:justify-end">
-					<Button size="sm" variant="outline" onClick={onClose}>
-						Cancel
-					</Button>
-					<Button size="sm" type="submit" disabled={loading}>
-						{loading ? "Saving..." : "Save Changes"}
-					</Button>
-				</div>
-			</form>
-		</div>
+
+					{/* Fixed Footer */}
+					<div className="flex-shrink-0 border-t border-gray-200 px-8 py-4 dark:border-gray-700 flex justify-end gap-3">
+						<Button size="sm" variant="outline" onClick={onClose}>
+							Cancel
+						</Button>
+						<Button size="sm" type="submit" disabled={loading}>
+							{loading ? "Saving..." : "Save Changes"}
+						</Button>
+					</div>
+				</form>
+			</div>
+		</Modal>
 	);
 }

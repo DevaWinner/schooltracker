@@ -170,7 +170,7 @@ export default function SchoolSearch() {
 							id="pageSize"
 							value={filters.page_size || DEFAULT_PAGE_SIZE}
 							onChange={handlePageSizeChange}
-							className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-800"
+							className="rounded-md border border-gray-300 bg-white px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
 						>
 							<option value={10}>10</option>
 							<option value={20}>20</option>
@@ -180,10 +180,78 @@ export default function SchoolSearch() {
 					</div>
 				</div>
 
-				{/* Loading state */}
+				{/* Loading state - Replace with skeleton loader */}
 				{loading && (
-					<div className="flex h-64 items-center justify-center">
-						<div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
+					<div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+						<div className="max-h-[70vh] overflow-y-auto">
+							<table className="w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+								<thead className="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10">
+									<tr>
+										<th
+											scope="col"
+											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Rank
+										</th>
+										<th
+											scope="col"
+											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Institution
+										</th>
+										<th
+											scope="col"
+											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Country
+										</th>
+										<th
+											scope="col"
+											className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Score
+										</th>
+										<th
+											scope="col"
+											className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400"
+										>
+											Actions
+										</th>
+									</tr>
+								</thead>
+								<tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
+									{/* Generate multiple skeleton rows */}
+									{Array(10)
+										.fill(0)
+										.map((_, index) => (
+											<tr
+												key={index}
+												className={
+													index % 2 === 0
+														? "bg-white dark:bg-gray-800"
+														: "bg-gray-50 dark:bg-gray-800/50"
+												}
+											>
+												<td className="whitespace-nowrap px-6 py-4">
+													<div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 animate-pulse dark:bg-gray-700"></div>
+												</td>
+												<td className="px-6 py-4">
+													<div className="h-4 w-48 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
+												</td>
+												<td className="px-6 py-4">
+													<div className="h-4 w-24 bg-gray-200 rounded animate-pulse dark:bg-gray-700"></div>
+												</td>
+												<td className="px-6 py-4">
+													<div className="h-5 w-12 bg-gray-200 rounded-full animate-pulse dark:bg-gray-700"></div>
+												</td>
+												<td className="whitespace-nowrap px-6 py-4 text-right">
+													<div className="h-4 w-20 bg-gray-200 rounded animate-pulse dark:bg-gray-700 ml-auto"></div>
+												</td>
+											</tr>
+										))}
+								</tbody>
+							</table>
+						</div>
 					</div>
 				)}
 

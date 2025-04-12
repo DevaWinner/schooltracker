@@ -84,23 +84,45 @@ export const verifyToken = async (
 	}
 };
 
-// Store auth tokens in local storage
+// Store auth tokens in local storage with session ID
 export const storeAuthTokens = (
 	accessToken: string,
 	refreshToken: string,
-	rememberMe: boolean = false
+	rememberMe: boolean = false,
+	sessionId: string = `session_${Date.now()}`
 ) => {
 	const storage = rememberMe ? localStorage : sessionStorage;
 	storage.setItem("access_token", accessToken);
 	storage.setItem("refresh_token", refreshToken);
+	storage.setItem("session_id", sessionId);
+
+	// Store the preference
+	localStorage.setItem("rememberMe", String(rememberMe));
+	localStorage.setItem("current_session_id", sessionId);
 };
 
-// Clear auth tokens from storage
+// Clear auth tokens from storage - more aggressive approach
 export const clearAuthTokens = () => {
-	localStorage.removeItem("access_token");
-	localStorage.removeItem("refresh_token");
-	sessionStorage.removeItem("access_token");
-	sessionStorage.removeItem("refresh_token");
+	console.log("Clearing all auth tokens and user data");
+
+	// Instead of individually removing items, clear everything
+	// This is more reliable when dealing with unknown cached items
+	localStorage.clear();
+	sessionStorage.clear();
+
+	// Optionally, if you need to keep some system settings like theme preference,
+	// you can restore them after clearing
+	const savedTheme = document.documentElement.dataset.theme || "light";
+	localStorage.setItem("theme", savedTheme);
+};
+
+// Get the current session ID
+export const getCurrentSessionId = (): string => {
+	return (
+		localStorage.getItem("current_session_id") ||
+		sessionStorage.getItem("session_id") ||
+		`session_${Date.now()}`
+	);
 };
 
 // Get the stored access token
@@ -134,11 +156,15 @@ export const updateAuthTokens = (
 	accessToken: string,
 	refreshToken: string
 ): void => {
-	if (localStorage.getItem("access_token")) {
+	// Check where tokens are stored (localStorage or sessionStorage)
+	const rememberMe = localStorage.getItem("rememberMe") === "true";
+
+	// Update tokens in the appropriate storage
+	if (localStorage.getItem("access_token") || rememberMe) {
 		localStorage.setItem("access_token", accessToken);
 		localStorage.setItem("refresh_token", refreshToken);
 	}
-	if (sessionStorage.getItem("access_token")) {
+	if (sessionStorage.getItem("access_token") || !rememberMe) {
 		sessionStorage.setItem("access_token", accessToken);
 		sessionStorage.setItem("refresh_token", refreshToken);
 	}
