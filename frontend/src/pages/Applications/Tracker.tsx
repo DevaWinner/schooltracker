@@ -205,20 +205,15 @@ export default function ApplicationTracker() {
 			</div>
 
 			{/* Edit Application Modal */}
-			<Modal
-				isOpen={isEditModalOpen}
-				onClose={() => setIsEditModalOpen(false)}
-				className="max-w-[800px] m-4"
-			>
-				{currentApplication && (
-					<EditApplicationModal
-						data={currentApplication}
-						onSave={handleSaveEdit}
-						onClose={() => setIsEditModalOpen(false)}
-						isLoading={isLoadingApplication}
-					/>
-				)}
-			</Modal>
+			{currentApplication && (
+				<EditApplicationModal
+					isOpen={isEditModalOpen}
+					data={currentApplication}
+					onSave={handleSaveEdit}
+					onClose={() => setIsEditModalOpen(false)}
+					isLoading={isLoadingApplication}
+				/>
+			)}
 
 			{/* Delete Confirmation Modal */}
 			<Modal

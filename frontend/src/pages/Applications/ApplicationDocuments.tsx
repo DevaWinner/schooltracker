@@ -5,7 +5,6 @@ import { ROUTES } from "../../constants/Routes";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import { Modal } from "../../components/ui/modal";
 import UploadDocumentModal from "../../components/Documents/UploadDocumentModal";
 import DocumentCard from "../../components/Documents/DocumentCard";
 import DocumentDetailModal from "../../components/Documents/DocumentDetailModal";
@@ -667,52 +666,37 @@ export default function ApplicationDocuments() {
 				</div>
 			</div>
 
-			<Modal
+			{/* Upload Document Modal */}
+			<UploadDocumentModal
 				isOpen={isUploadModalOpen}
 				onClose={() => {
 					setIsUploadModalOpen(false);
+					refreshDocuments();
 					setInitialDocType(undefined);
 				}}
-				className="max-w-md mx-auto"
-			>
-				<UploadDocumentModal
-					onClose={() => {
-						setIsUploadModalOpen(false);
-						refreshDocuments();
-						setInitialDocType(undefined);
-					}}
-					initialApplicationId={applicationId}
-					initialDocumentType={initialDocType}
+				initialApplicationId={applicationId}
+				initialDocumentType={initialDocType}
+			/>
+
+			{/* Document Detail Modal */}
+			{selectedDocument && (
+				<DocumentDetailModal
+					isOpen={isDetailModalOpen}
+					document={selectedDocument}
+					onClose={() => setIsDetailModalOpen(false)}
+					onDelete={handleDeleteClick}
 				/>
-			</Modal>
+			)}
 
-			<Modal
-				isOpen={isDetailModalOpen}
-				onClose={() => setIsDetailModalOpen(false)}
-				className="max-w-md mx-auto"
-			>
-				{selectedDocument && (
-					<DocumentDetailModal
-						document={selectedDocument}
-						onClose={() => setIsDetailModalOpen(false)}
-						onDelete={handleDeleteClick}
-					/>
-				)}
-			</Modal>
-
-			<Modal
-				isOpen={isDeleteModalOpen}
-				onClose={() => setIsDeleteModalOpen(false)}
-				className="max-w-md mx-auto"
-			>
-				{selectedDocument && (
-					<DeleteDocumentModal
-						documentName={selectedDocument.file_name}
-						onConfirm={handleConfirmDelete}
-						onCancel={() => setIsDeleteModalOpen(false)}
-					/>
-				)}
-			</Modal>
+			{/* Delete Confirmation Modal */}
+			{selectedDocument && (
+				<DeleteDocumentModal
+					isOpen={isDeleteModalOpen}
+					documentName={selectedDocument.file_name}
+					onConfirm={handleConfirmDelete}
+					onCancel={() => setIsDeleteModalOpen(false)}
+				/>
+			)}
 		</>
 	);
 }

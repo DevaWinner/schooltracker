@@ -1,5 +1,6 @@
 import { UserInfo, UserProfile, UserSettings } from "../types/user";
 import { authenticatedApi } from "../utils/apiUtils";
+import axios from "axios";
 
 // Basic user info interfaces and functions
 export interface UserInfoUpdateRequest {
@@ -44,6 +45,14 @@ export const getUserProfile = async (): Promise<UserProfile> => {
 		const response = await authenticatedApi.get<UserProfile>("/user/profile/");
 		return response.data;
 	} catch (error) {
+		// If unauthorized, dispatch auth error event
+		if (axios.isAxiosError(error) && error.response?.status === 401) {
+			window.dispatchEvent(
+				new CustomEvent("auth_error", {
+					detail: { type: "auth_error", message: "Unauthorized access" },
+				})
+			);
+		}
 		throw error;
 	}
 };
@@ -179,11 +188,23 @@ export const updatePartialProfile = async (
 		promises.push(updateUserSettings(settings));
 	}
 
-	// Wait for all updates to complete
-	const results = await Promise.all(promises);
+	try {
+		// Wait for all updates to complete
+		const results = await Promise.all(promises);
 
-	// Return a merged result
-	return results.reduce((acc, result) => ({ ...acc, ...result }), {});
+		// Return a merged result
+		return results.reduce((acc, result) => ({ ...acc, ...result }), {});
+	} catch (error) {
+		// Check for authentication error
+		if (axios.isAxiosError(error) && error.response?.status === 401) {
+			window.dispatchEvent(
+				new CustomEvent("auth_error", {
+					detail: { type: "auth_error", message: "Unauthorized access" },
+				})
+			);
+		}
+		throw error;
+	}
 };
 
 // New function to fetch combined profile data for dropdown

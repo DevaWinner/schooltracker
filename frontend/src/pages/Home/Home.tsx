@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import { Link } from "react-router-dom";
@@ -9,6 +9,8 @@ import ComponentCard from "../../components/common/ComponentCard";
 import { useApplications } from "../../context/ApplicationContext";
 import { formatDate } from "../../utils/dateUtils";
 import { useDocuments } from "../../context/DocumentContext";
+import WelcomeModal from "../../components/modals/WelcomeModal";
+import { AuthContext } from "../../context/AuthContext";
 
 export default function Home() {
 	const { applications, isLoading, fetchApplications } = useApplications();
@@ -17,11 +19,39 @@ export default function Home() {
 		fetchDocuments,
 		isLoading: documentsLoading,
 	} = useDocuments();
+	const { profile, isFirstLogin, setIsFirstLogin } = useContext(AuthContext);
+	const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
+	// Check if this is the user's first login
 	useEffect(() => {
-		// This will only fetch if data is stale or non-existent
+		// Debug to verify if isFirstLogin is working
+		console.log("Home component - isFirstLogin:", isFirstLogin);
+
+		if (isFirstLogin && profile) {
+			// Show the welcome modal with a slight delay so it appears after page load
+			console.log("Showing welcome modal for new user:", profile.first_name);
+
+			const timer = setTimeout(() => {
+				console.log("Setting showWelcomeModal to true");
+				setShowWelcomeModal(true);
+
+				// Mark that we've shown the first login modal
+				console.log("Clearing isFirstLogin flag");
+				setIsFirstLogin(false);
+				localStorage.removeItem("isFirstLogin"); // Clear the flag after showing
+			}, 500);
+
+			return () => clearTimeout(timer);
+		}
+	}, [isFirstLogin, profile, setIsFirstLogin]);
+
+	// Modify the API fetching effect to avoid unnecessary requests
+	useEffect(() => {
+		// Don't refetch on every render, rely on the context providers' caching
+		// This will only trigger actual API calls when necessary
+		
+		// We can keep these calls since they're protected against unnecessary refetching now
 		fetchApplications();
-		// Also fetch documents
 		fetchDocuments();
 	}, [fetchApplications, fetchDocuments]);
 
@@ -207,6 +237,18 @@ export default function Home() {
 				title="Dashboard | School Tracker"
 				description="Dashboard for School Tracker application"
 			/>
+
+			{/* Welcome Modal for first-time users */}
+			{profile && (
+				<WelcomeModal
+					isOpen={showWelcomeModal}
+					onClose={() => {
+						console.log("Closing welcome modal");
+						setShowWelcomeModal(false);
+					}}
+					userName={profile.first_name}
+				/>
+			)}
 
 			<div className="mb-6 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
 				<PageBreadcrumb pageTitle="Dashboard" />

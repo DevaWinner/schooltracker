@@ -4,6 +4,7 @@ import {
 	useState,
 	useEffect,
 	useCallback,
+	useRef,
 } from "react";
 
 type SidebarContextType = {
@@ -18,6 +19,7 @@ type SidebarContextType = {
 	setActiveItem: (item: string | null) => void;
 	toggleSubmenu: (item: string) => void;
 	isHoverEnabled: boolean;
+	setMobileOpen: (isOpen: boolean) => void;
 };
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -41,6 +43,9 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 	const [isHoverEnabled, setIsHoverEnabled] = useState(true);
 
+	// Store previous desktop sidebar state
+	const prevDesktopExpandedState = useRef(true);
+
 	// Use a stable wrapper for setIsHovered to avoid unnecessary rerenders
 	const handleSetIsHovered = useCallback(
 		(hovered: boolean) => {
@@ -56,13 +61,21 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	useEffect(() => {
 		const handleResize = () => {
-			const mobile = window.innerWidth < 768;
-			setIsMobile(mobile);
+			const mobile = window.innerWidth < 1024; // Using lg breakpoint (1024px)
 
-			// If we're switching to mobile, ensure sidebar is expanded
-			if (mobile && !isMobile) {
+			// Save desktop state before switching to mobile
+			if (!isMobile && mobile) {
+				prevDesktopExpandedState.current = isExpanded;
 				setIsExpanded(true);
 			}
+			// Restore desktop state when returning from mobile to desktop
+			else if (isMobile && !mobile) {
+				setIsExpanded(prevDesktopExpandedState.current);
+				// Close mobile sidebar when switching to desktop
+				setIsMobileOpen(false);
+			}
+
+			setIsMobile(mobile);
 		};
 
 		handleResize();
@@ -71,7 +84,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
-	}, [isMobile]);
+	}, [isMobile, isExpanded]);
 
 	const toggleSidebar = useCallback(() => {
 		setIsExpanded((prev) => {
@@ -79,12 +92,23 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 			// When toggling, update hover enabled state
 			// Only enable hover expanding when the sidebar is expanded
 			setIsHoverEnabled(newState);
+
+			// If in desktop mode, save this preference
+			if (!isMobile) {
+				prevDesktopExpandedState.current = newState;
+			}
+
 			return newState;
 		});
-	}, []);
+	}, [isMobile]);
 
 	const toggleMobileSidebar = useCallback(() => {
 		setIsMobileOpen((prev) => !prev);
+	}, []);
+
+	// Add explicit setter for mobile open state
+	const setMobileOpen = useCallback((isOpen: boolean) => {
+		setIsMobileOpen(isOpen);
 	}, []);
 
 	const toggleSubmenu = useCallback((item: string) => {
@@ -94,6 +118,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 	return (
 		<SidebarContext.Provider
 			value={{
+				// Always return true for isExpanded if in mobile mode
 				isExpanded: isMobile ? true : isExpanded,
 				isMobileOpen,
 				isHovered,
@@ -105,6 +130,7 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 				setActiveItem,
 				toggleSubmenu,
 				isHoverEnabled,
+				setMobileOpen, // Add the new method to the context
 			}}
 		>
 			{children}

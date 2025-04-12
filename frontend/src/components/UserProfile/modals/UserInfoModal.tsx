@@ -15,6 +15,7 @@ import { ComponentCardProps } from "../../../types/user";
 import { countries } from "../../../utils/countries";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { Modal } from "../../ui/modal";
 
 // Define the props interface for the DatePickerInput component
 interface DatePickerInputProps {
@@ -41,11 +42,17 @@ const DatePickerInput = forwardRef<HTMLInputElement, DatePickerInputProps>(
 // Add display name to avoid dev warnings
 DatePickerInput.displayName = "DatePickerInput";
 
+interface UserInfoModalProps extends ComponentCardProps {
+	isOpen: boolean;
+	onClose: () => void;
+}
+
 export default function UserInfoModal({
 	userInfo,
 	onSave,
 	onClose,
-}: ComponentCardProps) {
+	isOpen,
+}: UserInfoModalProps) {
 	const { refreshProfileData } = useContext(AuthContext);
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
@@ -129,121 +136,132 @@ export default function UserInfoModal({
 	};
 
 	return (
-		<div className="relative w-full p-4 overflow-y-auto bg-white rounded-3xl dark:bg-gray-900 lg:p-11">
-			<div className="px-2 pr-14">
-				<h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
-					Edit Personal Information
-				</h4>
-				<p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
-					Update your personal details.
-				</p>
-			</div>
-			<form className="flex flex-col" onSubmit={handleSubmit}>
-				<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-					<div>
-						<Label>First Name</Label>
-						<Input
-							type="text"
-							name="first_name"
-							value={formData.first_name}
-							onChange={handleChange}
-						/>
-					</div>
-					<div>
-						<Label>Last Name</Label>
-						<Input
-							type="text"
-							name="last_name"
-							value={formData.last_name}
-							onChange={handleChange}
-						/>
-					</div>
-					<div>
-						<Label>Email</Label>
-						<Input
-							type="email"
-							name="email"
-							value={formData.email}
-							onChange={handleChange}
-						/>
-					</div>
-					<div>
-						<Label>Phone</Label>
-						<Input
-							type="text"
-							name="phone"
-							value={formData.phone}
-							onChange={handleChange}
-						/>
-					</div>
-					<div>
-						<Label>Date of Birth</Label>
-						<div className="w-full">
-							<DatePicker
-								selected={
-									formData.date_of_birth
-										? new Date(formData.date_of_birth)
-										: null
-								}
-								onChange={handleDateChange}
-								className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
-								wrapperClassName="w-full"
-								dateFormat="yyyy-MM-dd"
-								placeholderText="Select date"
-								showMonthDropdown
-								showYearDropdown
-								dropdownMode="select"
-								yearDropdownItemNumber={100}
-								scrollableYearDropdown
-								customInput={
-									<DatePickerInput
-										placeholder="Select date"
-										className="w-full"
+		<Modal isOpen={isOpen} onClose={onClose} className="w-[1000px]">
+			<div className="flex flex-col h-[85vh]">
+				{/* Fixed Header */}
+				<div className="flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
+					<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
+						Edit Personal Information
+					</h4>
+					<p className="text-sm text-gray-500 dark:text-gray-400">
+						Update your personal details.
+					</p>
+				</div>
+
+				{/* Scrollable Content */}
+				<form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+					<div className="flex-1 px-8 py-6 overflow-y-auto">
+						<div className="space-y-8">
+							<div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+								<div>
+									<Label>First Name</Label>
+									<Input
+										type="text"
+										name="first_name"
+										value={formData.first_name}
+										onChange={handleChange}
 									/>
-								}
-							/>
+								</div>
+								<div>
+									<Label>Last Name</Label>
+									<Input
+										type="text"
+										name="last_name"
+										value={formData.last_name}
+										onChange={handleChange}
+									/>
+								</div>
+								<div>
+									<Label>Email</Label>
+									<Input
+										type="email"
+										name="email"
+										value={formData.email}
+										onChange={handleChange}
+									/>
+								</div>
+								<div>
+									<Label>Phone</Label>
+									<Input
+										type="text"
+										name="phone"
+										value={formData.phone}
+										onChange={handleChange}
+									/>
+								</div>
+								<div>
+									<Label>Date of Birth</Label>
+									<div className="w-full">
+										<DatePicker
+											selected={
+												formData.date_of_birth
+													? new Date(formData.date_of_birth)
+													: null
+											}
+											onChange={handleDateChange}
+											className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
+											wrapperClassName="w-full"
+											dateFormat="yyyy-MM-dd"
+											placeholderText="Select date"
+											showMonthDropdown
+											showYearDropdown
+											dropdownMode="select"
+											yearDropdownItemNumber={100}
+											scrollableYearDropdown
+											customInput={
+												<DatePickerInput
+													placeholder="Select date"
+													className="w-full"
+												/>
+											}
+										/>
+									</div>
+								</div>
+								<div>
+									<Label>Gender</Label>
+									<select
+										name="gender"
+										value={formData.gender}
+										onChange={handleChange}
+										className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
+									>
+										<option value="">Select gender</option>
+										<option value="Male">Male</option>
+										<option value="Female">Female</option>
+										<option value="Other">Other</option>
+									</select>
+								</div>
+								<div className="lg:col-span-2">
+									<Label>Country</Label>
+									<select
+										name="country"
+										value={formData.country}
+										onChange={handleChange}
+										className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
+									>
+										<option value="">Select country</option>
+										{countries.map((country) => (
+											<option key={country.code} value={country.name}>
+												{country.name}
+											</option>
+										))}
+									</select>
+								</div>
+							</div>
 						</div>
 					</div>
-					<div>
-						<Label>Gender</Label>
-						<select
-							name="gender"
-							value={formData.gender}
-							onChange={handleChange}
-							className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
-						>
-							<option value="">Select gender</option>
-							<option value="Male">Male</option>
-							<option value="Female">Female</option>
-							<option value="Other">Other</option>
-						</select>
+
+					{/* Fixed Footer */}
+					<div className="flex-shrink-0 border-t border-gray-200 px-8 py-4 dark:border-gray-700 flex justify-end gap-3">
+						<Button size="sm" variant="outline" onClick={onClose}>
+							Cancel
+						</Button>
+						<Button size="sm" type="submit" disabled={loading}>
+							{loading ? "Saving..." : "Save Changes"}
+						</Button>
 					</div>
-					<div className="lg:col-span-2">
-						<Label>Country</Label>
-						<select
-							name="country"
-							value={formData.country}
-							onChange={handleChange}
-							className="w-full rounded-lg border border-gray-300 p-2 bg-white dark:bg-gray-800 dark:border-gray-700 dark:text-white/90"
-						>
-							<option value="">Select country</option>
-							{countries.map((country) => (
-								<option key={country.code} value={country.name}>
-									{country.name}
-								</option>
-							))}
-						</select>
-					</div>
-				</div>
-				<div className="flex items-center gap-3 mt-6 lg:justify-end">
-					<Button size="sm" variant="outline" onClick={onClose}>
-						Cancel
-					</Button>
-					<Button size="sm" type="submit" disabled={loading}>
-						{loading ? "Saving..." : "Save Changes"}
-					</Button>
-				</div>
-			</form>
-		</div>
+				</form>
+			</div>
+		</Modal>
 	);
 }

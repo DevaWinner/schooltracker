@@ -22,47 +22,54 @@ const DocumentTypeFolder: React.FC<DocumentTypeFolderProps> = ({
 					icon: "school",
 					color: "from-blue-500 to-blue-600 shadow-blue-500/20",
 					colorInactive: "text-blue-500",
+					displayName: "Transcript",
 				};
 			case "Essay":
 				return {
 					icon: "book",
 					color: "from-green-500 to-green-600 shadow-green-500/20",
 					colorInactive: "text-green-500",
+					displayName: "Essay",
 				};
 			case "CV":
 				return {
 					icon: "document-text",
 					color: "from-amber-500 to-amber-600 shadow-amber-500/20",
 					colorInactive: "text-amber-500",
+					displayName: "CV",
 				};
 			case "Recommendation Letter":
 				return {
 					icon: "mail",
 					color: "from-purple-500 to-purple-600 shadow-purple-500/20",
 					colorInactive: "text-purple-500",
+					displayName: "Recommendation",
 				};
 			case "Other":
 				return {
 					icon: "folder",
 					color: "from-gray-500 to-gray-600 shadow-gray-500/20",
 					colorInactive: "text-gray-500",
+					displayName: "Other",
 				};
 			case "All":
 				return {
 					icon: "collection",
 					color: "from-brand-500 to-brand-600 shadow-brand-500/20",
 					colorInactive: "text-brand-500",
+					displayName: "All",
 				};
 			default:
 				return {
 					icon: "folder",
 					color: "from-gray-500 to-gray-600 shadow-gray-500/20",
 					colorInactive: "text-gray-500",
+					displayName: docType,
 				};
 		}
 	};
 
-	const { icon, color, colorInactive } = getFolderDetails(type);
+	const { icon, color, colorInactive, displayName } = getFolderDetails(type);
 
 	return (
 		<div
@@ -76,7 +83,7 @@ const DocumentTypeFolder: React.FC<DocumentTypeFolderProps> = ({
 			<div className="flex items-center gap-3">
 				{isActive ? (
 					<div
-						className={`flex h-10 w-10 items-center justify-center rounded bg-gradient-to-br ${color} text-white shadow-lg`}
+						className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded bg-gradient-to-br ${color} text-white shadow-lg`}
 					>
 						{icon === "school" && (
 							<svg
@@ -153,7 +160,7 @@ const DocumentTypeFolder: React.FC<DocumentTypeFolderProps> = ({
 					</div>
 				) : (
 					<div
-						className={`flex h-10 w-10 items-center justify-center rounded border border-gray-200 dark:border-gray-700 ${colorInactive}`}
+						className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded border border-gray-200 dark:border-gray-700 ${colorInactive}`}
 					>
 						{icon === "school" && (
 							<svg
@@ -230,17 +237,20 @@ const DocumentTypeFolder: React.FC<DocumentTypeFolderProps> = ({
 					</div>
 				)}
 
-				<div>
+				<div className="min-w-0">
 					<h3
-						className={`font-medium ${
+						className={`font-medium truncate ${
 							isActive
 								? "text-gray-900 dark:text-white"
 								: "text-gray-700 dark:text-gray-300"
 						}`}
 					>
-						{type}
+						{displayName}
+						{type === "Recommendation Letter" && (
+							<span className="block text-xs mt-0.5">Letter</span>
+						)}
 					</h3>
-					<p className="text-xs text-gray-500 dark:text-gray-400">
+					<p className="text-xs text-gray-500 dark:text-gray-400 truncate">
 						{count} {count === 1 ? "document" : "documents"}
 					</p>
 				</div>
