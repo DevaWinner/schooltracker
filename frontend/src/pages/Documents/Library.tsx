@@ -176,7 +176,7 @@ export default function DocumentLibrary() {
 				<h2 className="mb-4 text-lg font-semibold text-gray-800 dark:text-white">
 					Categories
 				</h2>
-				<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+				<div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6">
 					<DocumentTypeFolder
 						type="All"
 						count={documentsByType.All.length}
