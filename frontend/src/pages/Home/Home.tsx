@@ -45,10 +45,13 @@ export default function Home() {
 		}
 	}, [isFirstLogin, profile, setIsFirstLogin]);
 
+	// Modify the API fetching effect to avoid unnecessary requests
 	useEffect(() => {
-		// This will only fetch if data is stale or non-existent
+		// Don't refetch on every render, rely on the context providers' caching
+		// This will only trigger actual API calls when necessary
+		
+		// We can keep these calls since they're protected against unnecessary refetching now
 		fetchApplications();
-		// Also fetch documents
 		fetchDocuments();
 	}, [fetchApplications, fetchDocuments]);
 

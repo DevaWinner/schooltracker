@@ -72,6 +72,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 	const [error, setError] = useState<string | null>(null);
 	const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 	const [, setCurrentFilters] = useState<DocumentFilterParams>({});
+	const [hasAttemptedFetch, setHasAttemptedFetch] = useState<boolean>(false);
 
 	const { isAuthenticated } = useAuth();
 
@@ -109,6 +110,12 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 				}
 			}
 
+			// If we've already tried fetching and got empty results, don't fetch again
+			// unless explicitly requested with refresh=true
+			if (hasAttemptedFetch && documents.length === 0 && !refresh) {
+				return;
+			}
+
 			if (!isAuthenticated) {
 				return;
 			}
@@ -127,6 +134,9 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 				setFilteredDocuments(response.results);
 				organizeDocumentsByType(response.results);
 				setLastUpdated(new Date());
+
+				// Mark that we've attempted a fetch, even if results are empty
+				setHasAttemptedFetch(true);
 			} catch (err: any) {
 				setError(err.message || "Failed to fetch documents");
 				toast.error("Failed to load documents");
@@ -134,7 +144,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 				setIsLoading(false);
 			}
 		},
-		[isAuthenticated, lastUpdated, organizeDocumentsByType, isLoading]
+			[isAuthenticated, lastUpdated, organizeDocumentsByType, isLoading, hasAttemptedFetch, documents.length]
 	);
 
 	// Filter documents based on provided filters
@@ -294,6 +304,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 			setIsLoading(false);
 			setLastUpdated(null);
 			setCurrentFilters({});
+			setHasAttemptedFetch(false); // Reset the fetch attempt flag
 
 			// Force data refresh on next load
 			localStorage.removeItem("documentData");
@@ -327,7 +338,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 		let isMounted = true;
 
 		const initialFetch = async () => {
-			if (isAuthenticated && isMounted && !lastUpdated) {
+			if (isAuthenticated && isMounted && !hasAttemptedFetch) {
 				await fetchDocuments();
 			}
 		};
@@ -337,7 +348,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 		return () => {
 			isMounted = false;
 		};
-	}, [isAuthenticated, fetchDocuments, lastUpdated]);
+	}, [isAuthenticated, fetchDocuments, hasAttemptedFetch]);
 
 	const value: DocumentContextProps = {
 		documents,

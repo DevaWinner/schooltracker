@@ -81,6 +81,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 		next: null as string | null,
 		previous: null as string | null,
 	});
+	const [hasAttemptedFetch, setHasAttemptedFetch] = useState<boolean>(false);
 
 	const { isAuthenticated } = useContext(AuthContext);
 
@@ -96,6 +97,12 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				if (lastUpdated > fiveMinutesAgo) {
 					return;
 				}
+			}
+
+			// If we've already tried fetching and got empty results, don't fetch again
+			// unless explicitly requested with refresh=true
+			if (hasAttemptedFetch && applications.length === 0 && !refresh) {
+				return;
 			}
 
 			if (!isAuthenticated) {
@@ -115,6 +122,9 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 					previous: response.previous,
 				});
 				setLastUpdated(new Date());
+
+				// Mark that we've attempted a fetch, even if results are empty
+				setHasAttemptedFetch(true);
 			} catch (err: any) {
 				setError(err.message || "Failed to fetch applications");
 				toast.error("Failed to load applications");
@@ -122,7 +132,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				setIsLoading(false);
 			}
 		},
-		[isAuthenticated, applications.length, lastUpdated]
+		[isAuthenticated, applications.length, lastUpdated, hasAttemptedFetch]
 	);
 
 	// Filter applications based on provided filters
@@ -298,6 +308,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				previous: null,
 			});
 			setCurrentFilters({});
+			setHasAttemptedFetch(false); // Reset the fetch attempt flag
 
 			// Force data refresh on next load
 			localStorage.removeItem("applicationData");
@@ -328,10 +339,10 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 
 	// Initial fetch when component mounts if user is authenticated
 	useEffect(() => {
-		if (isAuthenticated) {
+		if (isAuthenticated && !hasAttemptedFetch) {
 			fetchApplications();
 		}
-	}, [isAuthenticated, fetchApplications]);
+	}, [isAuthenticated, fetchApplications, hasAttemptedFetch]);
 
 	const value = {
 		applications,
