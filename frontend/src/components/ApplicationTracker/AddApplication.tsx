@@ -1,7 +1,6 @@
 import React from "react";
 import { useModal } from "../../hooks/useModal";
 import { Application } from "../../types/applications";
-import { Modal } from "../ui/modal";
 import MultiStepApplicationModal from "./modals/MultiStepApplicationModal";
 import { useApplications } from "../../context/ApplicationContext";
 
@@ -59,9 +58,11 @@ const AddApplication: React.FC<AddApplicationProps> = ({ onRefresh }) => {
 				</svg>
 				Add Application
 			</button>
-			<Modal isOpen={isOpen} onClose={closeModal} className="max-w-[800px] m-4">
-				<MultiStepApplicationModal onSave={handleSave} onClose={closeModal} />
-			</Modal>
+			<MultiStepApplicationModal
+				isOpen={isOpen}
+				onSave={handleSave}
+				onClose={closeModal}
+			/>
 		</>
 	);
 };

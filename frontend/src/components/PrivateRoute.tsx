@@ -1,5 +1,5 @@
-import { useContext, useEffect } from "react";
-import { Navigate, Outlet, useLocation, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { JSX } from "react/jsx-runtime";
 
@@ -8,21 +8,8 @@ interface PrivateRouteProps {
 }
 
 export default function PrivateRoute({ children }: PrivateRouteProps) {
-	const { accessToken, isFirstLogin, isLoading } = useContext(AuthContext);
+	const { accessToken, isLoading } = useContext(AuthContext);
 	const location = useLocation();
-	const navigate = useNavigate();
-
-	useEffect(() => {
-		// If user is authenticated and it's their first login, and they're not already on the profile page
-		if (
-			accessToken &&
-			isFirstLogin &&
-			!location.pathname.includes("/profile/information") &&
-			!isLoading
-		) {
-			navigate("/profile/information", { replace: true });
-		}
-	}, [accessToken, isFirstLogin, location, navigate, isLoading]);
 
 	// Show loading indicator while checking authentication
 	if (isLoading) {

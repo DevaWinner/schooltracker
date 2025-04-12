@@ -19,9 +19,23 @@ export default function UserDropdown() {
 	}
 
 	const handleSignOut = () => {
-		// Clear stored tokens
+		// Ensure we close the dropdown
+		closeDropdown();
+
+		// Log that we're signing out for debugging purposes
+		console.log("UserDropdown: Initiating sign out process");
+
+		// First explicitly clear all storage before calling the auth context's signOut
+		window.localStorage.clear();
+		window.sessionStorage.clear();
+
+		// Make sure we clear all stored data
 		clearAuthTokens();
+
+		// Call the auth context's signOut function
 		signOut();
+
+		// Navigate to the sign-in page
 		navigate("/signin");
 	};
 

@@ -81,6 +81,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 		next: null as string | null,
 		previous: null as string | null,
 	});
+	const [hasAttemptedFetch, setHasAttemptedFetch] = useState<boolean>(false);
 
 	const { isAuthenticated } = useContext(AuthContext);
 
@@ -96,6 +97,12 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				if (lastUpdated > fiveMinutesAgo) {
 					return;
 				}
+			}
+
+			// If we've already tried fetching and got empty results, don't fetch again
+			// unless explicitly requested with refresh=true
+			if (hasAttemptedFetch && applications.length === 0 && !refresh) {
+				return;
 			}
 
 			if (!isAuthenticated) {
@@ -115,6 +122,9 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 					previous: response.previous,
 				});
 				setLastUpdated(new Date());
+
+				// Mark that we've attempted a fetch, even if results are empty
+				setHasAttemptedFetch(true);
 			} catch (err: any) {
 				setError(err.message || "Failed to fetch applications");
 				toast.error("Failed to load applications");
@@ -122,7 +132,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				setIsLoading(false);
 			}
 		},
-		[isAuthenticated, applications.length, lastUpdated]
+		[isAuthenticated, applications.length, lastUpdated, hasAttemptedFetch]
 	);
 
 	// Filter applications based on provided filters
@@ -281,12 +291,58 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 		[isAuthenticated]
 	);
 
+	// Clear application data when user signs out
+	useEffect(() => {
+		const handleUserSignOut = (_event: CustomEvent) => {
+			console.log("Application context: clearing application data on sign out");
+
+			// Reset all application state
+			setApplications([]);
+			setFilteredApplications([]);
+			setError(null);
+			setIsLoading(false);
+			setLastUpdated(null);
+			setPagination({
+				count: 0,
+				next: null,
+				previous: null,
+			});
+			setCurrentFilters({});
+			setHasAttemptedFetch(false); // Reset the fetch attempt flag
+
+			// Force data refresh on next load
+			localStorage.removeItem("applicationData");
+			sessionStorage.removeItem("applicationData");
+		};
+
+		// Listen for sign-out events using the more specific event name
+		window.addEventListener(
+			"user_signed_out_event",
+			handleUserSignOut as EventListener
+		);
+		window.addEventListener(
+			"force_data_reset",
+			handleUserSignOut as EventListener
+		);
+
+		return () => {
+			window.removeEventListener(
+				"user_signed_out_event",
+				handleUserSignOut as EventListener
+			);
+			window.removeEventListener(
+				"force_data_reset",
+				handleUserSignOut as EventListener
+			);
+		};
+	}, []);
+
 	// Initial fetch when component mounts if user is authenticated
 	useEffect(() => {
-		if (isAuthenticated) {
+		if (isAuthenticated && !hasAttemptedFetch) {
 			fetchApplications();
 		}
-	}, [isAuthenticated, fetchApplications]);
+	}, [isAuthenticated, fetchApplications, hasAttemptedFetch]);
 
 	const value = {
 		applications,
