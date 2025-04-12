@@ -3,7 +3,6 @@ import { toast } from "react-toastify";
 import PageMeta from "../../components/common/PageMeta";
 import DocumentTypeFolder from "../../components/Documents/DocumentTypeFolder";
 import DocumentCard from "../../components/Documents/DocumentCard";
-import { Modal } from "../../components/ui/modal";
 import DocumentDetailModal from "../../components/Documents/DocumentDetailModal";
 import DeleteDocumentModal from "../../components/Documents/DeleteDocumentModal";
 import UploadDocumentModal from "../../components/Documents/UploadDocumentModal";
@@ -390,44 +389,31 @@ export default function DocumentLibrary() {
 				)}
 			</div>
 
-			{/* Upload Modal */}
-			<Modal
+			{/* Delete Confirmation Modal */}
+			<DeleteDocumentModal
+				isOpen={isDeleteModalOpen}
+				documentName={selectedDocument?.file_name || ""}
+				onConfirm={handleConfirmDelete}
+				onCancel={() => setIsDeleteModalOpen(false)}
+			/>
+
+			{/* Upload Document Modal */}
+			<UploadDocumentModal
 				isOpen={isUploadModalOpen}
 				onClose={() => setIsUploadModalOpen(false)}
-				className="max-w-md mx-auto"
-			>
-				<UploadDocumentModal onClose={() => setIsUploadModalOpen(false)} />
-			</Modal>
+				initialApplicationId={null}
+				initialDocumentType={undefined}
+			/>
 
 			{/* Document Detail Modal */}
-			<Modal
-				isOpen={isDetailModalOpen}
-				onClose={() => setIsDetailModalOpen(false)}
-				className="max-w-md mx-auto"
-			>
-				{selectedDocument && (
-					<DocumentDetailModal
-						document={selectedDocument}
-						onClose={() => setIsDetailModalOpen(false)}
-						onDelete={handleDeleteClick}
-					/>
-				)}
-			</Modal>
-
-			{/* Delete Confirmation Modal */}
-			<Modal
-				isOpen={isDeleteModalOpen}
-				onClose={() => setIsDeleteModalOpen(false)}
-				className="max-w-md mx-auto"
-			>
-				{selectedDocument && (
-					<DeleteDocumentModal
-						documentName={selectedDocument.file_name}
-						onConfirm={handleConfirmDelete}
-						onCancel={() => setIsDeleteModalOpen(false)}
-					/>
-				)}
-			</Modal>
+			{selectedDocument && (
+				<DocumentDetailModal
+					isOpen={isDetailModalOpen}
+					document={selectedDocument}
+					onClose={() => setIsDetailModalOpen(false)}
+					onDelete={handleDeleteClick}
+				/>
+			)}
 		</>
 	);
 }
