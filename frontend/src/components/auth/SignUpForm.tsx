@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
@@ -9,7 +9,6 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { signUp } from "../../api/auth";
 import { SignUpRequest } from "../../interfaces/auth";
-import { AuthContext } from "../../context/AuthContext";
 import { countries } from "../../utils/countries";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
