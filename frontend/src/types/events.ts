@@ -6,8 +6,8 @@ export interface EventResponse {
 }
 
 export interface Events {
-    id: number,
-    application: number,
+    id: 1,
+    application: number | null,
     event_title: string,
     event_color: string,
     event_date: string,
@@ -17,7 +17,7 @@ export interface Events {
 }
 
 export interface EventRequest {
-    application: number,
+    application: number | null,
     event_title: string,
     event_color: string,
     event_date: string,

@@ -3,75 +3,74 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { EventInput, DateSelectArg, EventClickArg } from "@fullcalendar/core";
+import { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import { Modal } from "../components/ui/modal";
 import { useModal } from "../hooks/useModal";
 import PageMeta from "../components/common/PageMeta";
-
-interface CalendarEvent extends EventInput {
-  extendedProps: {
-    calendar: string;
-  };
-}
+import { EventRequest, Events } from "../types/events";
+import { createEvent, getEvents } from "../api/events";
+import { Application } from "../types/applications";
+import { useApplications } from "../context/ApplicationContext";
 
 const Calendar: React.FC = () => {
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
-    null
-  );
+  const { applications } = useApplications();
+  const [selectedEvent, setSelectedEvent] = useState<Events | null>(null);
   const [eventTitle, setEventTitle] = useState("");
-  const [eventStartDate, setEventStartDate] = useState("");
-  const [eventEndDate, setEventEndDate] = useState("");
-  const [eventLevel, setEventLevel] = useState("");
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [eventDate, setEventDate] = useState("");
+  const [eventColor, setEventColor] = useState("");
+  const [eventNotes, setEventNotes] = useState("");
+  const [applicationId, setApplicationId] = useState("");
+  const [events, setEvents] = useState<Events[]>([]);
   const calendarRef = useRef<FullCalendar>(null);
   const { isOpen, openModal, closeModal } = useModal();
 
   const calendarsEvents = {
-    Danger: "danger",
-    Success: "success",
-    Primary: "primary",
-    Warning: "warning",
+    danger: "danger",
+    success: "success",
+    primary: "primary",
+    warning: "warning",
   };
 
+  const fetchEvents = async () => {
+    try {
+      const events = await getEvents();
+      if (events.results.length == 0) {
+        setEvents([
+          {
+            id: 1,
+            application: 5,
+            event_title: "University of Ibadan Screening",
+            event_color: "primary",
+            event_date: "2025-05-10",
+            notes: "Go with JAMB result and birth certificate.",
+            created_at: "2025-04-08T13:00:00Z",
+            updated_at: "2025-04-08T13:00:00Z",
+          },
+        ]);
+      }
+      setEvents(events.results);
+    } catch (error) {
+      setEvents([]);
+    }
+  };
+
+  // Initial event data
   useEffect(() => {
-    // Initialize with some events
-    setEvents([
-      {
-        id: "1",
-        title: "Event Conf.",
-        start: new Date().toISOString().split("T")[0],
-        extendedProps: { calendar: "Danger" },
-      },
-      {
-        id: "2",
-        title: "Meeting",
-        start: new Date(Date.now() + 86400000).toISOString().split("T")[0],
-        extendedProps: { calendar: "Success" },
-      },
-      {
-        id: "3",
-        title: "Workshop",
-        start: new Date(Date.now() + 172800000).toISOString().split("T")[0],
-        end: new Date(Date.now() + 259200000).toISOString().split("T")[0],
-        extendedProps: { calendar: "Primary" },
-      },
-    ]);
+    fetchEvents();
   }, []);
 
   const handleDateSelect = (selectInfo: DateSelectArg) => {
     resetModalFields();
-    setEventStartDate(selectInfo.startStr);
-    setEventEndDate(selectInfo.endStr || selectInfo.startStr);
+    setEventDate(selectInfo.startStr);
     openModal();
   };
 
   const handleEventClick = (clickInfo: EventClickArg) => {
     const event = clickInfo.event;
-    setSelectedEvent(event as unknown as CalendarEvent);
+    setSelectedEvent(event as unknown as Events);
     setEventTitle(event.title);
-    setEventStartDate(event.start?.toISOString().split("T")[0] || "");
-    setEventEndDate(event.end?.toISOString().split("T")[0] || "");
-    setEventLevel(event.extendedProps.calendar);
+    setEventDate(event.start?.toISOString().split("T")[0] || "");
+    setEventColor(event.extendedProps.calendar);
     openModal();
   };
 
@@ -84,24 +83,23 @@ const Calendar: React.FC = () => {
             ? {
                 ...event,
                 title: eventTitle,
-                start: eventStartDate,
-                end: eventEndDate,
-                extendedProps: { calendar: eventLevel },
+                start: eventDate,
+                extendedProps: { calendar: eventColor },
               }
             : event
         )
       );
     } else {
       // Add new event
-      const newEvent: CalendarEvent = {
-        id: Date.now().toString(),
-        title: eventTitle,
-        start: eventStartDate,
-        end: eventEndDate,
-        allDay: true,
-        extendedProps: { calendar: eventLevel },
+      const newEvent: EventRequest = {
+        application: Number(applicationId) || null,
+        event_title: eventTitle,
+        event_color: eventColor,
+        event_date: eventDate,
+        notes: eventNotes,
       };
-      setEvents((prevEvents) => [...prevEvents, newEvent]);
+      createEvent(newEvent);
+      fetchEvents();
     }
     closeModal();
     resetModalFields();
@@ -109,9 +107,10 @@ const Calendar: React.FC = () => {
 
   const resetModalFields = () => {
     setEventTitle("");
-    setEventStartDate("");
-    setEventEndDate("");
-    setEventLevel("");
+    setEventDate("");
+    setEventColor("");
+    setEventNotes("");
+    setApplicationId("");
     setSelectedEvent(null);
   };
 
@@ -175,6 +174,28 @@ const Calendar: React.FC = () => {
                   />
                 </div>
               </div>
+              <div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                    Application Application
+                  </label>
+                  <select
+                    className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                    value={applicationId}
+                    onChange={(e) => setApplicationId(e.target.value)}
+                  >
+                    <option value="">None</option>
+                    {applications.map((app: Application) => (
+                      <option key={app.id} value={app.id}>
+                        {app.program_name} at{" "}
+                        {app.institution_name ||
+                          app.institution_details?.name ||
+                          app.institution}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
               <div className="mt-6">
                 <label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
                   Event Color
@@ -193,16 +214,16 @@ const Calendar: React.FC = () => {
                             <input
                               className="sr-only form-check-input"
                               type="radio"
-                              name="event-level"
+                              name="event-color"
                               value={key}
                               id={`modal${key}`}
-                              checked={eventLevel === key}
-                              onChange={() => setEventLevel(key)}
+                              checked={eventColor === key}
+                              onChange={() => setEventColor(key)}
                             />
                             <span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
                               <span
                                 className={`h-2 w-2 rounded-full bg-white ${
-                                  eventLevel === key ? "block" : "hidden"
+                                  eventColor === key ? "block" : "hidden"
                                 }`}
                               ></span>
                             </span>
@@ -214,34 +235,32 @@ const Calendar: React.FC = () => {
                   ))}
                 </div>
               </div>
-
               <div className="mt-6">
                 <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Enter Start Date
+                  Enter Date
                 </label>
                 <div className="relative">
                   <input
-                    id="event-start-date"
+                    id="event-date"
                     type="date"
-                    value={eventStartDate}
-                    onChange={(e) => setEventStartDate(e.target.value)}
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
                     className="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
                   />
                 </div>
-              </div>
-
-              <div className="mt-6">
-                <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-                  Enter End Date
-                </label>
-                <div className="relative">
-                  <input
-                    id="event-end-date"
-                    type="date"
-                    value={eventEndDate}
-                    onChange={(e) => setEventEndDate(e.target.value)}
-                    className="dark:bg-dark-900 h-11 w-full appearance-none rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pl-4 pr-11 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-                  />
+                <div>
+                  <div>
+                    <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+                      Notes
+                    </label>
+                    <input
+                      id="notes"
+                      type="text"
+                      value={eventNotes}
+                      onChange={(e) => setEventNotes(e.target.value)}
+                      className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+                    />
+                  </div>
                 </div>
               </div>
             </div>

@@ -26,9 +26,9 @@ export const getEvents = async (
  */
 export const getEventById = async (
     id: string | number
-): Promise<Event> => {
+): Promise<Events> => {
     try {
-        const response = await authenticatedApi.get<Event>(
+        const response = await authenticatedApi.get<Events>(
             `/events/${id}/`
         );
         return response.data;
@@ -46,10 +46,18 @@ export const getEventById = async (
  */
 export const createEvent = async (
     eventData: EventRequest
-): Promise<EventResponse> => {
+): Promise<Events> => {
     try {
-        const formattedData = { ...eventData };
-        const response = await authenticatedApi.post<EventResponse>(
+        const formattedData = eventData;
+        console.log(formattedData)
+        const testData: EventRequest = {
+            application: 7,
+            event_title: "ABSU Admission Exam",
+            event_color: "warning",
+            event_date: "2025-05-22",
+            notes: "These are my notes"
+        }
+        const response = await authenticatedApi.post<Events>(
             `/events/create/`,
             formattedData
         );
@@ -125,7 +133,7 @@ export const updateEvent = async (
             );
         } else {
             // Something happened in setting up the request
-            throw new Error(error.message || "Failed to update application");
+            throw new Error(error.message || "Failed to update event");
         }
     }
 };
