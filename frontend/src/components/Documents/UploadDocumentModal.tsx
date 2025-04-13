@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Button from "../ui/button/Button";
 import { Modal } from "../ui/modal";
 import {
@@ -23,6 +23,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 	initialApplicationId = null,
 	initialDocumentType,
 }) => {
+	const formRef = useRef<HTMLFormElement>(null);
 	const [file, setFile] = useState<File | null>(null);
 	const [documentType, setDocumentType] = useState<DocumentType>(
 		initialDocumentType || "Transcript"
@@ -121,7 +122,7 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 				{/* Content */}
 				<div className="flex-1 overflow-y-auto min-h-0">
 					<div className="px-8 py-4">
-						<form onSubmit={handleSubmit}>
+							<form ref={formRef} onSubmit={handleSubmit}>
 							<div className="mb-6">
 								<label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
 									Document Type
@@ -266,9 +267,12 @@ const UploadDocumentModal: React.FC<UploadDocumentModalProps> = ({
 						<Button variant="outline" onClick={onClose} disabled={isUploading}>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={!file || isUploading}>
-							{isUploading ? "Uploading..." : "Upload"}
-						</Button>
+							<Button 
+                            onClick={() => formRef.current?.requestSubmit()}
+                            disabled={!file || isUploading}
+                        >
+                            {isUploading ? "Uploading..." : "Upload"}
+                        </Button>
 					</div>
 				</div>
 			</div>
