@@ -10,6 +10,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ApplicationProvider } from "./context/ApplicationContext";
 import { DocumentProvider } from "./context/DocumentContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext";
+import { EventProvider } from "./context/EventContext";
 
 // Import page components
 import Home from "./pages/Home/Home";
@@ -51,72 +52,74 @@ export default function App() {
 	return (
 		<>
 			<AuthProvider>
-				<ApplicationProvider>
-					<DocumentProvider>
-						<ThemeProvider>
-							<Router>
-								<ScrollToTop />
-								<Routes>
-									{/* Protected Routes */}
-									<Route
-										element={
-											<PrivateRoute>
-												<AppLayout />
-											</PrivateRoute>
-										}
-									>
-										<Route index path={ROUTES.App.main} element={<Home />} />
+				<ThemeProvider>
+					<ApplicationProvider>
+						<DocumentProvider>
+							<EventProvider>
+								<Router>
+									<ScrollToTop />
+									<Routes>
+										{/* Protected Routes */}
 										<Route
-											path={ROUTES.Applications.tracker}
-											element={<ApplicationTracker />}
-										/>
-										<Route
-											path={ROUTES.Applications.detail}
-											element={<ApplicationDetail />}
-										/>
-										<Route
-											path={ROUTES.Applications.documents}
-											element={<ApplicationDocuments />}
-										/>
-										<Route
-											path={ROUTES.Documents.library}
-											element={<DocumentLibrary />}
-										/>
-										<Route
-											path={ROUTES.Directory.search}
-											element={<SchoolSearch />}
-										/>
-										{/* Add route for institution detail */}
-										<Route
-											path={ROUTES.Directory.institution}
-											element={<InstitutionDetail />}
-										/>
-										<Route
-											path={ROUTES.Other.calendar}
-											element={<Calendar />}
-										/>
-										<Route
-											path={ROUTES.Other.recommendations}
-											element={<Recommendations />}
-										/>
-										<Route
-											path={ROUTES.Profile.information}
-											element={<UserProfiles />}
-										/>
-									</Route>
+											element={
+												<PrivateRoute>
+													<AppLayout />
+												</PrivateRoute>
+											}
+										>
+											<Route index path={ROUTES.App.main} element={<Home />} />
+											<Route
+												path={ROUTES.Applications.tracker}
+												element={<ApplicationTracker />}
+											/>
+											<Route
+												path={ROUTES.Applications.detail}
+												element={<ApplicationDetail />}
+											/>
+											<Route
+												path={ROUTES.Applications.documents}
+												element={<ApplicationDocuments />}
+											/>
+											<Route
+												path={ROUTES.Documents.library}
+												element={<DocumentLibrary />}
+											/>
+											<Route
+												path={ROUTES.Directory.search}
+												element={<SchoolSearch />}
+											/>
+											{/* Add route for institution detail */}
+											<Route
+												path={ROUTES.Directory.institution}
+												element={<InstitutionDetail />}
+											/>
+											<Route
+												path={ROUTES.Other.calendar}
+												element={<Calendar />}
+											/>
+											<Route
+												path={ROUTES.Other.recommendations}
+												element={<Recommendations />}
+											/>
+											<Route
+												path={ROUTES.Profile.information}
+												element={<UserProfiles />}
+											/>
+										</Route>
 
-									{/* Public Routes */}
-									<Route path={ROUTES.Auth.signin} element={<SignIn />} />
-									<Route path={ROUTES.Auth.signup} element={<SignUp />} />
+										{/* Public Routes */}
+										<Route path={ROUTES.Auth.signin} element={<SignIn />} />
+										<Route path={ROUTES.Auth.signup} element={<SignUp />} />
 
-									{/* Fallback Route */}
-									<Route path="*" element={<NotFound />} />
-								</Routes>
-							</Router>
-							<ThemedToast />
-						</ThemeProvider>
-					</DocumentProvider>
-				</ApplicationProvider>
+										{/* Fallback Route */}
+										<Route path="*" element={<NotFound />} />
+									</Routes>
+								</Router>
+								<ThemedToast />
+							</EventProvider>
+						</DocumentProvider>
+					</ApplicationProvider>
+				</ThemeProvider>
 			</AuthProvider>
 		</>
 	);
