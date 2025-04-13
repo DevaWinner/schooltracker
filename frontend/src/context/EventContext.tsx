@@ -7,7 +7,7 @@ import React, {
 	useEffect,
 	useRef,
 } from "react";
-import { Events, EventRequest, EventResponse } from "../types/events";
+import { Events, EventRequest } from "../types/events";
 import {
 	getEvents,
 	createEvent,
