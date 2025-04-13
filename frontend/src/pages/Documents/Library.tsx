@@ -37,17 +37,21 @@ export default function DocumentLibrary() {
 	}, [fetchDocuments]);
 
 	useEffect(() => {
-		const filterParams: DocumentFilterParams = {};
+		const delayDebounceFn = setTimeout(() => {
+			const filterParams: DocumentFilterParams = {};
 
-		if (selectedType !== "All") {
-			filterParams.document_type = selectedType;
-		}
+			if (selectedType !== "All") {
+				filterParams.document_type = selectedType;
+			}
 
-		if (searchTerm.trim()) {
-			filterParams.search = searchTerm.trim();
-		}
+			if (searchTerm.trim()) {
+				filterParams.search = searchTerm.trim();
+			}
 
-		filterDocuments(filterParams);
+			filterDocuments(filterParams);
+		}, 300); // Add small delay for better performance
+
+		return () => clearTimeout(delayDebounceFn);
 	}, [selectedType, searchTerm, filterDocuments]);
 
 	const handleSelectDocument = (doc: Document) => {
@@ -110,7 +114,7 @@ export default function DocumentLibrary() {
 				description="Manage and organize your academic documents"
 			/>
 
-			<div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+			<div className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
 				<div>
 					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
 						Document Library
@@ -120,12 +124,12 @@ export default function DocumentLibrary() {
 					</p>
 				</div>
 
-				<div className="flex gap-3">
+				<div className="flex gap-3 items-center">
 					<div className="relative">
 						<input
 							type="search"
 							placeholder="Search documents..."
-							className="h-10 w-full rounded-lg border border-gray-300 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+							className="h-11 w-full rounded-lg border border-gray-300 pl-10 pr-4 text-sm focus:border-blue-500 focus:outline-none dark:border-gray-600 dark:bg-gray-800 dark:text-white"
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
 						/>
@@ -145,11 +149,14 @@ export default function DocumentLibrary() {
 								/>
 							</svg>
 						</span>
+						<p className="absolute -bottom-5 left-0 text-xs text-gray-500 dark:text-gray-400">
+							Search by document name
+						</p>
 					</div>
 
 					<Button
 						onClick={() => setIsUploadModalOpen(true)}
-						className="inline-flex items-center gap-2"
+						className="h-11 inline-flex items-center gap-2"
 					>
 						<svg
 							xmlns="http://www.w3.org/2000/svg"
