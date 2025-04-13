@@ -223,7 +223,7 @@ export default function DocumentLibrary() {
 			</div>
 
 			{/* Main Document Grid - Updated with better visual hierarchy */}
-			<div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 shadow-sm">
+			<div className="rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-700 dark:bg-gray-800 shadow-sm">
 				<div className="mb-4 flex items-center justify-between border-b border-gray-100 pb-4 dark:border-gray-700">
 					<h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
 						{selectedType === "All" ? (

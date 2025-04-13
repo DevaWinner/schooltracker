@@ -123,7 +123,7 @@ export default function SchoolSearch() {
 
 			<PageBreadcrumb pageTitle="Institution Directory" />
 
-			<div className="container mx-auto space-y-6 pb-12">
+			<div className="container mx-auto space-y-6">
 				{/* Intro section */}
 				<div className="mb-6">
 					<h1 className="text-3xl font-bold text-gray-900 dark:text-white">

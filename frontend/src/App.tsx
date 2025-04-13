@@ -13,7 +13,7 @@ import { ThemeProvider, useTheme } from "./context/ThemeContext";
 
 // Import page components
 import Home from "./pages/Home/Home";
-import Calendar from "./pages/Calendar";
+import Calendar from "./pages/Calendar/Calendar";
 import Recommendations from "./pages/Recommendations";
 import ApplicationTracker from "./pages/Applications/Tracker";
 import ApplicationDetail from "./pages/Applications/ApplicationDetail";
