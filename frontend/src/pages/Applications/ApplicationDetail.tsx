@@ -4,7 +4,6 @@ import { Application } from "../../types/applications";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { ROUTES } from "../../constants/Routes";
@@ -793,19 +792,14 @@ export default function ApplicationDetail() {
 				/>
 			)}
 
-			{/* Delete Confirmation Modal */}
-			<Modal
+			{/* Delete Confirmation Modal - Using the component directly */}
+			<DeleteConfirmationModal
 				isOpen={isDeleteModalOpen}
-				onClose={() => setIsDeleteModalOpen(false)}
-				className="max-w-[500px] m-4"
-			>
-				<DeleteConfirmationModal
-					title="Delete Application"
-					message={`Are you sure you want to delete the application for ${application.program_name}? This action cannot be undone.`}
-					onConfirm={handleConfirmDelete}
-					onCancel={() => setIsDeleteModalOpen(false)}
-				/>
-			</Modal>
+				title="Delete Application"
+				message={`Are you sure you want to delete the application for ${application.program_name}? This action cannot be undone.`}
+				onConfirm={handleConfirmDelete}
+				onCancel={() => setIsDeleteModalOpen(false)}
+			/>
 
 			{/* Event Form Modal */}
 			<EventFormModal

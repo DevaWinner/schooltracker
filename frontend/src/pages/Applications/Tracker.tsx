@@ -6,7 +6,6 @@ import PageMeta from "../../components/common/PageMeta";
 import AddApplication from "../../components/ApplicationTracker/AddApplication";
 import ApplicationTable from "../../components/ApplicationTracker/ApplicationTable";
 import { Application, ApplicationFilterParams } from "../../types/applications";
-import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { useApplications } from "../../context/ApplicationContext";
@@ -215,21 +214,16 @@ export default function ApplicationTracker() {
 				/>
 			)}
 
-			{/* Delete Confirmation Modal */}
-			<Modal
+			{/* Delete Confirmation Modal - Now directly using the modal component */}
+			<DeleteConfirmationModal
 				isOpen={isDeleteModalOpen}
-				onClose={() => setIsDeleteModalOpen(false)}
-				className="max-w-[500px] m-4"
-			>
-				<DeleteConfirmationModal
-					title="Delete Application"
-					message={`Are you sure you want to delete the application for ${
-						currentApplication?.program_name || "this program"
-					}? This action cannot be undone.`}
-					onConfirm={handleConfirmDelete}
-					onCancel={() => setIsDeleteModalOpen(false)}
-				/>
-			</Modal>
+				title="Delete Application"
+				message={`Are you sure you want to delete the application for ${
+					currentApplication?.program_name || "this program"
+				}? This action cannot be undone.`}
+				onConfirm={handleConfirmDelete}
+				onCancel={() => setIsDeleteModalOpen(false)}
+			/>
 		</>
 	);
 }

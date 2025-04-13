@@ -7,6 +7,7 @@ import { format, parseISO, isBefore } from "date-fns";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import EventFormModal from "../../components/Calendar/EventFormModal";
+import DeleteConfirmationModal from "../../components/Calendar/DeleteConfirmationModal";
 import { useModal } from "../../hooks/useModal";
 import Button from "../../components/ui/button/Button";
 
@@ -15,14 +16,21 @@ const AllEvents: React.FC = () => {
 	const { applications } = useApplications();
 	const navigate = useNavigate();
 	const [selectedEvent, setSelectedEvent] = useState<Events | null>(null);
+	const [eventToDelete, setEventToDelete] = useState<Events | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
+	const [isDeleting, setIsDeleting] = useState(false);
 	const [filteredEvents, setFilteredEvents] = useState<Events[]>([]);
 	const [filter, setFilter] = useState<string>("all"); // "all", "upcoming", "past"
 	const [search, setSearch] = useState<string>("");
 	const eventsLoadedRef = useRef(false);
 
-	// Modal for editing events
+	// Modals for editing and deleting events
 	const { isOpen, openModal, closeModal } = useModal();
+	const {
+		isOpen: isDeleteModalOpen,
+		openModal: openDeleteModal,
+		closeModal: closeDeleteModal,
+	} = useModal();
 
 	// Load events on component mount - FIXED to properly fetch data
 	useEffect(() => {
@@ -135,11 +143,26 @@ const AllEvents: React.FC = () => {
 		openModal();
 	};
 
-	// Handle event delete
-	const handleDeleteEvent = async (id: number) => {
-		if (window.confirm("Are you sure you want to delete this event?")) {
-			await removeEvent(id);
+	// Handle event delete confirmation
+	const handleDeleteConfirmation = (event: Events, e: React.MouseEvent) => {
+		e.stopPropagation(); // Prevent triggering the event edit
+		setEventToDelete(event);
+		openDeleteModal();
+	};
+
+	// Handle event delete execution
+	const handleConfirmDelete = async () => {
+		if (!eventToDelete) return;
+
+		setIsDeleting(true);
+		try {
+			await removeEvent(eventToDelete.id);
 			// Event will be automatically removed from the list when the context updates
+		} catch (error) {
+			console.error("Error deleting event:", error);
+		} finally {
+			setIsDeleting(false);
+			setEventToDelete(null);
 		}
 	};
 
@@ -219,10 +242,7 @@ const AllEvents: React.FC = () => {
 					<div className="flex gap-2">
 						<button
 							className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full"
-							onClick={(e) => {
-								e.stopPropagation();
-								handleDeleteEvent(event.id);
-							}}
+							onClick={(e) => handleDeleteConfirmation(event, e)}
 						>
 							<svg
 								className="w-5 h-5"
@@ -403,6 +423,18 @@ const AllEvents: React.FC = () => {
 				onClose={handleCloseModal}
 				selectedEvent={selectedEvent}
 				selectedDate=""
+			/>
+
+			{/* Delete Confirmation Modal */}
+			<DeleteConfirmationModal
+				isOpen={isDeleteModalOpen}
+				onClose={closeDeleteModal}
+				onConfirm={handleConfirmDelete}
+				title="Delete Event"
+				message={`Are you sure you want to delete "${
+					eventToDelete?.event_title || "this event"
+				}"? This action cannot be undone.`}
+				isDeleting={isDeleting}
 			/>
 		</>
 	);

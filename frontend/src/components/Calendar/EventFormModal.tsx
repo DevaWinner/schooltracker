@@ -4,6 +4,7 @@ import { Events, EventRequest } from "../../types/events";
 import { Application } from "../../types/applications";
 import { useApplications } from "../../context/ApplicationContext";
 import { useEvents } from "../../context/EventContext";
+import Button from "../ui/button/Button";
 
 interface EventFormModalProps {
 	isOpen: boolean;
@@ -101,24 +102,23 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 	};
 
 	return (
-		<Modal
-			isOpen={isOpen}
-			onClose={onClose}
-			className="max-w-[700px] p-6 lg:p-10"
-		>
-			<div className="flex flex-col px-2 overflow-y-auto custom-scrollbar">
-				<div>
-					<h5 className="mb-2 font-semibold text-gray-800 modal-title text-theme-xl dark:text-white/90 lg:text-2xl">
+		<Modal isOpen={isOpen} onClose={onClose} className="w-[700px]">
+			<div className="flex flex-col h-[85vh] bg-white dark:bg-gray-900 rounded-3xl overflow-hidden">
+				{/* Fixed Header */}
+				<div className="w-full flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
+					<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
 						{selectedEvent ? "Edit Event" : "Add Event"}
-					</h5>
-					<p className="text-sm text-gray-500 dark:text-gray-400">
+					</h4>
+					<p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
 						Plan your next big moment: schedule or edit an event to stay on
 						track
 					</p>
 				</div>
-				<div className="mt-8">
-					<div>
-						<div>
+
+				{/* Scrollable Content */}
+				<div className="flex-1 overflow-y-auto min-h-0">
+					<div className="w-full px-8 py-4">
+						<div className="mb-6">
 							<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 								Event Title
 							</label>
@@ -131,14 +131,13 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 								required
 							/>
 						</div>
-					</div>
-					<div className="mt-4">
-						<div>
+
+						<div className="mb-6">
 							<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
 								Associated Application
 							</label>
 							<select
-								className="block w-full rounded-lg border border-gray-300 bg-white p-2.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+								className="block w-full h-11 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
 								value={applicationId}
 								onChange={(e) => setApplicationId(e.target.value)}
 							>
@@ -153,51 +152,11 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 								))}
 							</select>
 						</div>
-					</div>
-					<div className="mt-6">
-						<label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
-							Event Color
-						</label>
-						<div className="flex flex-wrap items-center gap-4 sm:gap-5">
-							{Object.entries(calendarsEvents).map(([key, value]) => (
-								<div key={key} className="n-chk">
-									<div
-										className={`form-check form-check-${value} form-check-inline`}
-									>
-										<label
-											className="flex items-center text-sm text-gray-700 form-check-label dark:text-gray-400"
-											htmlFor={`modal${key}`}
-										>
-											<span className="relative">
-												<input
-													className="sr-only form-check-input"
-													type="radio"
-													name="event-color"
-													value={key}
-													id={`modal${key}`}
-													checked={eventColor === key}
-													onChange={() => setEventColor(key)}
-												/>
-												<span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
-													<span
-														className={`h-2 w-2 rounded-full bg-white ${
-															eventColor === key ? "block" : "hidden"
-														}`}
-													></span>
-												</span>
-											</span>
-											{key}
-										</label>
-									</div>
-								</div>
-							))}
-						</div>
-					</div>
-					<div className="mt-6">
-						<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-							Event Date
-						</label>
-						<div className="relative">
+
+						<div className="mb-6">
+							<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+								Event Date
+							</label>
 							<input
 								id="event-date"
 								type="date"
@@ -207,43 +166,86 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 								required
 							/>
 						</div>
-						<div className="mt-4">
-							<div>
-								<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-									Notes
-								</label>
-								<input
-									id="notes"
-									type="text"
-									value={eventNotes}
-									onChange={(e) => setEventNotes(e.target.value)}
-									className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
-								/>
+
+						<div className="mb-6">
+							<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
+								Notes
+							</label>
+							<input
+								id="notes"
+								type="text"
+								value={eventNotes}
+								onChange={(e) => setEventNotes(e.target.value)}
+								className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+							/>
+						</div>
+
+						<div className="mb-6">
+							<label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
+								Event Color
+							</label>
+							<div className="flex flex-wrap items-center gap-4 sm:gap-5">
+								{Object.entries(calendarsEvents).map(([key, value]) => (
+									<div key={key} className="n-chk">
+										<div
+											className={`form-check form-check-${value} form-check-inline`}
+										>
+											<label
+												className="flex items-center text-sm text-gray-700 form-check-label dark:text-gray-400"
+												htmlFor={`modal${key}`}
+											>
+												<span className="relative">
+													<input
+														className="sr-only form-check-input"
+														type="radio"
+														name="event-color"
+														value={key}
+														id={`modal${key}`}
+														checked={eventColor === key}
+														onChange={() => setEventColor(key)}
+													/>
+													<span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
+														<span
+															className={`h-2 w-2 rounded-full bg-white ${
+																eventColor === key ? "block" : "hidden"
+															}`}
+														></span>
+													</span>
+												</span>
+												{key}
+											</label>
+										</div>
+									</div>
+								))}
 							</div>
 						</div>
 					</div>
 				</div>
-				<div className="flex items-center gap-3 mt-6 modal-footer sm:justify-end">
-					<button
-						onClick={onClose}
-						type="button"
-						disabled={isSubmitting}
-						className="flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] sm:w-auto"
-					>
-						Cancel
-					</button>
-					<button
-						onClick={handleAddOrUpdateEvent}
-						type="button"
-						disabled={isSubmitting}
-						className="btn btn-success btn-update-event flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
-					>
-						{isSubmitting
-							? "Saving..."
-							: selectedEvent
-							? "Update Changes"
-							: "Add Event"}
-					</button>
+
+				{/* Fixed Footer */}
+				<div className="w-full flex-shrink-0 flex items-center justify-between border-t border-gray-200 px-8 py-4 bg-white dark:bg-gray-900 dark:border-gray-700">
+					<div></div>
+					<div className="flex items-center gap-3">
+						<Button
+							size="sm"
+							variant="outline"
+							onClick={onClose}
+							disabled={isSubmitting}
+						>
+							Cancel
+						</Button>
+						<Button
+							size="sm"
+							onClick={handleAddOrUpdateEvent}
+							disabled={isSubmitting}
+						>
+							{isSubmitting
+								? "Saving..."
+								: selectedEvent
+								? "Update Event"
+								: "Add Event"}
+						</Button>
+					</div>
 				</div>
 			</div>
 		</Modal>

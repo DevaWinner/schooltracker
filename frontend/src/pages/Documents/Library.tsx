@@ -74,7 +74,6 @@ export default function DocumentLibrary() {
 		try {
 			const success = await removeDocument(selectedDocument.id);
 			if (success) {
-				toast.success("Document deleted successfully");
 				setIsDeleteModalOpen(false);
 				return true;
 			}
