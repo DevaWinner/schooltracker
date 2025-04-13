@@ -98,8 +98,19 @@ const Calendar: React.FC = () => {
 					</p>
 				</div>
 				
-				{/* Added View All Events button */}
-				<div>
+				 {/* Buttons for calendar actions */}
+				<div className="flex gap-2">
+					<Button 
+						size="sm"
+						variant="primary"
+						onClick={() => {
+							setSelectedEvent(null);
+							setSelectedDate("");
+							openModal();
+						}}
+					>
+						Add Event +
+					</Button>
 					<Button 
 						size="sm"
 						variant="outline"
@@ -120,7 +131,7 @@ const Calendar: React.FC = () => {
 							plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
 							initialView="dayGridMonth"
 							headerToolbar={{
-								left: "prev,next addEventButton",
+								left: "prev,next",
 								center: "title",
 								right: "dayGridMonth,timeGridWeek,timeGridDay",
 							}}
@@ -129,16 +140,6 @@ const Calendar: React.FC = () => {
 							select={handleDateSelect}
 							eventClick={handleEventClick}
 							eventContent={renderEventContent}
-							customButtons={{
-								addEventButton: {
-									text: "Add Event +",
-									click: () => {
-										setSelectedEvent(null);
-										setSelectedDate("");
-										openModal();
-									},
-								},
-							}}
 						/>
 					)}
 				</div>
