@@ -6,11 +6,9 @@ import NotificationDropdown from "../components/header/NotificationDropdown";
 import UserDropdown from "../components/header/UserDropdown";
 import { TiThMenu } from "react-icons/ti";
 import { TbMenuOrder, TbMenu } from "react-icons/tb";
-import { motion } from "framer-motion";
 
 const AppHeader: React.FC = () => {
 	const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-	const [isMobileView, setIsMobileView] = useState(false);
 
 	const { isMobileOpen, toggleMobileSidebar, setMobileOpen } = useSidebar();
 
@@ -18,7 +16,6 @@ const AppHeader: React.FC = () => {
 	useEffect(() => {
 		const handleResize = () => {
 			const isMobile = window.innerWidth < 1024;
-			setIsMobileView(isMobile);
 
 			// When switching to desktop view, reset mobile sidebar state
 			if (!isMobile && isMobileOpen) {

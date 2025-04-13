@@ -4,7 +4,6 @@ import {
 	useState,
 	useEffect,
 	useCallback,
-	useRef,
 } from "react";
 
 type SidebarContextType = {
@@ -42,9 +41,6 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 	const [activeItem, setActiveItem] = useState<string | null>(null);
 	const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 	const [isHoverEnabled, setIsHoverEnabled] = useState(true);
-
-	// Store previous desktop sidebar state
-	const prevDesktopExpandedState = useRef(true);
 
 	// Use a stable wrapper for setIsHovered to avoid unnecessary rerenders
 	const handleSetIsHovered = useCallback(

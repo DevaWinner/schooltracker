@@ -138,26 +138,6 @@ const AppSidebar: React.FC = () => {
 		setOpenSubmenu((prev) => (prev && prev.index === index ? null : { index }));
 	};
 
-	const handleMouseEnter = () => {
-		if (hoverTimeoutRef.current) {
-			clearTimeout(hoverTimeoutRef.current);
-			hoverTimeoutRef.current = null;
-		}
-		if (isHoverEnabled) {
-			setIsHovered(true);
-		}
-	};
-
-	const handleMouseLeave = () => {
-		if (hoverTimeoutRef.current) {
-			clearTimeout(hoverTimeoutRef.current);
-		}
-		hoverTimeoutRef.current = window.setTimeout(() => {
-			setIsHovered(false);
-			hoverTimeoutRef.current = null;
-		}, 100);
-	};
-
 	useEffect(() => {
 		return () => {
 			if (hoverTimeoutRef.current) {
