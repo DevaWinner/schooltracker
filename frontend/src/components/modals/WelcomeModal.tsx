@@ -13,10 +13,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
 	onClose,
 	userName,
 }) => {
-	console.log(
-		`WelcomeModal: Rendering with isOpen=${isOpen}, userName=${userName}`
-	);
-
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} className="max-w-md">
 			<div className="p-6">
@@ -129,10 +125,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({
 
 					<Link
 						to="/profile/information"
-						onClick={() => {
-							console.log("WelcomeModal: Profile button clicked");
-							onClose();
-						}}
+						onClick={onClose}
 						className="px-4 py-2 text-sm font-medium text-white bg-brand-600 border border-transparent rounded-md shadow-sm hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 dark:bg-brand-500 dark:hover:bg-brand-600"
 					>
 						Complete Profile Now

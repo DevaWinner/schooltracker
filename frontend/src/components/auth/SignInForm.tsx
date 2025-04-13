@@ -123,7 +123,6 @@ export default function SignInForm() {
 				setIsFirstLogin(isFirstTimeUser);
 
 				if (isFirstTimeUser) {
-					console.log("New user detected, setting isFirstLogin to true");
 					// Make sure it's saved to localStorage for persistence
 					localStorage.setItem("isFirstLogin", "true");
 				}
@@ -131,7 +130,6 @@ export default function SignInForm() {
 				toast.success("Successfully signed in!");
 
 				// Force navigation to home page - hard-coded with no conditions
-				console.log("SignInForm: Navigating to home page");
 				navigate("/");
 			}
 		} catch (err: any) {

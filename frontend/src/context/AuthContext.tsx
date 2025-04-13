@@ -100,9 +100,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				// This is a new user, set isFirstLogin to true
 				setIsFirstLogin(true);
 				localStorage.setItem("isFirstLogin", "true");
-				console.log(
-					"AuthContext fetchProfileData: Detected new user, isFirstLogin set to true"
-				);
 			}
 
 			return { profileData, profileDetailsData, settingsData };
@@ -139,9 +136,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 			// Check if there's a stored flag for first login
 			if (storedIsFirstLogin === "true") {
-				console.log(
-					"Found isFirstLogin flag in localStorage, marking user as first-time"
-				);
 				setIsFirstLogin(true);
 			}
 
@@ -160,17 +154,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 								const parsedUserData = JSON.parse(userData);
 								setUser(parsedUserData);
 								setProfile(parsedUserData);
-							} catch (e) {
-								console.error("Error parsing stored user data", e);
-							}
+							} catch (e) {}
 						}
 
 						// Fetch fresh profile data
 						try {
 							await fetchProfileData();
-						} catch (error) {
-							console.error("Failed to fetch profile data", error);
-						}
+						} catch (error) {}
 					} else {
 						// Token is invalid, try to refresh it
 						try {
@@ -195,23 +185,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 							await fetchProfileData();
 						} catch (refreshError) {
 							// Refresh failed, clear auth state
-							console.error("Token refresh failed", refreshError);
 							signOutHandler();
 						}
 					}
 				} catch (error) {
-					console.error("Error during authentication validation", error);
 					signOutHandler();
 				}
 			} else {
 				// No stored tokens found
 				signOutHandler();
-			}
-
-			// Make sure there's no automatic navigation to profile
-			// Log any checks that could influence navigation
-			if (storedIsFirstLogin === "true") {
-				console.log("AuthContext: Found isFirstLogin in localStorage");
 			}
 
 			setIsLoading(false);
@@ -222,7 +204,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 	useEffect(() => {
 		const handleForceDataReset = () => {
-			console.log("Force data reset received");
 			signOutHandler(true);
 		};
 
@@ -251,11 +232,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		// Check if this is a first login
 		const isNewUser = userData.created_at === userData.updated_at;
 
-		// Set this first for debugging clarity
-		if (isNewUser) {
-			console.log("AuthContext signInHandler: Setting isFirstLogin to true");
-		}
-
 		setIsFirstLogin(isNewUser);
 
 		// Store tokens based on rememberMe preference
@@ -280,8 +256,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	};
 
 	const signOutHandler = (notifyComponents: boolean = true) => {
-		console.log("Signing out and clearing all state");
-
 		// Clear all auth-related state
 		setUser(null);
 		setAccessToken(null);
@@ -311,7 +285,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		const handleAuthError = (event: CustomEvent) => {
 			if (event.detail?.type === "auth_error") {
 				// If we get an auth error event from our API utilities
-				console.log("Auth error detected, signing out");
 				signOutHandler();
 			}
 		};

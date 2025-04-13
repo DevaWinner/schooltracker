@@ -287,8 +287,6 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 	// Clear document data when user signs out
 	useEffect(() => {
 		const handleUserSignOut = (_event: CustomEvent) => {
-			console.log("Document context: clearing document data on sign out");
-
 			// Reset all document state
 			setDocuments([]);
 			setFilteredDocuments([]);

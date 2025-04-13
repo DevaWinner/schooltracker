@@ -79,7 +79,6 @@ const NotificationDropdown: React.FC = () => {
 	useEffect(() => {
 		// Always fetch events on first mount to ensure notifications are up-to-date
 		if (!fetchedRef.current && !isLoading) {
-			console.log("NotificationDropdown: Initial event fetch");
 			fetchedRef.current = true;
 			fetchEvents(false); // Use false to allow caching if available
 		}

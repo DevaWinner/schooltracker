@@ -24,19 +24,12 @@ export default function Home() {
 
 	// Check if this is the user's first login
 	useEffect(() => {
-		// Debug to verify if isFirstLogin is working
-		console.log("Home component - isFirstLogin:", isFirstLogin);
-
 		if (isFirstLogin && profile) {
 			// Show the welcome modal with a slight delay so it appears after page load
-			console.log("Showing welcome modal for new user:", profile.first_name);
-
 			const timer = setTimeout(() => {
-				console.log("Setting showWelcomeModal to true");
 				setShowWelcomeModal(true);
 
 				// Mark that we've shown the first login modal
-				console.log("Clearing isFirstLogin flag");
 				setIsFirstLogin(false);
 				localStorage.removeItem("isFirstLogin"); // Clear the flag after showing
 			}, 500);
@@ -49,7 +42,7 @@ export default function Home() {
 	useEffect(() => {
 		// Don't refetch on every render, rely on the context providers' caching
 		// This will only trigger actual API calls when necessary
-		
+
 		// We can keep these calls since they're protected against unnecessary refetching now
 		fetchApplications();
 		fetchDocuments();
@@ -243,7 +236,6 @@ export default function Home() {
 				<WelcomeModal
 					isOpen={showWelcomeModal}
 					onClose={() => {
-						console.log("Closing welcome modal");
 						setShowWelcomeModal(false);
 					}}
 					userName={profile.first_name}
@@ -639,7 +631,6 @@ function getDaysUntil(dateStr?: string | null): string {
 		if (diffDays < 60) return "About 1 month left";
 		return `${Math.floor(diffDays / 30)} months left`;
 	} catch (error) {
-		console.error("Error calculating days until:", error);
 		return "";
 	}
 }

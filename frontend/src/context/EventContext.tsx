@@ -63,7 +63,6 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 		async (refresh = false) => {
 			// Prevent duplicate fetches if one is already in progress
 			if (isFetchingRef.current) {
-				console.log("Fetch already in progress, skipping duplicate request");
 				return;
 			}
 
@@ -92,7 +91,6 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 				setIsLoading(true);
 				setError(null);
 
-				console.log("Fetching events from API");
 				const response = await getEvents();
 				setEvents(response.results);
 				setLastUpdated(new Date());
@@ -200,8 +198,6 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 	// Clear event data when user signs out
 	useEffect(() => {
 		const handleUserSignOut = (_event: CustomEvent) => {
-			console.log("Event context: clearing event data on sign out");
-
 			// Reset all event state
 			setEvents([]);
 			setError(null);
@@ -235,7 +231,6 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 	// Initial fetch when component mounts - Simplified to ensure we fetch when needed
 	useEffect(() => {
 		if (isAuthenticated && !isFetchingRef.current) {
-			console.log("Initial events fetch on mount");
 			fetchEvents();
 		}
 	}, [isAuthenticated, fetchEvents]);

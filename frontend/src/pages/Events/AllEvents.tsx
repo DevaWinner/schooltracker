@@ -28,7 +28,6 @@ const AllEvents: React.FC = () => {
 	useEffect(() => {
 		const loadEvents = async () => {
 			if (!eventsLoadedRef.current) {
-				console.log("AllEvents: Loading events");
 				setIsLoading(true);
 				// Force refresh if events array is empty
 				await fetchEvents(events.length === 0);

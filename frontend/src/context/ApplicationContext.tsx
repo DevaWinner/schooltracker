@@ -311,8 +311,6 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 	// Clear application data when user signs out
 	useEffect(() => {
 		const handleUserSignOut = (_event: CustomEvent) => {
-			console.log("Application context: clearing application data on sign out");
-
 			// Reset all application state
 			setApplications([]);
 			setFilteredApplications([]);
