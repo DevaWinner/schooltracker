@@ -146,8 +146,7 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 				if (Object.keys(filters).length === 0) {
 					setFilteredApplications(applications);
 				} else if (
-					(filters.status || filters.degree_type) &&
-					!filters.search &&
+					(filters.status || filters.degree_type || filters.search) &&
 					!filters.ordering
 				) {
 					// Simple filtering we can do client-side
@@ -161,6 +160,24 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 						filtered = filtered.filter(
 							(app) => app.degree_type === filters.degree_type
 						);
+					}
+
+					if (filters.search) {
+						const searchTerm = filters.search.toLowerCase();
+						filtered = filtered.filter((app) => {
+							const institutionName = (
+								app.institution_details?.name ||
+								app.institution_name ||
+								app.institution ||
+								""
+							).toLowerCase();
+							const programName = (app.program_name || "").toLowerCase();
+
+							return (
+								institutionName.includes(searchTerm) ||
+								programName.includes(searchTerm)
+							);
+						});
 					}
 
 					setFilteredApplications(filtered);

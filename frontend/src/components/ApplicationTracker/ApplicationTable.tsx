@@ -31,6 +31,27 @@ export default function ApplicationTable({
 	const navigate = useNavigate();
 	const [filters, setFilters] = useState<ApplicationFilterParams>({});
 
+	// Add highlight function
+	const highlightSearchTerm = (text: string) => {
+		if (!filters.search) return text;
+
+		const searchTerm = filters.search.toLowerCase();
+		const lowerText = text.toLowerCase();
+		const index = lowerText.indexOf(searchTerm);
+
+		if (index === -1) return text;
+
+		return (
+			<>
+				{text.slice(0, index)}
+				<span className="bg-yellow-200 dark:bg-yellow-900">
+					{text.slice(index, index + searchTerm.length)}
+				</span>
+				{text.slice(index + searchTerm.length)}
+			</>
+		);
+	};
+
 	const applyFilters = (newFilters: ApplicationFilterParams) => {
 		setFilters(newFilters);
 		onFilterChange(newFilters);
@@ -213,14 +234,16 @@ export default function ApplicationTable({
 													}
 													className="text-blue-600 hover:text-blue-800 hover:underline dark:text-blue-400 dark:hover:text-blue-300 font-medium text-left"
 												>
-													{application.institution_details?.name ||
-														application.institution_name ||
-														application.institution ||
-														"N/A"}
+													{highlightSearchTerm(
+														application.institution_details?.name ||
+															application.institution_name ||
+															application.institution ||
+															"N/A"
+													)}
 												</button>
 											</TableCell>
 											<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
-												{application.program_name}
+												{highlightSearchTerm(application.program_name)}
 											</TableCell>
 											<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
 												{application.degree_type}
