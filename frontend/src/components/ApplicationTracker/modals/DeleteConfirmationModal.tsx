@@ -76,9 +76,9 @@ export default function DeleteConfirmationModal({
 					size="sm"
 					variant="danger"
 					onClick={handleConfirm}
-					isLoading={isDeleting}
+					disabled={isDeleting}
 				>
-					Delete
+					{isDeleting ? "Deleting..." : "Delete"}
 				</Button>
 			</div>
 		</div>

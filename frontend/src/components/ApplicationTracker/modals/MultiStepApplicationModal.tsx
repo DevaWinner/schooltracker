@@ -38,7 +38,7 @@ export default function MultiStepApplicationModal({
 			degree_type: "Master",
 		}
 	);
-
+	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [currentStep, setCurrentStep] = useState(1);
 	const [institutions, setInstitutions] = useState<Institution[]>([]);
 	const [isLoadingInstitutions, setIsLoadingInstitutions] = useState(false);
@@ -89,6 +89,8 @@ export default function MultiStepApplicationModal({
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 
+		if (isSubmitting) return;
+
 		// Add validation for required fields
 		if (!formData.program_name) {
 			toast.error("Program name is required");
@@ -100,22 +102,27 @@ export default function MultiStepApplicationModal({
 			return;
 		}
 
-		// Ensure institution field has the ID value for API submission
-		const finalData = {
-			...formData,
-			institution: formData.institution_id, // Ensure institution is set to the ID
-			created_at: formData.created_at || new Date().toISOString(),
-			updated_at: new Date().toISOString(),
-			program_name: formData.program_name || "Unnamed Program",
-		} as Application;
+		setIsSubmitting(true);
+		try {
+			// Ensure institution field has the ID value for API submission
+			const finalData = {
+				...formData,
+				institution: formData.institution_id,
+				created_at: formData.created_at || new Date().toISOString(),
+				updated_at: new Date().toISOString(),
+				program_name: formData.program_name || "Unnamed Program",
+			} as Application;
 
-		// Remove id field if it exists to prevent conflicts with database
-		// This is a defensive measure that ensures ID is never sent
-		if ("id" in finalData) {
-			delete (finalData as Record<string, any>).id;
+			if ("id" in finalData) {
+				delete (finalData as Record<string, any>).id;
+			}
+
+			await onSave(finalData);
+		} catch (error) {
+			// Handle error if needed
+		} finally {
+			setIsSubmitting(false);
 		}
-
-		await onSave(finalData);
 	};
 
 	const handleSubmitButtonClick = () => {
@@ -191,8 +198,12 @@ export default function MultiStepApplicationModal({
 								Next
 							</Button>
 						) : (
-							<Button size="sm" onClick={handleSubmitButtonClick}>
-								Submit Application
+							<Button
+								size="sm"
+								onClick={handleSubmitButtonClick}
+								disabled={isSubmitting}
+							>
+								{isSubmitting ? "Submitting..." : "Submit Application"}
 							</Button>
 						)}
 					</div>
