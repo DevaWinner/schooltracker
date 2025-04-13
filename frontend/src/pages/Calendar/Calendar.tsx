@@ -9,6 +9,8 @@ import PageMeta from "../../components/common/PageMeta";
 import { Events } from "../../types/events";
 import { useEvents } from "../../context/EventContext";
 import EventFormModal from "../../components/Calendar/EventFormModal";
+import Button from "../../components/ui/button/Button";
+import { useNavigate } from "react-router-dom";
 
 const Calendar: React.FC = () => {
 	const { events, fetchEvents, isLoading } = useEvents();
@@ -16,6 +18,7 @@ const Calendar: React.FC = () => {
 	const [selectedDate, setSelectedDate] = useState<string>("");
 	const calendarRef = useRef<FullCalendar>(null);
 	const { isOpen, openModal, closeModal } = useModal();
+	const navigate = useNavigate();
 
 	// Track if we've already initialized to prevent multiple API calls
 	const [initialized, setInitialized] = useState(false);
@@ -93,6 +96,17 @@ const Calendar: React.FC = () => {
 					<p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
 						Manage your important application dates and deadlines
 					</p>
+				</div>
+				
+				{/* Added View All Events button */}
+				<div>
+					<Button 
+						size="sm"
+						variant="outline"
+						onClick={() => navigate("/events")}
+					>
+						View All Events
+					</Button>
 				</div>
 			</div>
 

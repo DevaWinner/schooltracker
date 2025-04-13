@@ -1,101 +1,235 @@
-import { useEffect, useState } from "react";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import { getEvents } from "../../api/events";
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router";
+import { useEvents } from "../../context/EventContext";
 import { Events } from "../../types/events";
+import { BsBellFill } from "react-icons/bs";
+import { IoCalendarOutline } from "react-icons/io5";
+import {
+	format,
+	isSameDay,
+	formatDistanceToNow,
+	parseISO,
+	isBefore,
+} from "date-fns";
 
-export default function NotificationDropdown() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [notifying, setNotifying] = useState(true);
-  const [events, setEvents] = useState<Events[]>([]);
+const NotificationDropdown: React.FC = () => {
+	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+	const dropdownRef = useRef<HTMLDivElement>(null);
+	const { events, fetchEvents, isLoading } = useEvents();
+	const navigate = useNavigate();
+	const fetchedRef = useRef(false);
 
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
+	// Get only the last 3 events, sorted by event_date (closest upcoming first, then most recent past)
+	const recentEvents = [...events]
+		.sort((a, b) => {
+			const dateA = new Date(a.event_date);
+			const dateB = new Date(b.event_date);
+			const now = new Date();
 
-  const handleClick = () => {
-    toggleDropdown();
-    setNotifying(false);
-  };
+			// If one date is in the future and one is in the past, prioritize future dates
+			const aIsFuture = dateA >= now;
+			const bIsFuture = dateB >= now;
 
-  const convertDateString = (date: string | null | undefined) => {
-    if (date) {
-      const newDate = new Date(date).toLocaleDateString("en-US", {
-        month: "numeric",
-        day: "numeric",
-        year: "numeric",
-      });
-      return newDate;
-    }
-    return "Error loading date";
-  };
+			if (aIsFuture && !bIsFuture) return -1;
+			if (!aIsFuture && bIsFuture) return 1;
 
-  // Initial data loading
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const events = await getEvents();
-        setEvents(events.results);
-      } catch (error) {
-        setEvents([]);
-      }
-    };
+			// Otherwise sort chronologically (ascending for future dates, descending for past dates)
+			return aIsFuture
+				? dateA.getTime() - dateB.getTime() // Sort upcoming events by closest first
+				: dateB.getTime() - dateA.getTime(); // Sort past events by most recent first
+		})
+		.slice(0, 3);
 
-    fetchEvents();
-  }, []);
+	const toggleDropdown = () => {
+		setIsDropdownOpen(!isDropdownOpen);
 
-  return (
-    <div className="relative">
-      <button
-        className="relative flex items-center justify-center text-gray-500 transition-colors bg-white border border-gray-200 rounded-full dropdown-toggle hover:text-gray-700 h-11 w-11 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-        onClick={handleClick}
-      >
-        <span
-          className={`absolute right-0 top-0.5 z-10 h-2 w-2 rounded-full bg-orange-400 ${
-            !notifying ? "hidden" : "flex"
-          }`}
-        >
-          <span className="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping"></span>
-        </span>
-        <svg
-          className="fill-current"
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M10.75 2.29248C10.75 1.87827 10.4143 1.54248 10 1.54248C9.58583 1.54248 9.25004 1.87827 9.25004 2.29248V2.83613C6.08266 3.20733 3.62504 5.9004 3.62504 9.16748V14.4591H3.33337C2.91916 14.4591 2.58337 14.7949 2.58337 15.2091C2.58337 15.6234 2.91916 15.9591 3.33337 15.9591H4.37504H15.625H16.6667C17.0809 15.9591 17.4167 15.6234 17.4167 15.2091C17.4167 14.7949 17.0809 14.4591 16.6667 14.4591H16.375V9.16748C16.375 5.9004 13.9174 3.20733 10.75 2.83613V2.29248ZM14.875 14.4591V9.16748C14.875 6.47509 12.6924 4.29248 10 4.29248C7.30765 4.29248 5.12504 6.47509 5.12504 9.16748V14.4591H14.875ZM8.00004 17.7085C8.00004 18.1228 8.33583 18.4585 8.75004 18.4585H11.25C11.6643 18.4585 12 18.1228 12 17.7085C12 17.2943 11.6643 16.9585 11.25 16.9585H8.75004C8.33583 16.9585 8.00004 17.2943 8.00004 17.7085Z"
-            fill="currentColor"
-          />
-        </svg>
-      </button>
-      <div className="relative">
-        <Dropdown
-          isOpen={isOpen}
-          onClose={toggleDropdown}
-          className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
-        >
-          <ul className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
-            {events.map((event) => (
-              <li>
-                <DropdownItem
-                  onItemClick={toggleDropdown}
-                  tag="a"
-                  to="/calendar"
-                  className="flex items-center gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-                >
-                  {event.event_title}
-                  {event.event_color}
-                  {convertDateString(event.event_date)}
-                </DropdownItem>
-              </li>
-            ))}
-          </ul>
-        </Dropdown>
-      </div>
-    </div>
-  );
-}
+		// Only fetch events when opening the dropdown if we haven't already
+		// This reduces API calls while ensuring fresh data when user checks notifications
+		if (
+			!isDropdownOpen &&
+			events.length === 0 &&
+			!fetchedRef.current &&
+			!isLoading
+		) {
+			fetchEvents();
+		}
+	};
+
+	// Handle clicks outside the dropdown to close it
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target as Node)
+			) {
+				setIsDropdownOpen(false);
+			}
+		};
+
+		// Attach the event listener
+		document.addEventListener("mousedown", handleClickOutside);
+
+		// Clean up
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
+	// Ensure we fetch events when needed
+	useEffect(() => {
+		// Always fetch events on first mount to ensure notifications are up-to-date
+		if (!fetchedRef.current && !isLoading) {
+			console.log("NotificationDropdown: Initial event fetch");
+			fetchedRef.current = true;
+			fetchEvents(false); // Use false to allow caching if available
+		}
+
+		return () => {
+			fetchedRef.current = false;
+		};
+	}, [fetchEvents, isLoading]);
+
+	// Get notification badge color based on event color
+	const getEventBadgeColor = (color: string) => {
+		const colorMap: Record<string, string> = {
+			primary: "bg-blue-500",
+			danger: "bg-red-500",
+			warning: "bg-yellow-500",
+			success: "bg-green-500",
+		};
+
+		return colorMap[color] || "bg-gray-500";
+	};
+
+	// Format event date for display
+	const formatEventDate = (dateStr: string): string => {
+		try {
+			const date = parseISO(dateStr);
+			const now = new Date();
+
+			if (isSameDay(date, now)) {
+				return "Today";
+			}
+
+			// Format upcoming/past dates differently
+			return isBefore(date, now)
+				? `${formatDistanceToNow(date)} ago`
+				: format(date, "MMM d, yyyy");
+		} catch (error) {
+			return "Invalid date";
+		}
+	};
+
+	// Handle click on View All Notifications
+	const handleViewAllClick = () => {
+		navigate("/events");
+		setIsDropdownOpen(false);
+	};
+
+	return (
+		<div className="relative" ref={dropdownRef}>
+			<button
+				onClick={toggleDropdown}
+				className="flex items-center justify-center w-10 h-10 hover:bg-gray-100 rounded-lg dark:hover:bg-gray-800"
+			>
+				<span className="relative">
+					<BsBellFill className="text-gray-500 dark:text-gray-400" size={24} />
+					{recentEvents.length > 0 && (
+						<span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+							{recentEvents.length}
+						</span>
+					)}
+				</span>
+			</button>
+
+			{isDropdownOpen && (
+				<div className="absolute right-0 mt-2 w-80 origin-top-right rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 z-50">
+					<div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
+						<h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+							Notifications
+						</h5>
+					</div>
+
+					<div className="max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+						{isLoading ? (
+							<div className="flex justify-center py-8">
+								<div className="animate-spin h-6 w-6 border-2 border-t-transparent border-blue-500 rounded-full"></div>
+							</div>
+						) : recentEvents.length === 0 ? (
+							<div className="flex flex-col items-center justify-center py-8 px-5">
+								<div className="mb-3 rounded-full bg-gray-100 p-3 dark:bg-gray-700">
+									<IoCalendarOutline
+										size={24}
+										className="text-gray-500 dark:text-gray-400"
+									/>
+								</div>
+								<p className="text-sm text-gray-500 dark:text-gray-400">
+									No upcoming events
+								</p>
+							</div>
+						) : (
+							<ul>
+								{recentEvents.map((event: Events) => (
+									<li
+										key={event.id}
+										className="border-b border-gray-200 dark:border-gray-700 last:border-0"
+									>
+										<Link
+											to={
+												event.application
+													? `/applications/detail/${event.application}`
+													: "/calendar"
+											}
+											onClick={() => setIsDropdownOpen(false)}
+											className="flex items-start gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30"
+										>
+											<div
+												className={`mt-1 h-2 w-2 rounded-full ${getEventBadgeColor(
+													event.event_color
+												)}`}
+											></div>
+											<div className="flex-1">
+												<h6 className="mb-1 text-sm font-medium text-gray-900 dark:text-white">
+													{event.event_title}
+												</h6>
+												<p className="text-xs text-gray-500 dark:text-gray-400">
+													<span className="font-medium">Due: </span>
+													<span
+														className={
+															isBefore(parseISO(event.event_date), new Date())
+																? "text-red-500 dark:text-red-400"
+																: ""
+														}
+													>
+														{formatEventDate(event.event_date)}
+													</span>
+												</p>
+												{event.notes && (
+													<p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+														{event.notes.length > 50
+															? `${event.notes.substring(0, 50)}...`
+															: event.notes}
+													</p>
+												)}
+											</div>
+										</Link>
+									</li>
+								))}
+								<li className="px-5 py-3">
+									<button
+										onClick={handleViewAllClick}
+										className="block w-full rounded-lg bg-gray-50 px-4 py-2 text-center text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-gray-700/50 dark:text-gray-200 dark:hover:bg-gray-700"
+									>
+										View All Events
+									</button>
+								</li>
+							</ul>
+						)}
+					</div>
+				</div>
+			)}
+		</div>
+	);
+};
+
+export default NotificationDropdown;

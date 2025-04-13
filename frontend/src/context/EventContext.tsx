@@ -58,33 +58,32 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 
 	const { isAuthenticated } = useAuth();
 
-	// Fetch events from API
+	// Fetch events from API - Fixed to properly fetch when needed
 	const fetchEvents = useCallback(
 		async (refresh = false) => {
 			// Prevent duplicate fetches if one is already in progress
 			if (isFetchingRef.current) {
+				console.log("Fetch already in progress, skipping duplicate request");
 				return;
 			}
 
-			// If we already have events and not explicitly refreshing, use cached data
-			if (!refresh && events.length > 0 && lastUpdated) {
-				// Only refetch if data is older than 5 minutes
+			// If we're not authenticated, don't try to fetch
+			if (!isAuthenticated) {
+				return;
+			}
+
+			// Always fetch if explicitly refreshing or if our events array is empty
+			const shouldFetch = refresh || events.length === 0 || !lastUpdated;
+
+			// Otherwise, check if our cache is still fresh (less than 5 minutes old)
+			if (!shouldFetch && lastUpdated) {
 				const fiveMinutesAgo = new Date();
 				fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
 
 				if (lastUpdated > fiveMinutesAgo) {
+					// Our data is fresh enough, no need to fetch
 					return;
 				}
-			}
-
-			// If we've already tried fetching and got empty results, don't fetch again
-			// unless explicitly requested with refresh=true
-			if (hasAttemptedFetch && events.length === 0 && !refresh) {
-				return;
-			}
-
-			if (!isAuthenticated) {
-				return;
 			}
 
 			try {
@@ -93,6 +92,7 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 				setIsLoading(true);
 				setError(null);
 
+				console.log("Fetching events from API");
 				const response = await getEvents();
 				setEvents(response.results);
 				setLastUpdated(new Date());
@@ -109,7 +109,7 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 				isFetchingRef.current = false;
 			}
 		},
-		[isAuthenticated, lastUpdated, events.length, hasAttemptedFetch]
+		[isAuthenticated, events.length, lastUpdated] // Restore needed dependencies
 	);
 
 	// Add a new event
@@ -232,30 +232,13 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 		};
 	}, []);
 
-	// Initial fetch when component mounts if user is authenticated
-	// This is a one-time initialization
+	// Initial fetch when component mounts - Simplified to ensure we fetch when needed
 	useEffect(() => {
-		let isMounted = true;
-
-		const initialFetch = async () => {
-			// Only proceed if user is authenticated and we haven't already tried fetching
-			if (
-				isAuthenticated &&
-				isMounted &&
-				!hasAttemptedFetch &&
-				!isFetchingRef.current
-			) {
-				await fetchEvents();
-			}
-		};
-
-		initialFetch();
-
-		// Cleanup function that runs when component unmounts
-		return () => {
-			isMounted = false;
-		};
-	}, [isAuthenticated, fetchEvents, hasAttemptedFetch]);
+		if (isAuthenticated && !isFetchingRef.current) {
+			console.log("Initial events fetch on mount");
+			fetchEvents();
+		}
+	}, [isAuthenticated, fetchEvents]);
 
 	const value: EventContextProps = {
 		events,

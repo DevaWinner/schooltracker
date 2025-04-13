@@ -15,6 +15,7 @@ import { EventProvider } from "./context/EventContext";
 // Import page components
 import Home from "./pages/Home/Home";
 import Calendar from "./pages/Calendar/Calendar";
+import AllEvents from "./pages/Events/AllEvents";
 import Recommendations from "./pages/Recommendations";
 import ApplicationTracker from "./pages/Applications/Tracker";
 import ApplicationDetail from "./pages/Applications/ApplicationDetail";
@@ -96,6 +97,10 @@ export default function App() {
 											<Route
 												path={ROUTES.Other.calendar}
 												element={<Calendar />}
+											/>
+											<Route
+												path={ROUTES.Other.events}
+												element={<AllEvents />}
 											/>
 											<Route
 												path={ROUTES.Other.recommendations}

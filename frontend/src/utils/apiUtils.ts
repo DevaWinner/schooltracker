@@ -45,7 +45,7 @@ export const createAuthenticatedApi = (): AxiosInstance => {
 		withCredentials: true,
 	});
 
-	// Request interceptor
+	// Request interceptor - Modified to ensure proper caching behavior
 	api.interceptors.request.use(
 		(config) => {
 			const token = getAccessToken();
@@ -56,12 +56,14 @@ export const createAuthenticatedApi = (): AxiosInstance => {
 			// Add session ID to prevent cached responses
 			const sessionId = getCurrentSessionId();
 
-			// Add cache-busting parameter to GET requests
+			// Add cache-busting for GET requests to ensure we get fresh data
+			// This is important for the events API
 			if (config.method?.toLowerCase() === "get") {
 				config.params = {
 					...config.params,
 					_sid: sessionId,
-					_t: Date.now(), // Add timestamp for cache busting
+					// Adding timestamp back for events endpoints to prevent cached responses
+					...(config.url?.includes("events") ? { _t: Date.now() } : {}),
 				};
 			}
 

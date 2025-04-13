@@ -1,3 +1,5 @@
+import { format, formatDistance, formatRelative, subDays } from "date-fns";
+
 /**
  * Format a date string to a human-readable format
  * @param dateStr Date string to format
@@ -116,5 +118,67 @@ export const getRelativeTimeString = (dateStr?: string | null): string => {
 	} catch (error) {
 		console.error("Error calculating relative time:", dateStr, error);
 		return "Unknown";
+	}
+};
+
+/**
+ * Formats a date to a human-readable relative format (e.g. "2 days ago")
+ * @param dateString ISO date string
+ * @returns Formatted date string
+ */
+export const formatRelativeDate = (dateString: string): string => {
+	try {
+		const date = new Date(dateString);
+		return formatDistance(date, new Date(), { addSuffix: true });
+	} catch (error) {
+		return "Unknown date";
+	}
+};
+
+/**
+ * Formats a date to a standard format (e.g. "Jan 1, 2023")
+ * @param dateString ISO date string
+ * @returns Formatted date string
+ */
+export const formatStandardDate = (dateString: string): string => {
+	try {
+		const date = new Date(dateString);
+		return format(date, "MMM d, yyyy");
+	} catch (error) {
+		return "Invalid date";
+	}
+};
+
+/**
+ * Returns true if the date is in the future
+ * @param dateString ISO date string
+ * @returns boolean
+ */
+export const isUpcoming = (dateString: string): boolean => {
+	try {
+		const date = new Date(dateString);
+		return date > new Date();
+	} catch (error) {
+		return false;
+	}
+};
+
+/**
+ * Determines if a date is today
+ * @param dateString ISO date string
+ * @returns boolean
+ */
+export const isToday = (dateString: string): boolean => {
+	try {
+		const date = new Date(dateString);
+		const today = new Date();
+
+		return (
+			date.getDate() === today.getDate() &&
+			date.getMonth() === today.getMonth() &&
+			date.getFullYear() === today.getFullYear()
+		);
+	} catch (error) {
+		return false;
 	}
 };
