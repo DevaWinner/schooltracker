@@ -29,6 +29,8 @@ import InstitutionDetail from "./pages/Directory/InstitutionDetail";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import UserProfiles from "./pages/UserProfile/UserProfileInformation";
+import AcademicBackground from "./pages/UserProfile/AcademicBackground";
+import Support from "./pages/Support";
 
 // Create a wrapper for ToastContainer to use theme context
 const ThemedToast = () => {
@@ -115,6 +117,14 @@ export default function App() {
 												<Route
 													path={ROUTES.Profile.information}
 													element={<UserProfiles />}
+												/>
+												<Route
+													path={ROUTES.Profile.background}
+													element={<AcademicBackground />}
+												/>
+												<Route
+													path={ROUTES.Other.support}
+													element={<Support />}
 												/>
 											</Route>
 
