@@ -11,6 +11,7 @@ import {
 	parseISO,
 	isBefore,
 } from "date-fns";
+import { Dropdown } from "../ui/dropdown/Dropdown";
 
 const NotificationDropdown: React.FC = () => {
 	const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -44,7 +45,6 @@ const NotificationDropdown: React.FC = () => {
 		setIsDropdownOpen(!isDropdownOpen);
 
 		// Only fetch events when opening the dropdown if we haven't already
-		// This reduces API calls while ensuring fresh data when user checks notifications
 		if (
 			!isDropdownOpen &&
 			events.length === 0 &&
@@ -53,6 +53,10 @@ const NotificationDropdown: React.FC = () => {
 		) {
 			fetchEvents();
 		}
+	};
+
+	const closeDropdown = () => {
+		setIsDropdownOpen(false);
 	};
 
 	// Handle clicks outside the dropdown to close it
@@ -129,7 +133,7 @@ const NotificationDropdown: React.FC = () => {
 		<div className="relative" ref={dropdownRef}>
 			<button
 				onClick={toggleDropdown}
-				className="flex items-center justify-center w-10 h-10 hover:bg-gray-100 rounded-lg dark:hover:bg-gray-800"
+				className="flex items-center text-gray-700 dark:text-gray-400"
 			>
 				<span className="relative">
 					<BsBellFill className="text-gray-500 dark:text-gray-400" size={24} />
@@ -141,24 +145,33 @@ const NotificationDropdown: React.FC = () => {
 				</span>
 			</button>
 
-			{isDropdownOpen && (
-				<div className="absolute right-0 mt-2 w-80 origin-top-right rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 z-50">
-					<div className="border-b border-gray-200 px-5 py-4 dark:border-gray-700">
-						<h5 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-							Notifications
-						</h5>
-					</div>
+			<Dropdown
+				isOpen={isDropdownOpen}
+				onClose={closeDropdown}
+				className="absolute z-50 mt-[17px] flex w-[300px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark sm:right-0 right-[-220px]"
+			>
+				<div>
+					<span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
+						Notifications
+					</span>
+					<span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
+						{recentEvents.length > 0 
+							? `${recentEvents.length} recent event${recentEvents.length > 1 ? 's' : ''}` 
+							: 'No recent events'}
+					</span>
+				</div>
 
-					<div className="max-h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+				<div className="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+					<div className="max-h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
 						{isLoading ? (
-							<div className="flex justify-center py-8">
+							<div className="flex justify-center py-4">
 								<div className="animate-spin h-6 w-6 border-2 border-t-transparent border-blue-500 rounded-full"></div>
 							</div>
 						) : recentEvents.length === 0 ? (
-							<div className="flex flex-col items-center justify-center py-8 px-5">
+							<div className="flex flex-col items-center justify-center py-4">
 								<div className="mb-3 rounded-full bg-gray-100 p-3 dark:bg-gray-700">
 									<IoCalendarOutline
-										size={24}
+										size={20}
 										className="text-gray-500 dark:text-gray-400"
 									/>
 								</div>
@@ -169,10 +182,7 @@ const NotificationDropdown: React.FC = () => {
 						) : (
 							<ul>
 								{recentEvents.map((event: Events) => (
-									<li
-										key={event.id}
-										className="border-b border-gray-200 dark:border-gray-700 last:border-0"
-									>
+									<li key={event.id}>
 										<Link
 											to={
 												event.application
@@ -180,7 +190,7 @@ const NotificationDropdown: React.FC = () => {
 													: "/calendar"
 											}
 											onClick={() => setIsDropdownOpen(false)}
-											className="flex items-start gap-4 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/30"
+											className="flex items-start gap-3 px-3 py-2 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
 										>
 											<div
 												className={`mt-1 h-2 w-2 rounded-full ${getEventBadgeColor(
@@ -188,7 +198,7 @@ const NotificationDropdown: React.FC = () => {
 												)}`}
 											></div>
 											<div className="flex-1">
-												<h6 className="mb-1 text-sm font-medium text-gray-900 dark:text-white">
+												<h6 className="font-medium text-gray-900 dark:text-white">
 													{event.event_title}
 												</h6>
 												<p className="text-xs text-gray-500 dark:text-gray-400">
@@ -214,19 +224,34 @@ const NotificationDropdown: React.FC = () => {
 										</Link>
 									</li>
 								))}
-								<li className="px-5 py-3">
-									<button
-										onClick={handleViewAllClick}
-										className="block w-full rounded-lg bg-gray-50 px-4 py-2 text-center text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-gray-700/50 dark:text-gray-200 dark:hover:bg-gray-700"
-									>
-										View All Events
-									</button>
-								</li>
 							</ul>
 						)}
 					</div>
 				</div>
-			)}
+        <button
+          onClick={handleViewAllClick}
+          className="flex items-center justify-center gap-2 px-4 py-2 mt-4 font-medium text-gray-500 border border-gray-500 rounded-lg shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:text-gray-400 dark:border-gray-400 dark:hover:bg-gray-600/10 dark:focus:ring-gray-500"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="fill-gray-500 dark:fill-gray-400"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M16 4H8C6.89543 4 6 4.89543 6 6V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V6C18 4.89543 17.1046 4 16 4ZM8 2C5.79086 2 4 3.79086 4 6V18C4 20.2091 5.79086 22 8 22H16C18.2091 22 20 20.2091 20 18V6C20 3.79086 18.2091 2 16 2H8Z"
+            />
+            <path d="M8 7C8 6.44772 8.44772 6 9 6H15C15.5523 6 16 6.44772 16 7C16 7.55228 15.5523 8 15 8H9C8.44772 8 8 7.55228 8 7Z" />
+            <path d="M9 10C8.44772 10 8 10.4477 8 11C8 11.5523 8.44772 12 9 12H15C15.5523 12 16 11.5523 16 11C16 10.4477 15.5523 10 15 10H9Z" />
+            <path d="M9 14C8.44772 14 8 14.4477 8 15C8 15.5523 8.44772 16 9 16H13C13.5523 16 14 15.5523 14 15C14 14.4477 13.5523 14 13 14H9Z" />
+          </svg>
+          View All Events
+        </button>
+			</Dropdown>
 		</div>
 	);
 };

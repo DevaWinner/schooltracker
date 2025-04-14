@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { toast } from "react-toastify";
 import PageMeta from "../../components/common/PageMeta";
 import DocumentTypeFolder from "../../components/Documents/DocumentTypeFolder";
 import DocumentCard from "../../components/Documents/DocumentCard";
