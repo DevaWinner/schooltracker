@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router-dom"; // Fixed import
 import { useEvents } from "../../context/EventContext";
 import { Events } from "../../types/events";
 import { BsBellFill } from "react-icons/bs";
@@ -155,9 +155,11 @@ const NotificationDropdown: React.FC = () => {
 						Notifications
 					</span>
 					<span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
-						{recentEvents.length > 0 
-							? `${recentEvents.length} recent event${recentEvents.length > 1 ? 's' : ''}` 
-							: 'No recent events'}
+						{recentEvents.length > 0
+							? `${recentEvents.length} recent event${
+									recentEvents.length > 1 ? "s" : ""
+							  }`
+							: "No recent events"}
 					</span>
 				</div>
 
@@ -228,29 +230,29 @@ const NotificationDropdown: React.FC = () => {
 						)}
 					</div>
 				</div>
-        <button
-          onClick={handleViewAllClick}
-          className="flex items-center justify-center gap-2 px-4 py-2 mt-4 font-medium text-gray-500 border border-gray-500 rounded-lg shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:text-gray-400 dark:border-gray-400 dark:hover:bg-gray-600/10 dark:focus:ring-gray-500"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="fill-gray-500 dark:fill-gray-400"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M16 4H8C6.89543 4 6 4.89543 6 6V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V6C18 4.89543 17.1046 4 16 4ZM8 2C5.79086 2 4 3.79086 4 6V18C4 20.2091 5.79086 22 8 22H16C18.2091 22 20 20.2091 20 18V6C20 3.79086 18.2091 2 16 2H8Z"
-            />
-            <path d="M8 7C8 6.44772 8.44772 6 9 6H15C15.5523 6 16 6.44772 16 7C16 7.55228 15.5523 8 15 8H9C8.44772 8 8 7.55228 8 7Z" />
-            <path d="M9 10C8.44772 10 8 10.4477 8 11C8 11.5523 8.44772 12 9 12H15C15.5523 12 16 11.5523 16 11C16 10.4477 15.5523 10 15 10H9Z" />
-            <path d="M9 14C8.44772 14 8 14.4477 8 15C8 15.5523 8.44772 16 9 16H13C13.5523 16 14 15.5523 14 15C14 14.4477 13.5523 14 13 14H9Z" />
-          </svg>
-          View All Events
-        </button>
+				<button
+					onClick={handleViewAllClick}
+					className="flex items-center justify-center gap-2 px-4 py-2 mt-4 font-medium text-gray-500 border border-gray-500 rounded-lg shadow-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 dark:text-gray-400 dark:border-gray-400 dark:hover:bg-gray-600/10 dark:focus:ring-gray-500"
+				>
+					<svg
+						width="20"
+						height="20"
+						viewBox="0 0 24 24"
+						fill="none"
+						xmlns="http://www.w3.org/2000/svg"
+						className="fill-gray-500 dark:fill-gray-400"
+					>
+						<path
+							fillRule="evenodd"
+							clipRule="evenodd"
+							d="M16 4H8C6.89543 4 6 4.89543 6 6V18C6 19.1046 6.89543 20 8 20H16C17.1046 20 18 19.1046 18 18V6C18 4.89543 17.1046 4 16 4ZM8 2C5.79086 2 4 3.79086 4 6V18C4 20.2091 5.79086 22 8 22H16C18.2091 22 20 20.2091 20 18V6C20 3.79086 18.2091 2 16 2H8Z"
+						/>
+						<path d="M8 7C8 6.44772 8.44772 6 9 6H15C15.5523 6 16 6.44772 16 7C16 7.55228 15.5523 8 15 8H9C8.44772 8 8 7.55228 8 7Z" />
+						<path d="M9 10C8.44772 10 8 10.4477 8 11C8 11.5523 8.44772 12 9 12H15C15.5523 12 16 11.5523 16 11C16 10.4477 15.5523 10 15 10H9Z" />
+						<path d="M9 14C8.44772 14 8 14.4477 8 15C8 15.5523 8.44772 16 9 16H13C13.5523 16 14 15.5523 14 15C14 14.4477 13.5523 14 13 14H9Z" />
+					</svg>
+					View All Events
+				</button>
 			</Dropdown>
 		</div>
 	);
