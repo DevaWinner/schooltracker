@@ -1,45 +1,31 @@
-import React, { useState } from "react";
-import Button from "../ui/button/Button";
+import React from "react";
 import { Modal } from "../ui/modal";
+import Button from "../ui/button/Button";
 
-interface DeleteDocumentModalProps {
+interface DeleteConfirmationModalProps {
 	isOpen: boolean;
-	documentName: string;
-	onConfirm: () => Promise<boolean>;
-	onCancel: () => void;
+	onClose: () => void;
+	onConfirm: () => Promise<void>;
+	title: string;
+	message?: string;
+	isDeleting?: boolean;
 }
 
-const DeleteDocumentModal: React.FC<DeleteDocumentModalProps> = ({
+const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
 	isOpen,
-	documentName,
+	onClose,
 	onConfirm,
-	onCancel,
+	title,
+	message = "This action cannot be undone.",
+	isDeleting = false,
 }) => {
-	const [isDeleting, setIsDeleting] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
-	const handleDelete = async () => {
-		setIsDeleting(true);
-		setError(null);
-
-		try {
-			const success = await onConfirm();
-			if (!success) {
-				setError("Failed to delete the document. Please try again.");
-				setIsDeleting(false);
-			}
-		} catch (err: any) {
-			setError(err.message || "An error occurred while deleting the document.");
-			setIsDeleting(false);
-		}
+	const handleConfirm = async () => {
+		await onConfirm();
+		onClose();
 	};
 
 	return (
-		<Modal
-			isOpen={isOpen}
-			onClose={onCancel}
-			className="w-[450px] lg:w-[500px]"
-		>
+		<Modal isOpen={isOpen} onClose={onClose} className="w-[450px] lg:w-[500px]">
 			<div className="flex flex-col h-auto bg-white dark:bg-gray-900 rounded-3xl overflow-hidden">
 				{/* Fixed Header */}
 				<div className="w-full flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
@@ -61,7 +47,7 @@ const DeleteDocumentModal: React.FC<DeleteDocumentModalProps> = ({
 							</svg>
 						</div>
 						<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
-							Delete Document
+							{title}
 						</h4>
 					</div>
 				</div>
@@ -69,19 +55,11 @@ const DeleteDocumentModal: React.FC<DeleteDocumentModalProps> = ({
 				{/* Content */}
 				<div className="p-8 text-center">
 					<p className="text-gray-700 dark:text-gray-300 font-medium">
-						Are you sure you want to delete{" "}
-						<span className="font-medium">{documentName}</span>? This action
-						cannot be undone.
+						{message}
 					</p>
 					<p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
 						You won't be able to recover this event after deletion.
 					</p>
-
-					{error && (
-						<div className="mt-4 rounded-md bg-red-50 p-3 dark:bg-red-900/20">
-							<p className="text-sm text-red-700 dark:text-red-400">{error}</p>
-						</div>
-					)}
 				</div>
 
 				{/* Fixed Footer */}
@@ -91,7 +69,7 @@ const DeleteDocumentModal: React.FC<DeleteDocumentModalProps> = ({
 						<Button
 							size="sm"
 							variant="outline"
-							onClick={onCancel}
+							onClick={onClose}
 							disabled={isDeleting}
 						>
 							Cancel
@@ -99,7 +77,7 @@ const DeleteDocumentModal: React.FC<DeleteDocumentModalProps> = ({
 						<Button
 							size="sm"
 							variant="danger"
-							onClick={handleDelete}
+							onClick={handleConfirm}
 							disabled={isDeleting}
 						>
 							{isDeleting ? "Deleting..." : "Delete"}
@@ -111,4 +89,4 @@ const DeleteDocumentModal: React.FC<DeleteDocumentModalProps> = ({
 	);
 };
 
-export default DeleteDocumentModal;
+export default DeleteConfirmationModal;

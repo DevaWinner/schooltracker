@@ -52,6 +52,7 @@ export default function EditApplicationModal({
 		updated_at: data?.updated_at || "",
 		user: data?.user || undefined,
 	});
+	const [isSaving, setIsSaving] = useState(false);
 
 	const initialSearchTerm =
 		data?.institution_name || (data?.institution_details?.name ?? "") || "";
@@ -216,8 +217,9 @@ export default function EditApplicationModal({
 		}));
 	};
 
-	const submitForm = (e: React.FormEvent) => {
+	const submitForm = async (e: React.FormEvent) => {
 		e.preventDefault();
+		if (isSaving) return;
 
 		const processedFormData = { ...formData };
 		const dateFields = ["start_date", "submitted_date", "decision_date"];
@@ -240,7 +242,12 @@ export default function EditApplicationModal({
 				processedFormData.user === null ? undefined : processedFormData.user,
 		};
 
-		onSave(updatedApplication);
+		setIsSaving(true);
+		try {
+			await onSave(updatedApplication);
+		} finally {
+			setIsSaving(false);
+		}
 	};
 
 	return (
@@ -633,12 +640,12 @@ export default function EditApplicationModal({
 							size="sm"
 							variant="outline"
 							onClick={onClose}
-							disabled={isLoading}
+							disabled={isLoading || isSaving}
 						>
 							Cancel
 						</Button>
-						<Button size="sm" type="submit" disabled={isLoading}>
-							{isLoading ? "Loading..." : "Save Changes"}
+						<Button size="sm" type="submit" disabled={isLoading || isSaving}>
+							{isSaving ? "Saving..." : "Save Changes"}
 						</Button>
 					</div>
 				</form>

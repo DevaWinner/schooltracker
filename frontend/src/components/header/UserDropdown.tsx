@@ -22,9 +22,6 @@ export default function UserDropdown() {
 		// Ensure we close the dropdown
 		closeDropdown();
 
-		// Log that we're signing out for debugging purposes
-		console.log("UserDropdown: Initiating sign out process");
-
 		// First explicitly clear all storage before calling the auth context's signOut
 		window.localStorage.clear();
 		window.sessionStorage.clear();
@@ -57,7 +54,6 @@ export default function UserDropdown() {
 						></path>
 					</svg>
 				</div>
-				<div className="text-sm text-gray-500">Sign in</div>
 			</div>
 		);
 	}

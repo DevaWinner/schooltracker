@@ -4,7 +4,6 @@ import {
 	useState,
 	useEffect,
 	useCallback,
-	useRef,
 } from "react";
 
 type SidebarContextType = {
@@ -35,16 +34,13 @@ export const useSidebar = () => {
 export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 	children,
 }) => {
-	const [isExpanded, setIsExpanded] = useState(true);
+	const [isExpanded, setIsExpanded] = useState(window.innerWidth >= 1200);
 	const [isMobileOpen, setIsMobileOpen] = useState(false);
 	const [isMobile, setIsMobile] = useState(false);
 	const [isHovered, setIsHovered] = useState(false);
 	const [activeItem, setActiveItem] = useState<string | null>(null);
 	const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
 	const [isHoverEnabled, setIsHoverEnabled] = useState(true);
-
-	// Store previous desktop sidebar state
-	const prevDesktopExpandedState = useRef(true);
 
 	// Use a stable wrapper for setIsHovered to avoid unnecessary rerenders
 	const handleSetIsHovered = useCallback(
@@ -61,20 +57,16 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	useEffect(() => {
 		const handleResize = () => {
-			const mobile = window.innerWidth < 1024; // Using lg breakpoint (1024px)
+			const mobile = window.innerWidth < 1024;
+			const isLargeScreen = window.innerWidth >= 1200;
 
-			// Save desktop state before switching to mobile
-			if (!isMobile && mobile) {
-				prevDesktopExpandedState.current = isExpanded;
+			if (mobile) {
 				setIsExpanded(true);
-			}
-			// Restore desktop state when returning from mobile to desktop
-			else if (isMobile && !mobile) {
-				setIsExpanded(prevDesktopExpandedState.current);
-				// Close mobile sidebar when switching to desktop
+				setIsMobileOpen(false);
+			} else {
+				setIsExpanded(isLargeScreen);
 				setIsMobileOpen(false);
 			}
-
 			setIsMobile(mobile);
 		};
 
@@ -84,26 +76,26 @@ export const SidebarProvider: React.FC<{ children: React.ReactNode }> = ({
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
-	}, [isMobile, isExpanded]);
+	}, []);
 
 	const toggleSidebar = useCallback(() => {
 		setIsExpanded((prev) => {
 			const newState = !prev;
-			// When toggling, update hover enabled state
-			// Only enable hover expanding when the sidebar is expanded
 			setIsHoverEnabled(newState);
-
-			// If in desktop mode, save this preference
-			if (!isMobile) {
-				prevDesktopExpandedState.current = newState;
-			}
-
 			return newState;
 		});
-	}, [isMobile]);
+	}, []);
 
 	const toggleMobileSidebar = useCallback(() => {
-		setIsMobileOpen((prev) => !prev);
+		setIsMobileOpen((prev) => {
+			const newState = !prev;
+			// When opening mobile sidebar, ensure hover is disabled
+			if (newState) {
+				setIsHovered(false);
+				setIsHoverEnabled(false);
+			}
+			return newState;
+		});
 	}, []);
 
 	// Add explicit setter for mobile open state

@@ -30,5 +30,6 @@ export const ROUTES = {
 	Other: {
 		calendar: "/calendar",
 		recommendations: "/recommendations",
+    events: "/events",
 	},
 };

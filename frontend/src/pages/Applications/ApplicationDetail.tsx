@@ -4,13 +4,16 @@ import { Application } from "../../types/applications";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
-import { Modal } from "../../components/ui/modal";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { ROUTES } from "../../constants/Routes";
 import { getApplicationById } from "../../api/applications";
 import { toast } from "react-toastify";
 import { useApplications } from "../../context/ApplicationContext";
+import { useEvents } from "../../context/EventContext";
+import { Events } from "../../types/events";
+import EventFormModal from "../../components/Calendar/EventFormModal";
+import { useModal } from "../../hooks/useModal";
 
 export default function ApplicationDetail() {
 	const { id } = useParams();
@@ -23,6 +26,20 @@ export default function ApplicationDetail() {
 		useState<Application | null>(null);
 
 	const { updateApplicationItem, removeApplication } = useApplications();
+	const { events, fetchEvents } = useEvents();
+
+	// Event modal state
+	const {
+		isOpen: isEventModalOpen,
+		openModal: openEventModal,
+		closeModal: closeEventModal,
+	} = useModal();
+	const [selectedEvent, setSelectedEvent] = useState<Events | null>(null);
+
+	// Filter events for this application
+	const applicationEvents = events.filter(
+		(event) => event.application === Number(id)
+	);
 
 	// Always fetch the application from API to ensure we have the latest data
 	useEffect(() => {
@@ -34,6 +51,9 @@ export default function ApplicationDetail() {
 				// Get fresh data directly from the API
 				const data = await getApplicationById(id);
 				setApplication(data);
+
+				// Fetch events to ensure we have the latest
+				fetchEvents();
 			} catch (error) {
 				toast.error("Failed to fetch application details");
 			} finally {
@@ -42,7 +62,7 @@ export default function ApplicationDetail() {
 		};
 
 		fetchApplication();
-	}, [id]);
+	}, [id, fetchEvents]);
 
 	const handleEdit = () => {
 		if (application) {
@@ -104,6 +124,24 @@ export default function ApplicationDetail() {
 		return result;
 	};
 
+	// Handle adding/editing events
+	const handleAddEvent = () => {
+		setSelectedEvent(null);
+		openEventModal();
+	};
+
+	const handleEditEvent = (event: Events) => {
+		setSelectedEvent(event);
+		openEventModal();
+	};
+
+	const handleCloseEventModal = () => {
+		closeEventModal();
+		setSelectedEvent(null);
+		// Refresh events to get the latest data
+		fetchEvents(true);
+	};
+
 	// Format date for display
 	const formatDate = (dateStr?: string | null): string => {
 		if (!dateStr) return "Not specified";
@@ -134,6 +172,22 @@ export default function ApplicationDetail() {
 				return "bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-gray-200";
 			default:
 				return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+		}
+	};
+
+	// Get event color class for visual representation
+	const getEventColorClass = (color: string) => {
+		switch (color) {
+			case "danger":
+				return "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800/30";
+			case "success":
+				return "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800/30";
+			case "primary":
+				return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800/30";
+			case "warning":
+				return "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-300 dark:border-yellow-800/30";
+			default:
+				return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600";
 		}
 	};
 
@@ -436,6 +490,113 @@ export default function ApplicationDetail() {
 							)}
 						</div>
 					</div>
+
+					{/* Events Card - New Section */}
+					<div className="rounded-xl border border-gray-200 bg-white overflow-hidden dark:border-gray-700 dark:bg-gray-800 mt-6">
+						<div className="border-b border-gray-200 px-6 py-4 flex justify-between items-center dark:border-gray-700">
+							<h2 className="text-lg font-medium text-gray-900 dark:text-white">
+								Events & Deadlines
+							</h2>
+							<Button onClick={handleAddEvent} size="sm" className="text-sm">
+								<svg
+									xmlns="http://www.w3.org/2000/svg"
+									className="h-4 w-4 mr-1"
+									fill="none"
+									viewBox="0 0 24 24"
+									stroke="currentColor"
+								>
+									<path
+										strokeLinecap="round"
+										strokeLinejoin="round"
+										strokeWidth={2}
+										d="M12 4v16m8-8H4"
+									/>
+								</svg>
+								Add Event
+							</Button>
+						</div>
+
+						<div className="px-6 py-4">
+							{applicationEvents.length > 0 ? (
+								<div className="space-y-3">
+									{applicationEvents.map((event) => (
+										<div
+											key={event.id}
+											className={`rounded-lg border px-4 py-3 ${getEventColorClass(
+												event.event_color
+											)}`}
+											onClick={() => handleEditEvent(event)}
+											role="button"
+											tabIndex={0}
+										>
+											<div className="flex justify-between items-start">
+												<div>
+													<h3 className="font-medium">{event.event_title}</h3>
+													<p className="text-sm mt-1">
+														{formatDate(event.event_date)}
+													</p>
+													{event.notes && (
+														<p className="text-sm mt-2 opacity-80">
+															{event.notes}
+														</p>
+													)}
+												</div>
+												<div className="flex gap-2">
+													<button
+														className="p-1 hover:bg-gray-200 rounded-full dark:hover:bg-gray-700"
+														onClick={(e) => {
+															e.stopPropagation();
+															handleEditEvent(event);
+														}}
+													>
+														<svg
+															xmlns="http://www.w3.org/2000/svg"
+															className="h-4 w-4"
+															fill="none"
+															viewBox="0 0 24 24"
+															stroke="currentColor"
+														>
+															<path
+																strokeLinecap="round"
+																strokeLinejoin="round"
+																strokeWidth={2}
+																d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+															/>
+														</svg>
+													</button>
+												</div>
+											</div>
+										</div>
+									))}
+								</div>
+							) : (
+								<div className="text-center py-8">
+									<div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800">
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											className="h-6 w-6"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke="currentColor"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												strokeWidth={2}
+												d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+											/>
+										</svg>
+									</div>
+									<p className="mb-2 text-gray-600 dark:text-gray-400">
+										No events or deadlines found
+									</p>
+									<Button onClick={handleAddEvent} size="sm" variant="outline">
+										Add Your First Event
+									</Button>
+								</div>
+							)}
+						</div>
+					</div>
 				</div>
 
 				{/* Sidebar Cards */}
@@ -631,19 +792,23 @@ export default function ApplicationDetail() {
 				/>
 			)}
 
-			{/* Delete Confirmation Modal */}
-			<Modal
+			{/* Delete Confirmation Modal - Using the component directly */}
+			<DeleteConfirmationModal
 				isOpen={isDeleteModalOpen}
-				onClose={() => setIsDeleteModalOpen(false)}
-				className="max-w-[500px] m-4"
-			>
-				<DeleteConfirmationModal
-					title="Delete Application"
-					message={`Are you sure you want to delete the application for ${application.program_name}? This action cannot be undone.`}
-					onConfirm={handleConfirmDelete}
-					onCancel={() => setIsDeleteModalOpen(false)}
-				/>
-			</Modal>
+				title="Delete Application"
+				message={`Are you sure you want to delete the application for ${application.program_name}? This action cannot be undone.`}
+				onConfirm={handleConfirmDelete}
+				onCancel={() => setIsDeleteModalOpen(false)}
+			/>
+
+			{/* Event Form Modal */}
+			<EventFormModal
+				isOpen={isEventModalOpen}
+				onClose={handleCloseEventModal}
+				selectedEvent={selectedEvent}
+				selectedDate=""
+				initialApplicationId={application.id}
+			/>
 		</>
 	);
 }

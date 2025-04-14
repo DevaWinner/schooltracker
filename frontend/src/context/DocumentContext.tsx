@@ -144,7 +144,14 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 				setIsLoading(false);
 			}
 		},
-			[isAuthenticated, lastUpdated, organizeDocumentsByType, isLoading, hasAttemptedFetch, documents.length]
+		[
+			isAuthenticated,
+			lastUpdated,
+			organizeDocumentsByType,
+			isLoading,
+			hasAttemptedFetch,
+			documents.length,
+		]
 	);
 
 	// Filter documents based on provided filters
@@ -154,39 +161,32 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 			setCurrentFilters(filters);
 
 			try {
-				// If we have simple filters we can apply client-side, do it
-				if (Object.keys(filters).length === 0) {
-					setFilteredDocuments(documents);
-					return;
+				let filtered = [...documents];
+
+				// Apply search filter
+				if (filters.search) {
+					const searchTerm = filters.search.toLowerCase();
+					filtered = filtered.filter((doc) =>
+						doc.file_name.toLowerCase().includes(searchTerm)
+					);
 				}
 
-				if (
-					(filters.document_type || filters.application) &&
-					!filters.search &&
-					!filters.ordering
-				) {
-					// Simple filtering we can do client-side
-					let filtered = [...documents];
-
-					if (filters.document_type) {
-						filtered = filtered.filter(
-							(doc) => doc.document_type === filters.document_type
-						);
-					}
-
-					if (filters.application) {
-						filtered = filtered.filter(
-							(doc) =>
-								String(doc.application_id) === String(filters.application)
-						);
-					}
-
-					setFilteredDocuments(filtered);
-				} else {
-					// More complex filtering, use the API
-					const response = await getDocuments(filters);
-					setFilteredDocuments(response.results);
+				// Apply document type filter
+				if (filters.document_type) {
+					filtered = filtered.filter(
+						(doc) => doc.document_type === filters.document_type
+					);
 				}
+
+				// Apply application filter
+				if (filters.application) {
+					filtered = filtered.filter(
+						(doc) => String(doc.application_id) === String(filters.application)
+					);
+				}
+
+				setFilteredDocuments(filtered);
+				organizeDocumentsByType(filtered);
 			} catch (err: any) {
 				setError(err.message || "Failed to filter documents");
 				toast.error("Failed to filter documents");
@@ -195,7 +195,7 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 				setIsLoading(false);
 			}
 		},
-		[documents]
+		[documents, organizeDocumentsByType]
 	);
 
 	// Upload a new document
@@ -287,8 +287,6 @@ export const DocumentProvider: React.FC<DocumentProviderProps> = ({
 	// Clear document data when user signs out
 	useEffect(() => {
 		const handleUserSignOut = (_event: CustomEvent) => {
-			console.log("Document context: clearing document data on sign out");
-
 			// Reset all document state
 			setDocuments([]);
 			setFilteredDocuments([]);
