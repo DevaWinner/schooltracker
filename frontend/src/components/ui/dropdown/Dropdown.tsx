@@ -1,46 +1,31 @@
-import type React from "react";
-import { useEffect, useRef } from "react";
+import React from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface DropdownProps {
-  isOpen: boolean;
-  onClose: () => void;
-  children: React.ReactNode;
-  className?: string;
+	isOpen: boolean;
+	onClose: () => void;
+	className?: string;
+	children: React.ReactNode;
 }
 
 export const Dropdown: React.FC<DropdownProps> = ({
-  isOpen,
-  onClose,
-  children,
-  className = "",
+	isOpen,
+	className,
+	children,
 }) => {
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node) &&
-        !(event.target as HTMLElement).closest(".dropdown-toggle")
-      ) {
-        onClose();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [onClose]);
-
-  if (!isOpen) return null;
-
-  return (
-    <div
-      ref={dropdownRef}
-      className={`absolute z-40  right-0 mt-2  rounded-xl border border-gray-200 bg-white  shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark ${className}`}
-    >
-      {children}
-    </div>
-  );
+	return (
+		<AnimatePresence>
+			{isOpen && (
+				<motion.div
+					initial={{ opacity: 0, y: -10 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -10 }}
+					transition={{ duration: 0.2, ease: "easeInOut" }}
+					className={className}
+				>
+					{children}
+				</motion.div>
+			)}
+		</AnimatePresence>
+	);
 };

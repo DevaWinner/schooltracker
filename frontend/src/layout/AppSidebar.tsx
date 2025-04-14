@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
-
 import {
 	GridIcon,
 	CalenderIcon,
@@ -11,6 +10,10 @@ import {
 	ChevronDownIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import {
+	TbLayoutSidebarRightExpandFilled,
+	TbLayoutSidebarLeftExpandFilled,
+} from "react-icons/tb";
 
 type NavItem = {
 	name: string;
@@ -60,6 +63,7 @@ const AppSidebar: React.FC = () => {
 		setIsHovered,
 		isHoverEnabled,
 		toggleMobileSidebar,
+		toggleSidebar,
 	} = useSidebar();
 	const [isMobileScreen, setIsMobileScreen] = useState(false);
 	const location = useLocation();
@@ -134,26 +138,6 @@ const AppSidebar: React.FC = () => {
 		setOpenSubmenu((prev) => (prev && prev.index === index ? null : { index }));
 	};
 
-	const handleMouseEnter = () => {
-		if (hoverTimeoutRef.current) {
-			clearTimeout(hoverTimeoutRef.current);
-			hoverTimeoutRef.current = null;
-		}
-		if (isHoverEnabled) {
-			setIsHovered(true);
-		}
-	};
-
-	const handleMouseLeave = () => {
-		if (hoverTimeoutRef.current) {
-			clearTimeout(hoverTimeoutRef.current);
-		}
-		hoverTimeoutRef.current = window.setTimeout(() => {
-			setIsHovered(false);
-			hoverTimeoutRef.current = null;
-		}, 100);
-	};
-
 	useEffect(() => {
 		return () => {
 			if (hoverTimeoutRef.current) {
@@ -165,16 +149,18 @@ const AppSidebar: React.FC = () => {
 	useEffect(() => {
 		const handleResize = () => {
 			setIsMobileScreen(window.innerWidth < 1024);
+			if (window.innerWidth < 1200) {
+				setIsHovered(false);
+			}
 		};
 
 		handleResize();
-
 		window.addEventListener("resize", handleResize);
 
 		return () => {
 			window.removeEventListener("resize", handleResize);
 		};
-	}, []);
+	}, [setIsHovered]);
 
 	const handleNavItemClick = () => {
 		if (isMobileScreen || window.innerWidth < 1024) {
@@ -311,10 +297,18 @@ const AppSidebar: React.FC = () => {
 		</ul>
 	);
 
+	const handleToggle = () => {
+		if (isMobileScreen) {
+			toggleMobileSidebar();
+		} else {
+			toggleSidebar();
+		}
+	};
+
 	return (
 		<>
 			<aside
-				className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen will-change-transform z-50 border-r border-gray-200 
+				className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen will-change-transform z-[70] border-r border-gray-200 
 				${
 					isExpanded || isMobileScreen
 						? "w-[290px]"
@@ -324,11 +318,23 @@ const AppSidebar: React.FC = () => {
 				}
 				${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
 				lg:translate-x-0 transition-[width,transform] duration-300 ease-out`}
-				onMouseEnter={handleMouseEnter}
-				onMouseLeave={handleMouseLeave}
 			>
+				{/* Only show toggle button on desktop */}
+				{!isMobileScreen && (
+					<button
+						onClick={handleToggle}
+						className="absolute -right-5 top-15 flex items-center justify-center w-10 h-10 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 z-50 cursor-pointer transform transition-all duration-200 hover:scale-110 bg-white dark:bg-gray-900 shadow-xl hover:shadow-2xl ring-1 ring-gray-200 dark:ring-gray-700"
+						aria-label="Toggle Sidebar"
+					>
+						{isExpanded ? (
+							<TbLayoutSidebarRightExpandFilled className="w-5 h-5" />
+						) : (
+							<TbLayoutSidebarLeftExpandFilled className="w-5 h-5" />
+						)}
+					</button>
+				)}
 				<div
-					className={`py-8 flex ${
+					className={`py-8 mb-8 flex ${
 						!isExpanded && !isHovered && !isMobileScreen
 							? "lg:justify-center"
 							: "justify-start"
@@ -351,7 +357,7 @@ const AppSidebar: React.FC = () => {
 						)}
 					</Link>
 				</div>
-				<div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+				<div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar pt-4">
 					<nav className="mb-6 w-full">
 						<div className="flex flex-col gap-4 w-full">
 							{(isExpanded || isHovered || isMobileOpen || isMobileScreen) && (

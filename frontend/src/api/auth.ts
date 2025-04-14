@@ -18,7 +18,7 @@ const axiosInstance = axios.create({
 	withCredentials: true,
 });
 
-// Simple request interceptor without console.log
+// Simple request interceptor
 axiosInstance.interceptors.request.use(
 	(config) => {
 		return config;
@@ -103,8 +103,6 @@ export const storeAuthTokens = (
 
 // Clear auth tokens from storage - more aggressive approach
 export const clearAuthTokens = () => {
-	console.log("Clearing all auth tokens and user data");
-
 	// Instead of individually removing items, clear everything
 	// This is more reliable when dealing with unknown cached items
 	localStorage.clear();

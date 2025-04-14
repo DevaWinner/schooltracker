@@ -142,6 +142,9 @@ export default function ApplicationFilters({
 							placeholder="Search applications..."
 						/>
 					</div>
+					<div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+						Search by institution name or program name
+					</div>
 				</div>
 			</div>
 		</div>
