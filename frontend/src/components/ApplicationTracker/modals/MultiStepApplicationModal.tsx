@@ -158,7 +158,7 @@ export default function MultiStepApplicationModal({
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose}>
-			<div className="flex flex-col h-[85vh] bg-white dark:bg-gray-900 rounded-3xl overflow-hidden lg:w-[600px]">
+			<div className="flex flex-col h-[85vh] bg-white dark:bg-gray-900 rounded-3xl overflow-hidden w-[90vw] lg:w-[600px]">
 				{/* Fixed Header */}
 				<div className="w-full flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
 					<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">

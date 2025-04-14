@@ -251,8 +251,8 @@ export default function EditApplicationModal({
 	};
 
 	return (
-		<Modal isOpen={isOpen} onClose={onClose} className="w-[1000px]">
-			<div className="flex flex-col h-[85vh]">
+		<Modal isOpen={isOpen} onClose={onClose}>
+			<div className="flex flex-col h-[85vh] w-[90vw] md:w-[60vw] lg:w-[600px]">
 				{/* Fixed Header */}
 				<div className="flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
 					<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">

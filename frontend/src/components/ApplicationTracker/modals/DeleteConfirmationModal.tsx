@@ -76,7 +76,7 @@ export default function DeleteConfirmationModal({
 						{message}
 					</p>
 					<p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-						You won't be able to recover this event after deletion.
+						You won't be able to recover this application after deletion.
 					</p>
 
 					{error && (
