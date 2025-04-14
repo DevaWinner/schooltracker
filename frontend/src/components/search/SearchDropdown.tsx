@@ -43,7 +43,7 @@ const SearchDropdown: React.FC<SearchDropdownProps> = ({
 	if (!isOpen) return null;
 
 	return (
-		<div className="absolute top-full left-0 mt-1 z-50 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
+		<div className="absolute top-full left-12 mt-1 z-50 w-full bg-white rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 overflow-hidden">
 			<AnimatePresence>
 				<motion.div
 					initial={{ opacity: 0, y: -5 }}
