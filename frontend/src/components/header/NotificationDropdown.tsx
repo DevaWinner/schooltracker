@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Fixed import
 import { useEvents } from "../../context/EventContext";
-import { Events } from "../../types/events";
+import { Events } from "../../interfaces/events";
 import { BsBellFill } from "react-icons/bs";
 import { IoCalendarOutline } from "react-icons/io5";
 import {

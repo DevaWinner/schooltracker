@@ -1,6 +1,6 @@
 import { useModal } from "../../hooks/useModal";
 import UserProfileModal from "./modals/UserProfileModal";
-import { ComponentCardProps } from "../../types/user";
+import { ComponentCardProps } from "../../interfaces/user";
 
 interface ExtendedCardProps extends ComponentCardProps {
 	refreshData?: () => void;

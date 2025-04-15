@@ -1,9 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Application } from "../../types/applications";
-import { Document } from "../../types/documents";
-import { Institution } from "../../types/institutions";
-import { Events } from "../../types/events";
+import { Application } from "../../interfaces/applications";
+import { Document } from "../../interfaces/documents";
+import { Institution } from "../../interfaces/institutions";
+import { Events } from "../../interfaces/events";
 import {
 	FaSearch,
 	FaUniversity,

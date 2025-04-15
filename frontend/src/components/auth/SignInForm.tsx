@@ -86,7 +86,10 @@ export default function SignInForm() {
 				})
 			);
 
-			const response = await signIn({ email, password });
+			const response = await signIn({
+				email: email.toLowerCase(),
+				password,
+			});
 			if (response.status === "success") {
 				// Generate a new user session ID to prevent stale data issues
 				const sessionId = `session_${Date.now()}_${Math.random()

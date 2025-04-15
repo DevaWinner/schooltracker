@@ -1,4 +1,4 @@
-import { UserInfo, UserProfile, UserSettings } from "../types/user";
+import { UserInfo, UserProfile, UserSettings } from "../interfaces/user";
 import { authenticatedApi } from "../utils/apiUtils";
 import axios from "axios";
 

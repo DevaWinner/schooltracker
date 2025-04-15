@@ -1,4 +1,4 @@
-import { Application } from "../../../../types/applications";
+import { Application } from "../../../../interfaces/applications";
 
 interface StepProps {
 	data: Partial<Application>;

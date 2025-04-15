@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useEvents } from "../../context/EventContext";
 import { useApplications } from "../../context/ApplicationContext";
-import { Events } from "../../types/events";
+import { Events } from "../../interfaces/events";
 import { format, parseISO, isBefore } from "date-fns";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";

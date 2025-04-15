@@ -1,4 +1,4 @@
-import { EventRequest, EventResponse, Events } from "../types/events";
+import { EventRequest, EventResponse, Events } from "../interfaces/events";
 import { authenticatedApi } from "../utils/apiUtils";
 
 /**

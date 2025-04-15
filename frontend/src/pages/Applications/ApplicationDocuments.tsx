@@ -11,7 +11,7 @@ import DocumentDetailModal from "../../components/Documents/DocumentDetailModal"
 import DeleteDocumentModal from "../../components/Documents/DeleteDocumentModal";
 import { useDocuments } from "../../context/DocumentContext";
 import { useApplications } from "../../context/ApplicationContext";
-import { Document, DocumentType } from "../../types/documents";
+import { Document, DocumentType } from "../../interfaces/documents";
 import { loadApplicationById } from "../../utils/applicationUtils";
 
 export default function ApplicationDocuments() {

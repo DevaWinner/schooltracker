@@ -1,6 +1,6 @@
 import { useModal } from "../../hooks/useModal";
 import UserSettingsModal from "./modals/UserSettingsModal";
-import { ComponentCardProps } from "../../types/user";
+import { ComponentCardProps } from "../../interfaces/user";
 import { timezones } from "../../utils/timezones";
 import { getLanguageByCode } from "../../utils/languages";
 

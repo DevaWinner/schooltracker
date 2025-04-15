@@ -3,7 +3,7 @@ import {
 	InstitutionDetail,
 	InstitutionFilters,
 	PaginatedInstitutions,
-} from "../types/institutions";
+} from "../interfaces/institutions";
 
 /**
  * Fetch a paginated list of institutions with optional filters

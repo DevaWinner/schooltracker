@@ -1,20 +1,93 @@
-import { Application } from "../types/applications";
+import { Application } from "../interfaces/applications";
 import { getApplicationById } from "../api/applications";
 
+// Application cache to prevent redundant API calls
+const applicationCache: Record<
+	number,
+	{ data: Application; timestamp: number }
+> = {};
+
 /**
- * Loads a complete application by ID from the API
+ * Loads application data by ID, using cache when possible
+ * @param id Application ID to fetch
+ * @param forceRefresh Force a refresh from API even if cached data exists
+ * @returns Application data
  */
 export const loadApplicationById = async (
-	id: string | number
+	id: number | string,
+	forceRefresh = false
 ): Promise<Application | null> => {
+	const numericId = Number(id);
+	const now = Date.now();
+	const cacheMaxAge = 5 * 60 * 1000; // 5 minutes
+
 	try {
-		const appId = typeof id === "string" ? id : id.toString();
-		const data = await getApplicationById(appId);
-		return data;
+		// Always fetch if forcing refresh or no cache exists
+		if (forceRefresh || !applicationCache[numericId]) {
+			const application = await getApplicationById(numericId);
+			applicationCache[numericId] = {
+				data: application,
+				timestamp: now,
+			};
+			return application;
+		}
+
+		// Check cache age
+		const cacheAge = now - applicationCache[numericId].timestamp;
+		if (cacheAge > cacheMaxAge) {
+			// Cache is too old, fetch fresh data
+			const application = await getApplicationById(numericId);
+			applicationCache[numericId] = {
+				data: application,
+				timestamp: now,
+			};
+			return application;
+		}
+
+		// Use cached data
+		return applicationCache[numericId].data;
 	} catch (error) {
-		console.error(`Error loading application with ID ${id}:`, error);
+		console.error("Failed to load application:", error);
+		// If cache exists, return it as fallback even if expired
+		if (applicationCache[numericId]) {
+			return applicationCache[numericId].data;
+		}
 		return null;
 	}
+};
+
+/**
+ * Adds or updates application in cache
+ */
+export const updateApplicationCache = (application: Application): void => {
+	if (!application || !application.id) return;
+
+	applicationCache[application.id] = {
+		data: application,
+		timestamp: Date.now(),
+	};
+};
+
+/**
+ * Clears application cache
+ */
+export const clearApplicationCache = (): void => {
+	Object.keys(applicationCache).forEach((key) => {
+		delete applicationCache[Number(key)];
+	});
+};
+
+/**
+ * Gets cached application if available
+ */
+export const getCachedApplication = (
+	id: number | string
+): Application | null => {
+	const numericId = Number(id);
+	if (applicationCache[numericId]) {
+		return applicationCache[numericId].data;
+	}
+	return null;
 };
 
 /**

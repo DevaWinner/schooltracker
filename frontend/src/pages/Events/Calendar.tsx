@@ -6,7 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import { DateSelectArg, EventClickArg } from "@fullcalendar/core";
 import { useModal } from "../../hooks/useModal";
 import PageMeta from "../../components/common/PageMeta";
-import { Events } from "../../types/events";
+import { Events } from "../../interfaces/events";
 import { useEvents } from "../../context/EventContext";
 import EventFormModal from "../../components/Calendar/EventFormModal";
 import Button from "../../components/ui/button/Button";
@@ -97,10 +97,10 @@ const Calendar: React.FC = () => {
 						Manage your important application dates and deadlines
 					</p>
 				</div>
-				
-				 {/* Buttons for calendar actions */}
+
+				{/* Buttons for calendar actions */}
 				<div className="flex gap-2">
-					<Button 
+					<Button
 						size="sm"
 						variant="primary"
 						onClick={() => {
@@ -111,7 +111,7 @@ const Calendar: React.FC = () => {
 					>
 						Add Event +
 					</Button>
-					<Button 
+					<Button
 						size="sm"
 						variant="outline"
 						onClick={() => navigate("/events")}

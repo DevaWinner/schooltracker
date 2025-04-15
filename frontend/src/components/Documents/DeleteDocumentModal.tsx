@@ -74,7 +74,7 @@ const DeleteDocumentModal: React.FC<DeleteDocumentModalProps> = ({
 						cannot be undone.
 					</p>
 					<p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-						You won't be able to recover this event after deletion.
+						You won't be able to recover this document after deletion.
 					</p>
 
 					{error && (

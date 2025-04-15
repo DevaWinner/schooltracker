@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Application } from "../../types/applications";
+import { Application } from "../../interfaces/applications";
 
 interface ApplicationStatsProps {
 	applications: Application[];

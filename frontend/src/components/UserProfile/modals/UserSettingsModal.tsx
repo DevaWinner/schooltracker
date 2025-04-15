@@ -7,7 +7,7 @@ import Label from "../../form/Label";
 import Switch from "../../form/input/Switch";
 import { timezones } from "../../../utils/timezones";
 import { languages } from "../../../utils/languages";
-import { ComponentCardProps } from "../../../types/user";
+import { ComponentCardProps } from "../../../interfaces/user";
 import { Modal } from "../../ui/modal";
 
 interface UserSettingsModalProps extends ComponentCardProps {
