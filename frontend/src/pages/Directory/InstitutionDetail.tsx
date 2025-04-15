@@ -1,10 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getInstitutionById } from "../../api/institutions";
 import { InstitutionDetail } from "../../interfaces/institutions";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { toast } from "react-toastify";
+import {
+	getCachedInstitution,
+	cacheInstitution,
+} from "../../utils/institutionCache";
 
 export default function InstitutionDetailPage() {
 	const { id } = useParams<{ id: string }>();
@@ -13,23 +17,35 @@ export default function InstitutionDetailPage() {
 	);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
+	const isFetchingRef = useRef(false);
 
 	useEffect(() => {
 		const fetchInstitutionDetails = async () => {
-			if (!id) return;
+			if (!id || isFetchingRef.current) return;
+
+			// Check cache first
+			const cached = getCachedInstitution(id);
+			if (cached && "classification" in cached) {
+				setInstitution(cached as InstitutionDetail);
+				setLoading(false);
+				return;
+			}
 
 			setLoading(true);
 			setError(null);
 
 			try {
+				isFetchingRef.current = true;
 				const data = await getInstitutionById(id);
 				setInstitution(data);
+				cacheInstitution(data);
 			} catch (error: any) {
 				console.error("Error fetching institution details:", error);
 				setError(error.message || "Failed to load institution details");
 				toast.error("Failed to load institution details. Please try again.");
 			} finally {
 				setLoading(false);
+				isFetchingRef.current = false;
 			}
 		};
 
@@ -191,8 +207,58 @@ export default function InstitutionDetailPage() {
 
 				{/* Loading state */}
 				{loading && (
-					<div className="flex items-center justify-center h-64">
-						<div className="h-12 w-12 rounded-full border-4 border-t-blue-600 border-blue-200 animate-spin"></div>
+					<div className="space-y-8">
+						{/* Header Skeleton */}
+						<div className="relative overflow-hidden bg-gradient-to-r from-blue-600/30 to-indigo-600/30 rounded-xl shadow-lg">
+							<div className="relative z-10 px-8 py-12">
+								<div className="space-y-4">
+									<div className="h-6 w-32 bg-white/20 rounded animate-pulse"></div>
+									<div className="h-10 w-3/4 bg-white/20 rounded animate-pulse"></div>
+									<div className="h-6 w-48 bg-white/20 rounded animate-pulse"></div>
+									<div className="flex gap-4 mt-4">
+										<div className="h-8 w-24 bg-white/20 rounded-full animate-pulse"></div>
+										<div className="h-8 w-32 bg-white/20 rounded animate-pulse"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						{/* Classification Skeleton */}
+						<div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
+							<div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+								<div className="h-7 w-40 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+							</div>
+							<div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-6">
+								{[1, 2, 3].map((i) => (
+									<div key={i} className="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+										<div className="h-5 w-20 bg-gray-200 dark:bg-gray-600 rounded animate-pulse mb-2"></div>
+										<div className="h-7 w-32 bg-gray-200 dark:bg-gray-600 rounded animate-pulse"></div>
+									</div>
+								))}
+							</div>
+						</div>
+
+						{/* Performance Metrics Skeleton */}
+						<div>
+							<div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-6"></div>
+							<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+								{[1, 2, 3, 4, 5, 6].map((i) => (
+									<div key={i} className="rounded-lg bg-gray-50 dark:bg-gray-800 p-6 h-full">
+										<div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+										<div className="flex justify-between items-center">
+											<div className="space-y-2">
+												<div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+												<div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+											</div>
+											<div className="space-y-2">
+												<div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+												<div className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+											</div>
+										</div>
+									</div>
+								))}
+							</div>
+						</div>
 					</div>
 				)}
 

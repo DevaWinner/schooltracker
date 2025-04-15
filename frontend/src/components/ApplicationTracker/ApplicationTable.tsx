@@ -7,7 +7,8 @@ import {
 	TableRow,
 } from "../ui/table";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useInstitutions } from "../../context/InstitutionContext";
 import {
 	Application,
 	ApplicationFilterParams,
@@ -32,8 +33,13 @@ export default function ApplicationTable({
 	onEdit,
 	onDelete,
 }: ApplicationTableProps) {
+	const { fetchInstitutions } = useInstitutions();
 	const navigate = useNavigate();
 	const [filters, setFilters] = useState<ApplicationFilterParams>({});
+
+	useEffect(() => {
+		fetchInstitutions();
+	}, []);
 
 	// Add highlight function
 	const highlightSearchTerm = (text: string) => {

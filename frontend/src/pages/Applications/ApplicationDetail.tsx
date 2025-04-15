@@ -15,7 +15,6 @@ import EventFormModal from "../../components/Calendar/EventFormModal";
 import { useModal } from "../../hooks/useModal";
 import {
 	loadApplicationById,
-	getCachedApplication,
 } from "../../utils/applicationUtils";
 
 export default function ApplicationDetail() {
