@@ -187,7 +187,7 @@ export default function SignUpForm() {
 
 		setIsLoading(true);
 		const payload: SignUpRequest = {
-			email,
+			email: email.toLowerCase(),
 			password,
 			first_name: firstName,
 			last_name: lastName,

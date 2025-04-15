@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "../ui/modal";
-import { Events, EventRequest } from "../../interfaces/events";
+import { Events } from "../../interfaces/events";
 import { Application } from "../../interfaces/applications";
 import { useApplications } from "../../context/ApplicationContext";
 import { useEvents } from "../../context/EventContext";
