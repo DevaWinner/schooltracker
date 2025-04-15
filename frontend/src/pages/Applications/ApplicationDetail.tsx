@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { Application } from "../../interfaces/applications";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
@@ -7,21 +7,60 @@ import Button from "../../components/ui/button/Button";
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { ROUTES } from "../../constants/Routes";
-import { getApplicationById } from "../../api/applications";
 import { toast } from "react-toastify";
 import { useApplications } from "../../context/ApplicationContext";
 import { useEvents } from "../../context/EventContext";
 import { Events } from "../../interfaces/events";
 import EventFormModal from "../../components/Calendar/EventFormModal";
 import { useModal } from "../../hooks/useModal";
+import {
+	loadApplicationById,
+	getCachedApplication,
+} from "../../utils/applicationUtils";
 
 export default function ApplicationDetail() {
 	const { id } = useParams();
 	const navigate = useNavigate();
-	const [application, setApplication] = useState<Application | null>(null);
+	const location = useLocation();
+	const initialData = location.state?.applicationData;
+
+	const [application, setApplication] = useState<Application | null>(
+		initialData
+	);
+	const [loading, setLoading] = useState(!initialData);
+	const isFetchingRef = useRef<boolean>(false);
+
+	// Fetch application data only once
+	const fetchApplicationData = useCallback(async () => {
+		if (!id || isFetchingRef.current) return;
+
+		try {
+			isFetchingRef.current = true;
+			setLoading(true);
+
+			// Always fetch fresh data for the detail view
+			const data = await loadApplicationById(id, true);
+			if (data) {
+				setApplication(data);
+			} else {
+				toast.error("Failed to load application details");
+			}
+		} catch (error) {
+			toast.error("Error loading application details");
+		} finally {
+			setLoading(false);
+			isFetchingRef.current = false;
+		}
+	}, [id]);
+
+	// Initial data fetch
+	useEffect(() => {
+		// Always fetch fresh data when component mounts
+		fetchApplicationData();
+	}, [fetchApplicationData]);
+
 	const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 	const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-	const [loading, setLoading] = useState(true);
 	const [currentApplication, setCurrentApplication] =
 		useState<Application | null>(null);
 
@@ -36,33 +75,10 @@ export default function ApplicationDetail() {
 	} = useModal();
 	const [selectedEvent, setSelectedEvent] = useState<Events | null>(null);
 
-	// Filter events for this application
-	const applicationEvents = events.filter(
-		(event) => event.application === Number(id)
-	);
-
-	// Always fetch the application from API to ensure we have the latest data
-	useEffect(() => {
-		const fetchApplication = async () => {
-			if (!id) return;
-
-			setLoading(true);
-			try {
-				// Get fresh data directly from the API
-				const data = await getApplicationById(id);
-				setApplication(data);
-
-				// Fetch events to ensure we have the latest
-				fetchEvents();
-			} catch (error) {
-				toast.error("Failed to fetch application details");
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetchApplication();
-	}, [id, fetchEvents]);
+	// Filter events for this application more efficiently
+	const applicationEvents = id
+		? events.filter((event) => event.application === Number(id))
+		: [];
 
 	const handleEdit = () => {
 		if (application) {

@@ -13,6 +13,7 @@ import {
 	ApplicationFilterParams,
 } from "../../interfaces/applications";
 import ApplicationFilters from "./ApplicationFilters";
+import { updateApplicationCache } from "../../utils/applicationUtils";
 
 interface ApplicationTableProps {
 	data: Application[];
@@ -72,7 +73,10 @@ export default function ApplicationTable({
 		e: React.MouseEvent,
 		application: Application
 	) => {
-		e.stopPropagation(); // Stop row click event from firing
+		e.preventDefault();
+		e.stopPropagation();
+
+		// Don't pass the application data in state, let the detail page fetch it
 		navigate(`/applications/detail/${application.id}`);
 	};
 
@@ -229,6 +233,9 @@ export default function ApplicationTable({
 										<tr
 											key={application.id}
 											className="cursor-pointer border-b border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/30"
+											onClick={() => {
+												navigate(`/applications/detail/${application.id}`);
+											}}
 										>
 											<TableCell className="px-5 py-4 text-theme-sm text-gray-800 dark:text-gray-300">
 												<button

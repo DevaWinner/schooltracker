@@ -12,7 +12,10 @@ import {
 import EditApplicationModal from "../../components/ApplicationTracker/modals/EditApplicationModal";
 import DeleteConfirmationModal from "../../components/ApplicationTracker/modals/DeleteConfirmationModal";
 import { useApplications } from "../../context/ApplicationContext";
-import { loadApplicationById } from "../../utils/applicationUtils";
+import {
+	loadApplicationById,
+	updateApplicationCache,
+} from "../../utils/applicationUtils";
 
 export default function ApplicationTracker() {
 	const {
@@ -43,6 +46,8 @@ export default function ApplicationTracker() {
 	);
 
 	const handleView = useCallback((application: Application) => {
+		// Cache the application data to avoid extra API calls
+		updateApplicationCache(application);
 		setCurrentApplication(application);
 	}, []);
 
