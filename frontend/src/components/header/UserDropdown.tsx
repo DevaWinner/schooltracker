@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,24 @@ export default function UserDropdown() {
 	const [isOpen, setIsOpen] = useState(false);
 	const { signOut, profile, userProfile } = useContext(AuthContext);
 	const navigate = useNavigate();
+	const dropdownRef = useRef<HTMLDivElement>(null);
+
+	// Handle clicks outside the dropdown to close it
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				dropdownRef.current &&
+				!dropdownRef.current.contains(event.target as Node)
+			) {
+				setIsOpen(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
 
 	function toggleDropdown() {
 		setIsOpen(!isOpen);
@@ -67,7 +85,7 @@ export default function UserDropdown() {
 	const profilePicture = userProfile?.profile_picture || null;
 
 	return (
-		<div className="relative">
+		<div className="relative" ref={dropdownRef}>
 			<button
 				onClick={toggleDropdown}
 				className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
@@ -110,8 +128,11 @@ export default function UserDropdown() {
 			<Dropdown
 				isOpen={isOpen}
 				onClose={closeDropdown}
-				className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
+				className="absolute right-[-11px] mt-[5px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
 			>
+				{/* Triangle indicator pointing to the user icon */}
+				<div className="absolute -top-2 right-[25px] h-4 w-4 rotate-45 border-l border-t border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-dark"></div>
+
 				<div>
 					<span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
 						{fullName}
