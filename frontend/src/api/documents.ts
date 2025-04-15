@@ -4,7 +4,7 @@ import {
 	DocumentFilterParams,
 	DocumentResponse,
 	DocumentUploadRequest,
-} from "../types/documents";
+} from "../interfaces/documents";
 
 /**
  * Get all documents with optional filters

@@ -7,7 +7,7 @@ import React, {
 	useEffect,
 	useRef,
 } from "react";
-import { Events, EventRequest } from "../types/events";
+import { Events, EventRequest } from "../interfaces/events";
 import {
 	getEvents,
 	createEvent,
@@ -58,11 +58,14 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 
 	const { isAuthenticated } = useAuth();
 
-	// Fetch events from API - Fixed to properly fetch when needed
+	// Fetch events from API - Modified to be even more efficient
 	const fetchEvents = useCallback(
 		async (refresh = false) => {
 			// Prevent duplicate fetches if one is already in progress
 			if (isFetchingRef.current) {
+				console.debug(
+					"Events fetch already in progress, skipping duplicate request"
+				);
 				return;
 			}
 
@@ -71,16 +74,16 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 				return;
 			}
 
-			// Always fetch if explicitly refreshing or if our events array is empty
+			// If we have events and not forcing refresh, use cache when appropriate
 			const shouldFetch = refresh || events.length === 0 || !lastUpdated;
 
-			// Otherwise, check if our cache is still fresh (less than 5 minutes old)
+			// Check cache freshness - use a longer cache time (10 minutes) to reduce API calls
 			if (!shouldFetch && lastUpdated) {
-				const fiveMinutesAgo = new Date();
-				fiveMinutesAgo.setMinutes(fiveMinutesAgo.getMinutes() - 5);
+				const tenMinutesAgo = new Date();
+				tenMinutesAgo.setMinutes(tenMinutesAgo.getMinutes() - 10);
 
-				if (lastUpdated > fiveMinutesAgo) {
-					// Our data is fresh enough, no need to fetch
+				if (lastUpdated > tenMinutesAgo) {
+					console.debug("Using cached events data");
 					return;
 				}
 			}
@@ -107,7 +110,7 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 				isFetchingRef.current = false;
 			}
 		},
-		[isAuthenticated, events.length, lastUpdated] // Restore needed dependencies
+		[isAuthenticated, events.length, lastUpdated, hasAttemptedFetch]
 	);
 
 	// Add a new event

@@ -5,8 +5,8 @@ import {
 	DocumentType,
 	DocumentUploadRequest,
 	DOCUMENT_TYPES,
-} from "../../types/documents";
-import { Application } from "../../types/applications";
+} from "../../interfaces/documents";
+import { Application } from "../../interfaces/applications";
 import { useApplications } from "../../context/ApplicationContext";
 import { useDocuments } from "../../context/DocumentContext";
 

@@ -11,7 +11,7 @@ import {
 	DocumentFilterParams,
 	DocumentType,
 	DocumentUploadRequest,
-} from "../types/documents";
+} from "../interfaces/documents";
 import { getDocuments, uploadDocument, deleteDocument } from "../api/documents";
 import { toast } from "react-toastify";
 import { useAuth } from "./AuthContext";

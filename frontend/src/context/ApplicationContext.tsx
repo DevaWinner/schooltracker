@@ -6,7 +6,10 @@ import React, {
 	useCallback,
 	useContext,
 } from "react";
-import { Application, ApplicationFilterParams } from "../types/applications";
+import {
+	Application,
+	ApplicationFilterParams,
+} from "../interfaces/applications";
 import {
 	getApplications,
 	createApplication,
@@ -15,6 +18,10 @@ import {
 } from "../api/applications";
 import { toast } from "react-toastify";
 import { AuthContext } from "./AuthContext";
+import {
+	updateApplicationCache,
+	clearApplicationCache,
+} from "../utils/applicationUtils";
 
 interface ApplicationContextProps {
 	applications: Application[];
@@ -257,6 +264,9 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 					prevApps.map((app) => (app.id === id ? updatedApplication : app))
 				);
 
+				// Update the application cache
+				updateApplicationCache(updatedApplication);
+
 				setLastUpdated(new Date());
 				return updatedApplication;
 			} catch (err: any) {
@@ -324,6 +334,9 @@ export const ApplicationProvider: React.FC<ApplicationProviderProps> = ({
 			});
 			setCurrentFilters({});
 			setHasAttemptedFetch(false); // Reset the fetch attempt flag
+
+			// Clear application cache
+			clearApplicationCache();
 
 			// Force data refresh on next load
 			localStorage.removeItem("applicationData");

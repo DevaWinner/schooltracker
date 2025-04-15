@@ -1,5 +1,5 @@
 import { UserData } from "../interfaces/auth";
-import { UserInfo } from "../types/user";
+import { UserInfo } from "../interfaces/user";
 
 /**
  * Converts UserData from auth API response to UserInfo for profile context
@@ -17,8 +17,8 @@ export function adaptUserDataToUserInfo(userData: UserData): UserInfo {
 		// Copy other properties
 		phone: userData.phone,
 		date_of_birth: userData.date_of_birth,
-    created_at: userData.created_at,
-    updated_at: userData.updated_at,
+		created_at: userData.created_at,
+		updated_at: userData.updated_at,
 	};
 
 	return userInfo;

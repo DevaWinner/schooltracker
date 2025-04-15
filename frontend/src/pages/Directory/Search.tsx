@@ -3,89 +3,46 @@ import { Link } from "react-router-dom";
 import PageMeta from "../../components/common/PageMeta";
 import InstitutionFilter from "../../components/Directory/InstitutionFilter";
 import Pagination from "../../components/Directory/Pagination";
-import { getInstitutions, getCountries } from "../../api/institutions";
-import { Institution, InstitutionFilters } from "../../types/institutions";
+import { InstitutionFilters } from "../../interfaces/institutions";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
-import { toast } from "react-toastify";
+import { useInstitutions } from "../../context/InstitutionContext";
 
-const DEFAULT_PAGE_SIZE = 20; // Updated to match API default of 20
+const DEFAULT_PAGE_SIZE = 20;
 
 export default function SchoolSearch() {
-	// State management
-	const [institutions, setInstitutions] = useState<Institution[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [totalCount, setTotalCount] = useState(0);
+	const {
+		filteredInstitutions,
+		countries,
+		isLoading,
+		totalCount,
+		fetchInstitutions,
+	} = useInstitutions();
+
 	const [currentPage, setCurrentPage] = useState(1);
-	const [countries, setCountries] = useState<string[]>([]);
 	const [filters, setFilters] = useState<InstitutionFilters>({
 		page_size: DEFAULT_PAGE_SIZE,
 	});
 
-	// Memoize the fetchInstitutions function to prevent dependency cycles
-	const fetchInstitutions = useCallback(async () => {
-		setLoading(true);
-		try {
-			// Create proper filters for the API request
-			const currentFilters: InstitutionFilters = {
-				...filters,
-				page: currentPage,
-				page_size: filters.page_size || DEFAULT_PAGE_SIZE,
-			};
-
-			// Remove undefined/null values
-			Object.keys(currentFilters).forEach((key) => {
-				if (
-					currentFilters[key] === undefined ||
-					currentFilters[key] === null ||
-					currentFilters[key] === ""
-				) {
-					delete currentFilters[key];
-				}
+	// Fetch institutions when filters change
+	const handleApplyFilters = useCallback(
+		(newFilters: InstitutionFilters) => {
+			setCurrentPage(1);
+			setFilters({
+				...newFilters,
+				page_size: newFilters.page_size || filters.page_size,
+				page: 1,
 			});
+		},
+		[filters.page_size]
+	);
 
-			const data = await getInstitutions(currentFilters);
-
-			// Update state with received data
-			setInstitutions(data.results);
-			setTotalCount(data.count);
-		} catch (error: any) {
-			toast.error(error.message || "Failed to load institutions");
-			setInstitutions([]);
-		} finally {
-			setLoading(false);
-		}
-	}, [currentPage, filters]);
-
-	// Initial data loading
+	// Fetch data when filters or page changes
 	useEffect(() => {
-		const loadCountries = async () => {
-			try {
-				const countryList = await getCountries();
-				setCountries(countryList);
-			} catch (error) {
-				setCountries([]);
-			}
-		};
-
-		loadCountries();
-	}, []);
-
-	// Fetch institutions when relevant filters change
-	useEffect(() => {
-		fetchInstitutions();
-	}, [fetchInstitutions]);
-
-	// Handler for applying filters from filter component
-	const handleApplyFilters = (newFilters: InstitutionFilters) => {
-		// Reset to page 1 when filters change
-		setCurrentPage(1);
-
-		// Update filters state, preserving the page size if not explicitly set
-		setFilters({
-			...newFilters,
-			page_size: newFilters.page_size || filters.page_size,
+		fetchInstitutions({
+			...filters,
+			page: currentPage,
 		});
-	};
+	}, [filters, currentPage, fetchInstitutions]);
 
 	// Handle page change from pagination component
 	const handlePageChange = (page: number) => {
@@ -139,18 +96,19 @@ export default function SchoolSearch() {
 				<InstitutionFilter
 					onApplyFilters={handleApplyFilters}
 					countries={countries}
-					loading={loading}
+					loading={isLoading}
 					initialFilters={filters}
 				/>
 
 				{/* Results info section */}
 				<div className="flex flex-wrap items-center justify-between gap-4 mb-4">
 					<div className="text-sm text-gray-600 dark:text-gray-400">
-						{loading ? (
+						{isLoading ? (
 							"Loading institutions..."
 						) : (
 							<>
-								Showing {institutions.length} of {totalCount} institutions
+								Showing {filteredInstitutions.length} of {totalCount}{" "}
+								institutions
 								{filters.search && ` matching "${filters.search}"`}
 								<span className="ml-2 text-gray-500">
 									(Page {currentPage} of {totalPages})
@@ -181,7 +139,7 @@ export default function SchoolSearch() {
 				</div>
 
 				{/* Loading state - Replace with skeleton loader */}
-				{loading && (
+				{isLoading && (
 					<div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
 						<div className="max-h-[70vh] overflow-y-auto">
 							<table className="w-full min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -256,7 +214,7 @@ export default function SchoolSearch() {
 				)}
 
 				{/* No results state */}
-				{!loading && institutions.length === 0 && (
+				{!isLoading && filteredInstitutions.length === 0 && (
 					<div className="flex h-64 flex-col items-center justify-center rounded-lg bg-white px-4 py-8 text-center shadow-sm dark:bg-gray-800">
 						<svg
 							className="mb-4 h-16 w-16 text-gray-400"
@@ -282,7 +240,7 @@ export default function SchoolSearch() {
 				)}
 
 				{/* Results Table with sticky header */}
-				{!loading && institutions.length > 0 && (
+				{!isLoading && filteredInstitutions.length > 0 && (
 					<>
 						<div className="overflow-x-auto rounded-lg border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
 							<div className="max-h-[70vh] overflow-y-auto">
@@ -322,7 +280,7 @@ export default function SchoolSearch() {
 										</tr>
 									</thead>
 									<tbody className="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-gray-800">
-										{institutions.map((institution, index) => (
+										{filteredInstitutions.map((institution, index) => (
 											<tr
 												key={institution.id}
 												className={`hover:bg-gray-50 transition duration-150 dark:hover:bg-gray-700 ${

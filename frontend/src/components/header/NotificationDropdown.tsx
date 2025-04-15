@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom"; // Fixed import
 import { useEvents } from "../../context/EventContext";
-import { Events } from "../../types/events";
+import { Events } from "../../interfaces/events";
 import { BsBellFill } from "react-icons/bs";
 import { IoCalendarOutline } from "react-icons/io5";
 import {
@@ -148,8 +148,11 @@ const NotificationDropdown: React.FC = () => {
 			<Dropdown
 				isOpen={isDropdownOpen}
 				onClose={closeDropdown}
-				className="absolute z-50 mt-[17px] flex w-[300px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark sm:right-0 right-[-220px]"
+				className="absolute z-50 mt-[19px] flex w-[250px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark lg:right-[-120px] right-[-160px]"
 			>
+				{/* Triangle indicator pointing to the bell icon */}
+				<div className="absolute -top-2 right-[164px] lg:right-[120px] h-4 w-4 rotate-45 border-l border-t border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-dark"></div>
+
 				<div>
 					<span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
 						Notifications

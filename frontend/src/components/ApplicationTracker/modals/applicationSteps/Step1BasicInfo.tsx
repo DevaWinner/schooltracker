@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Application } from "../../../../types/applications";
+import { Application } from "../../../../interfaces/applications";
 import FormField from "../../../ui/form/FormField";
 
 interface Institution {

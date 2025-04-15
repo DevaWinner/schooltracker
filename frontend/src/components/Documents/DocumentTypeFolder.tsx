@@ -1,5 +1,5 @@
 import React from "react";
-import { DocumentType } from "../../types/documents";
+import { DocumentType } from "../../interfaces/documents";
 
 interface DocumentTypeFolderProps {
 	type: DocumentType | "All";

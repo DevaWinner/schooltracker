@@ -6,10 +6,10 @@ import React, {
 	useCallback,
 	useEffect,
 } from "react";
-import { Application } from "../types/applications";
-import { Document } from "../types/documents";
-import { Institution } from "../types/institutions";
-import { Events } from "../types/events";
+import { Application } from "../interfaces/applications";
+import { Document } from "../interfaces/documents";
+import { Institution } from "../interfaces/institutions";
+import { Events } from "../interfaces/events";
 import { useApplications } from "./ApplicationContext";
 import { useDocuments } from "./DocumentContext";
 import { useEvents } from "./EventContext";

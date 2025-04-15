@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { InstitutionFilters } from "../../types/institutions";
+import { InstitutionFilters } from "../../interfaces/institutions";
 import Input from "../form/input/InputField";
 import Label from "../form/Label";
 import Button from "../ui/button/Button";

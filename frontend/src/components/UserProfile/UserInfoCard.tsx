@@ -1,6 +1,6 @@
 import { useModal } from "../../hooks/useModal";
 import UserInfoModal from "./modals/UserInfoModal";
-import { ComponentCardProps } from "../../types/user";
+import { ComponentCardProps } from "../../interfaces/user";
 
 // Update the props to include refreshData function
 interface ExtendedCardProps extends ComponentCardProps {

@@ -1,4 +1,4 @@
-import { Application } from "../../../../types/applications";
+import { Application } from "../../../../interfaces/applications";
 import Input from "../../../form/input/InputField";
 import Label from "../../../form/Label";
 
