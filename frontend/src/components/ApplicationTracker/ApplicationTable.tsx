@@ -14,7 +14,6 @@ import {
 	ApplicationFilterParams,
 } from "../../interfaces/applications";
 import ApplicationFilters from "./ApplicationFilters";
-import { updateApplicationCache } from "../../utils/applicationUtils";
 
 interface ApplicationTableProps {
 	data: Application[];

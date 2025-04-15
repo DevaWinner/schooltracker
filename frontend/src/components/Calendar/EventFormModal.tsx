@@ -63,38 +63,31 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 		}
 	}, [isOpen, selectedEvent, selectedDate, initialApplicationId]);
 
-	const handleAddOrUpdateEvent = async () => {
-		if (!eventTitle || !eventDate) {
-			alert("Please fill in the required fields");
-			return;
-		}
-
+	const handleAddOrUpdateEvent = async (e: React.FormEvent) => {
+		e.preventDefault();
 		setIsSubmitting(true);
 
 		try {
+			if (!applicationId) {
+				throw new Error("Please select an application");
+			}
+
+			const eventData = {
+				event_title: eventTitle.trim(),
+				event_date: eventDate,
+				event_color: eventColor,
+				notes: eventNotes.trim(),
+				application: Number(applicationId),
+			};
+
 			if (selectedEvent) {
-				// Update existing event
-				await updateEventById(selectedEvent.id, {
-					event_title: eventTitle,
-					event_date: eventDate,
-					event_color: eventColor,
-					notes: eventNotes,
-					application: applicationId ? Number(applicationId) : null,
-				});
+				await updateEventById(selectedEvent.id, eventData);
 			} else {
-				// Add new event
-				const newEvent: EventRequest = {
-					application: applicationId ? Number(applicationId) : null,
-					event_title: eventTitle,
-					event_color: eventColor,
-					event_date: eventDate,
-					notes: eventNotes,
-				};
-				await addEvent(newEvent);
+				await addEvent(eventData);
 			}
 
 			onClose();
-		} catch (error) {
+		} catch (error: any) {
 			console.error("Error saving event:", error);
 		} finally {
 			setIsSubmitting(false);
@@ -103,7 +96,10 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 
 	return (
 		<Modal isOpen={isOpen} onClose={onClose} className="w-[700px]">
-			<div className="flex flex-col h-[85vh] bg-white dark:bg-gray-900 rounded-3xl overflow-hidden">
+			<form
+				onSubmit={handleAddOrUpdateEvent}
+				className="flex flex-col h-[85vh] bg-white dark:bg-gray-900 rounded-3xl overflow-hidden"
+			>
 				{/* Fixed Header */}
 				<div className="w-full flex-shrink-0 border-b border-gray-200 px-8 pt-6 pb-4 dark:border-gray-700">
 					<h4 className="text-2xl font-semibold text-gray-800 dark:text-white/90">
@@ -120,7 +116,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 					<div className="w-full px-8 py-4">
 						<div className="mb-6">
 							<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-								Event Title
+								Event Title <span className="text-red-500">*</span>
 							</label>
 							<input
 								id="event-title"
@@ -129,19 +125,22 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 								onChange={(e) => setEventTitle(e.target.value)}
 								className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
 								required
+								minLength={1}
+								placeholder="Enter event title"
 							/>
 						</div>
 
 						<div className="mb-6">
 							<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-								Associated Application
+								Associated Application <span className="text-red-500">*</span>
 							</label>
 							<select
 								className="block w-full h-11 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
 								value={applicationId}
 								onChange={(e) => setApplicationId(e.target.value)}
+								required
 							>
-								<option value="">None</option>
+								<option value="">Select an application</option>
 								{applications.map((app: Application) => (
 									<option key={app.id} value={app.id}>
 										{app.program_name} at{" "}
@@ -155,7 +154,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 
 						<div className="mb-6">
 							<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-								Event Date
+								Event Date <span className="text-red-500">*</span>
 							</label>
 							<input
 								id="event-date"
@@ -169,7 +168,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 
 						<div className="mb-6">
 							<label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
-								Notes
+								Notes <span className="text-red-500">*</span>
 							</label>
 							<input
 								id="notes"
@@ -177,12 +176,15 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 								value={eventNotes}
 								onChange={(e) => setEventNotes(e.target.value)}
 								className="dark:bg-dark-900 h-11 w-full rounded-lg border border-gray-300 bg-transparent px-4 py-2.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800"
+								required
+								minLength={1}
+								placeholder="Enter event notes"
 							/>
 						</div>
 
 						<div className="mb-6">
 							<label className="block mb-4 text-sm font-medium text-gray-700 dark:text-gray-400">
-								Event Color
+								Event Color <span className="text-red-500">*</span>
 							</label>
 							<div className="flex flex-wrap items-center gap-4 sm:gap-5">
 								{Object.entries(calendarsEvents).map(([key, value]) => (
@@ -203,6 +205,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 														id={`modal${key}`}
 														checked={eventColor === key}
 														onChange={() => setEventColor(key)}
+														required
 													/>
 													<span className="flex items-center justify-center w-5 h-5 mr-2 border border-gray-300 rounded-full box dark:border-gray-700">
 														<span
@@ -227,6 +230,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 					<div></div>
 					<div className="flex items-center gap-3">
 						<Button
+							type="button"
 							size="sm"
 							variant="outline"
 							onClick={onClose}
@@ -234,11 +238,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 						>
 							Cancel
 						</Button>
-						<Button
-							size="sm"
-							onClick={handleAddOrUpdateEvent}
-							disabled={isSubmitting}
-						>
+						<Button type="submit" size="sm" disabled={isSubmitting}>
 							{isSubmitting
 								? "Saving..."
 								: selectedEvent
@@ -247,7 +247,7 @@ const EventFormModal: React.FC<EventFormModalProps> = ({
 						</Button>
 					</div>
 				</div>
-			</div>
+			</form>
 		</Modal>
 	);
 };
