@@ -1,6 +1,6 @@
 import React from "react";
 import { useModal } from "../../hooks/useModal";
-import { Application } from "../../types/applications";
+import { Application } from "../../interfaces/applications";
 import MultiStepApplicationModal from "./modals/MultiStepApplicationModal";
 import { useApplications } from "../../context/ApplicationContext";
 

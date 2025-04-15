@@ -11,7 +11,7 @@ import { updateBasicInfo, UserInfoUpdateRequest } from "../../../api/profile";
 import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
-import { ComponentCardProps } from "../../../types/user";
+import { ComponentCardProps } from "../../../interfaces/user";
 import { countries } from "../../../utils/countries";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";

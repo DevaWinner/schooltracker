@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ApplicationFilterParams } from "../../types/applications";
+import { ApplicationFilterParams } from "../../interfaces/applications";
 
 interface ApplicationFiltersProps {
 	onFilterChange: (filters: ApplicationFilterParams) => void;

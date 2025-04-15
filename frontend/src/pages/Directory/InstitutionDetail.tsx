@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getInstitutionById } from "../../api/institutions";
-import { InstitutionDetail } from "../../types/institutions";
+import { InstitutionDetail } from "../../interfaces/institutions";
 import PageMeta from "../../components/common/PageMeta";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { toast } from "react-toastify";

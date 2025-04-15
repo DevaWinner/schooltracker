@@ -5,7 +5,7 @@ import React, {
 	ReactNode,
 	useCallback,
 } from "react";
-import { UserInfo, UserProfile, UserSettings } from "../types/user";
+import { UserInfo, UserProfile, UserSettings } from "../interfaces/user";
 import { getProfile, getUserProfile, getUserSettings } from "../api/profile";
 import {
 	getAccessToken,

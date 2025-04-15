@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Application } from "../../../types/applications";
+import { Application } from "../../../interfaces/applications";
 import { getInstitutionsForSelect } from "../../../api/institutions";
 import Button from "../../ui/button/Button";
 import StepIndicator from "./StepIndicator";

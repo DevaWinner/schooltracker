@@ -10,7 +10,7 @@ import {
 	Document,
 	DocumentFilterParams,
 	DocumentType,
-} from "../../types/documents";
+} from "../../interfaces/documents";
 import Button from "../../components/ui/button/Button";
 
 export default function DocumentLibrary() {

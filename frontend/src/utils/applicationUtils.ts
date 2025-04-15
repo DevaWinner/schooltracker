@@ -1,4 +1,4 @@
-import { Application } from "../types/applications";
+import { Application } from "../interfaces/applications";
 import { getApplicationById } from "../api/applications";
 
 /**

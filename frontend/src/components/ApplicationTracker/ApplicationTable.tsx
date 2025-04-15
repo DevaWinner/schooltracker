@@ -8,7 +8,10 @@ import {
 } from "../ui/table";
 
 import { useState } from "react";
-import { Application, ApplicationFilterParams } from "../../types/applications";
+import {
+	Application,
+	ApplicationFilterParams,
+} from "../../interfaces/applications";
 import ApplicationFilters from "./ApplicationFilters";
 
 interface ApplicationTableProps {

@@ -1,7 +1,7 @@
 import React from "react";
 import Button from "../ui/button/Button";
 import { Modal } from "../ui/modal";
-import { Document } from "../../types/documents";
+import { Document } from "../../interfaces/documents";
 import { format } from "date-fns";
 import FileIcon from "./FileIcon";
 

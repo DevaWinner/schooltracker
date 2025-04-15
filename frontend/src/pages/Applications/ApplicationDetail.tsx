@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Application } from "../../types/applications";
+import { Application } from "../../interfaces/applications";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import PageMeta from "../../components/common/PageMeta";
 import Button from "../../components/ui/button/Button";
@@ -11,7 +11,7 @@ import { getApplicationById } from "../../api/applications";
 import { toast } from "react-toastify";
 import { useApplications } from "../../context/ApplicationContext";
 import { useEvents } from "../../context/EventContext";
-import { Events } from "../../types/events";
+import { Events } from "../../interfaces/events";
 import EventFormModal from "../../components/Calendar/EventFormModal";
 import { useModal } from "../../hooks/useModal";
 

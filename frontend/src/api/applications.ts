@@ -2,7 +2,7 @@ import {
 	Application,
 	ApplicationFilterParams,
 	ApplicationResponse,
-} from "../types/applications";
+} from "../interfaces/applications";
 import { authenticatedApi } from "../utils/apiUtils";
 
 /**

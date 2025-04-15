@@ -6,7 +6,10 @@ import React, {
 	useCallback,
 	useContext,
 } from "react";
-import { Application, ApplicationFilterParams } from "../types/applications";
+import {
+	Application,
+	ApplicationFilterParams,
+} from "../interfaces/applications";
 import {
 	getApplications,
 	createApplication,

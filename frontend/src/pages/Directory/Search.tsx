@@ -4,7 +4,7 @@ import PageMeta from "../../components/common/PageMeta";
 import InstitutionFilter from "../../components/Directory/InstitutionFilter";
 import Pagination from "../../components/Directory/Pagination";
 import { getInstitutions, getCountries } from "../../api/institutions";
-import { Institution, InstitutionFilters } from "../../types/institutions";
+import { Institution, InstitutionFilters } from "../../interfaces/institutions";
 import PageBreadcrumb from "../../components/common/PageBreadCrumb";
 import { toast } from "react-toastify";
 

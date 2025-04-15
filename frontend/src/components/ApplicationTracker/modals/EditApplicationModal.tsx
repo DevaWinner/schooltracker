@@ -2,7 +2,7 @@ import Button from "../../ui/button/Button";
 import Input from "../../form/input/InputField";
 import Label from "../../form/Label";
 import { useState, useEffect } from "react";
-import { Application } from "../../../types/applications";
+import { Application } from "../../../interfaces/applications";
 import { formatDateForInput } from "../../../utils/dateUtils";
 import { getInstitutionsForSelect } from "../../../api/institutions";
 import { Modal } from "../../ui/modal";

@@ -1,5 +1,5 @@
 import React from "react";
-import { Document } from "../../types/documents";
+import { Document } from "../../interfaces/documents";
 import FileIcon from "./FileIcon";
 import { format } from "date-fns";
 
