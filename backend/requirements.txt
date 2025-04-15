@@ -1,0 +1,14 @@
+Django==5.2
+djangorestframework==3.14.0
+djangorestframework-simplejwt==5.3.1
+drf-yasg==1.21.7
+django-cors-headers==4.3.1
+django-filter==23.5
+python-decouple==3.8
+dj-database-url==2.1.0
+whitenoise==6.6.0
+gunicorn==21.2.0
+psycopg2-binary==2.9.9
+setuptools==69.0.0
+supabase==2.15.0
+filetype==1.2.0
