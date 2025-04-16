@@ -91,11 +91,11 @@ See the full **[Installation Guide](https://github.com/DevaWinner/schooltracker/
 ---
 
 ### 👤 Godspower Onyebuchi Okonkwo
-**GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
-**LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
+**GitHub:** [@JohnSmith](https://github.com/buchii1)  
+**LinkedIn:** [John-Smith](https://www.linkedin.com/in/okonkwo-godspower/)
 #### 💬 Favorite Quote
-> ❝ Your Favorite Quote Here ❞  
-> — Author
+> ❝ Whatever you are, be a good one. ❞  
+> — Abraham Lincoln
 
 ---
 
