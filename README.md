@@ -11,6 +11,7 @@ A **centralized platform** to simplify **international school applications** by 
 ## 📑 Table of Contents
 
 - [About the Project](#about-the-project)
+- [Live Project](#live-project)
 - [Documentation](#documentation)
 - [Getting Started](#getting-started)
 - [Team Members](#team-members)
@@ -27,6 +28,12 @@ A **centralized platform** to simplify **international school applications** by 
 ✅ **Offering an international school directory**
 
 The platform uses **React (Vite + TypeScript)** for the frontend, **Django (Python)** for backend logic, and **Supabase (Postgres + Authentication)** for secure data storage.
+
+---
+
+## 🚀 Live Project
+
+Check out the live version of SchoolTracker: **[https://schooltracker-prfu.onrender.com](https://schooltracker-prfu.onrender.com)**
 
 ---
 
@@ -85,8 +92,8 @@ See the full **[Installation Guide](https://github.com/DevaWinner/schooltracker/
 **GitHub:** [@JohnSmith](https://github.com/JohnSmith)  
 **LinkedIn:** [John-Smith](https://www.linkedin.com/in/john-smith/)
 #### 💬 Favorite Quote
-> ❝ Your Favorite Quote Here ❞  
-> — Author
+> ❝ Self-control means wanting to be effective at some random point in the infinite radiations of my spiritual existence. ❞  
+> — Franz Kafka
 
 ---
 
@@ -105,8 +112,6 @@ See the full **[Installation Guide](https://github.com/DevaWinner/schooltracker/
 #### 💬 Favorite Quote
 > ❝ You’re not everything you could be, and you know it ❞  
 > — Jordan B Peterson
-
-**💡 Note:** If you’d like to contribute to the project or have any questions, please refer to our [CONTRIBUTING.md](CONTRIBUTING.md) or open an issue on GitHub. We’re always open to new ideas and collaboration opportunities!
 
 ---
 
