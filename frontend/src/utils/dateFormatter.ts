@@ -1,3 +1,6 @@
+/**
+ * Provides proper formatting for dates
+ */
 export function formatDate(dateString?: string): string {
 	if (!dateString) return "Not set";
 

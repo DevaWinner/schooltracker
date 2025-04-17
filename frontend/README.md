@@ -1,54 +1,127 @@
-# React + TypeScript + Vite
+---
+# SchoolTracker Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is the frontend component of the **SchoolTracker** project, it handles the user interface and accepts user input. It then utilizes the API endpoints provided by the backend to process user inputs.
+---
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🔐 User Authentication & Authorization
+- 🏫 School Data Management
+- 🌐 RESTful API with Django
+- 💾 PostgreSQL Database Integration
+- ☁️ Supabase Integration for Media Storage
+- 🚀 Ready for deployment with Render
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Project Structure
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+backend/
+frontend/
+├── public/
+├── src/
+│   ├── api/                    # API call functions and related logic
+│   ├── components/             # Reusable UI components
+│   │   └── SomeComponent/
+│   │       ├── SomeComponent.tsx
+│   │       └── props.ts        # Component props and types
+│   ├── constants/              # All constants (routes, endpoints, etc.)
+│   │   ├── Routes.ts           # Application route constants
+│   │   └── Endpoints.ts        # API endpoints constants
+│   ├── interfaces/             # General interface files (e.g., modal interfaces)
+│   │   └── ModalProps.ts       # Modal-specific types
+│   ├── context/                # Global state contexts
+│   ├── hooks/                  # Custom hooks
+│   ├── layout/                 # Layout components
+│   ├── pages/                  # Page-level components
+│   ├── utils/                  # Utility functions (formatters, helpers, etc.)
+│   ├── icons/                  # Icons used throughout the app
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── .env
+├── .gitignore
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── tsconfig.app.jsion
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Getting Started
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+### Prerequisites
+
+- Node.js 14+
+- Python 3.8+
+- PostgreSQL database
+- Render account (for hosting the site)
+- Git
+- (Optional) Virtual environment tool like `venv`
+
+---
+
+## Installation
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/DevaWinner/schooltracker.git
+cd schooltracker/frontend
 ```
+
+### 2. Create and Activate a Virtual Environment
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install Dependencies
+
+```bash
+npm install
+```
+
+---
+
+## Environment Setup
+
+### 4. Create a `.env` File
+
+Create a `.env` file in the `frontend/` directory and update it with the following variables:
+
+```env
+VITE_BASE_URL=
+VITE_BASE_AUTH_URL=
+```
+
+> 💡 Tip: Never share your real `SECRET_KEY` publicly in production. Use `.env` to keep them secure.
+
+---
+
+## Run the Local Development Server
+
+```bash
+npm run dev
+```
+
+Visit: [http://localhost:3001/](http://localhost:3001/)
+
+---
+
+## Deployment (Render)
+
+1. Push your code to GitHub
+2. Connect the GitHub repo to Render
+3. Make sure to add the environment variables to Render’s dashboard
+
+---

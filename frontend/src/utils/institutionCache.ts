@@ -15,6 +15,9 @@ const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 const institutionCache: Record<string, InstitutionCacheEntry> = {};
 const INSTITUTION_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
+/**
+ * Loads the institutions from the cache
+ */
 export const getInstitutionsCache = (): CacheEntry | null => {
 	const cached = localStorage.getItem(CACHE_KEY);
 	if (!cached) return null;
@@ -30,6 +33,9 @@ export const getInstitutionsCache = (): CacheEntry | null => {
 	return entry;
 };
 
+/**
+ * Populates the institutions cache with provided data
+ */
 export const setInstitutionsCache = (data: Institution[]): void => {
 	const entry: CacheEntry = {
 		data,
@@ -38,10 +44,16 @@ export const setInstitutionsCache = (data: Institution[]): void => {
 	localStorage.setItem(CACHE_KEY, JSON.stringify(entry));
 };
 
+/**
+ * Empties the cache
+ */
 export const clearInstitutionsCache = (): void => {
 	localStorage.removeItem(CACHE_KEY);
 };
 
+/**
+ * Adds and institution to the cache
+ */
 export const cacheInstitution = (institution: Institution | InstitutionDetail): void => {
 	institutionCache[institution.id] = {
 		data: institution,
@@ -49,6 +61,9 @@ export const cacheInstitution = (institution: Institution | InstitutionDetail): 
 	};
 };
 
+/**
+ * Gets cached institution if available
+ */
 export const getCachedInstitution = (id: string): Institution | InstitutionDetail | null => {
 	const cached = institutionCache[id];
 	if (!cached) return null;
@@ -61,6 +76,9 @@ export const getCachedInstitution = (id: string): Institution | InstitutionDetai
 	return cached.data;
 };
 
+/**
+ * Removes all data from the cache
+ */
 export const clearInstitutionCache = (): void => {
 	Object.keys(institutionCache).forEach(key => {
 		delete institutionCache[key];
